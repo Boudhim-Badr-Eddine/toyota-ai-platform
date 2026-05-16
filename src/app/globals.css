@@ -1,0 +1,185 @@
+@import "tailwindcss";
+
+/* ─── Toyota Brand Design System ─────────────────────────────────────────── */
+:root {
+  /* Brand Colors */
+  --toyota-red: #EB0A1E;
+  --toyota-dark: #0A0A0A;
+  --toyota-card: #111111;
+  --toyota-gray: #1A1A1A;
+  --toyota-border: #2A2A2A;
+  --toyota-text: #FFFFFF;
+  --toyota-muted: #9CA3AF;
+  --toyota-gold: #C9A84C;
+
+  /* shadcn/ui compatible tokens (dark mode by default) */
+  --background: #0A0A0A;
+  --foreground: #FFFFFF;
+  --card: #111111;
+  --card-foreground: #FFFFFF;
+  --popover: #111111;
+  --popover-foreground: #FFFFFF;
+  --primary: #EB0A1E;
+  --primary-foreground: #FFFFFF;
+  --secondary: #1A1A1A;
+  --secondary-foreground: #FFFFFF;
+  --muted: #1A1A1A;
+  --muted-foreground: #9CA3AF;
+  --accent: #C9A84C;
+  --accent-foreground: #0A0A0A;
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
+  --border: #2A2A2A;
+  --input: #2A2A2A;
+  --ring: #EB0A1E;
+  --radius: 0.75rem;
+}
+
+/* ─── Base Styles ─────────────────────────────────────────────────────────── */
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    font-family: Inter, system-ui, sans-serif;
+    background-color: var(--toyota-dark);
+    color: var(--toyota-text);
+  }
+
+  /* Custom scrollbar — dark theme */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--toyota-gray);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--toyota-border);
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--toyota-muted);
+  }
+
+  /* Focus ring override */
+  :focus-visible {
+    outline: 2px solid var(--toyota-red);
+    outline-offset: 2px;
+  }
+}
+
+/* ─── Component Utilities ─────────────────────────────────────────────────── */
+@layer components {
+  /* Toyota card style */
+  .toyota-card {
+    @apply rounded-2xl border border-white/5 bg-[#111111];
+  }
+
+  /* Toyota primary button */
+  .toyota-btn-primary {
+    @apply rounded-full bg-[#EB0A1E] px-6 py-3 font-semibold text-white transition-all
+           hover:bg-[#c00818] active:scale-95 focus-visible:ring-2 focus-visible:ring-[#EB0A1E];
+  }
+
+  /* Toyota secondary button */
+  .toyota-btn-secondary {
+    @apply rounded-xl border border-[#2A2A2A] bg-[#1A1A1A] px-6 py-3 font-semibold
+           text-white transition-all hover:border-white/20 hover:bg-[#2A2A2A] active:scale-95;
+  }
+
+  /* Gradient text for headings */
+  .gradient-text {
+    @apply bg-linear-to-r from-white via-white to-[#9CA3AF] bg-clip-text text-transparent;
+  }
+
+  /* Red gradient accent */
+  .gradient-red {
+    @apply bg-linear-to-r from-[#EB0A1E] to-[#ff4040] bg-clip-text text-transparent;
+  }
+
+  /* Gold gradient accent */
+  .gradient-gold {
+    @apply bg-linear-to-r from-[#C9A84C] to-[#e8c76a] bg-clip-text text-transparent;
+  }
+
+  /* Glass card effect */
+  .glass-card {
+    @apply rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md;
+  }
+
+  /* Section container */
+  .section-container {
+    @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+}
+
+/* ─── Custom Animations ───────────────────────────────────────────────────── */
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out forwards;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.6s ease-out forwards;
+  }
+
+  .animate-slide-in {
+    animation: slideIn 0.5s ease-out forwards;
+  }
+
+  .animate-pulse-red {
+    animation: pulseRed 2s ease-in-out infinite;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulseRed {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(235, 10, 30, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(235, 10, 30, 0);
+  }
+}
