@@ -1,10 +1,13 @@
+'use client';
+
 import { Suspense } from "react";
 import { LayoutGrid, Sparkles } from "lucide-react";
 import { VEHICLES_DATA } from "@/data/vehicles";
 import { VehicleGrid } from "@/components/catalog/VehicleGrid";
 import { ComparisonBanner } from "@/components/catalog/ComparisonBanner";
 
-// ─── Catalog page (Server Component) ──────────────────────────────────────────
+// ─── Catalog page (Client Component) ──────────────────────────────────────────
+// Mark as client to allow onClick handlers
 // Vehicles are read directly from the static data file to avoid a round-trip
 // network fetch in server components. The API route serves external consumers.
 
@@ -44,14 +47,19 @@ function GridSkeleton() {
   );
 }
 
-// ─── Page ──────────────────────────────────────────────────────────────────────
+// ─── Page ───────────────────────────────────────────────────────────────────
 
 export default function VehiclesPage() {
   const vehicles = VEHICLES_DATA;
 
+  const handleOpenChat = () => {
+    // Dispatch custom event to open chat widget
+    window.dispatchEvent(new CustomEvent('openChatWidget'));
+  };
+
   return (
     <div className="min-h-screen bg-toyota-dark">
-      {/* ── Hero ─────────────────────────────────────────────────────────────── */}
+      {/* ── Hero ──────────────────────────────────────────────────────────────── */}
       <section className="relative pt-28 pb-16 overflow-hidden">
         {/* Background glow */}
         <div
@@ -103,7 +111,7 @@ export default function VehiclesPage() {
         <ComparisonBanner />
       </section>
 
-      {/* ── AI Advisor CTA ─────────────────────────────────────────────────────── */}
+      {/* ── AI Advisor CTA ──────────────────────────────────────────────────────── */}
       <section className="section-container pb-4">
         <div className="bg-linear-to-r from-toyota-red/10 via-toyota-red/5 to-transparent border border-toyota-red/15 rounded-2xl px-5 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -120,7 +128,7 @@ export default function VehiclesPage() {
             </div>
           </div>
           <button
-            onClick={() => window.dispatchEvent(new CustomEvent('openChatWidget'))}
+            onClick={handleOpenChat}
             className="shrink-0 flex items-center gap-2 px-4 py-2 bg-toyota-red text-white text-sm font-bold rounded-xl hover:bg-toyota-red/90 transition-colors"
           >
             <Sparkles className="h-3.5 w-3.5" />
@@ -129,7 +137,7 @@ export default function VehiclesPage() {
         </div>
       </section>
 
-      {/* ── Vehicle Grid ─────────────────────────────────────────────────────── */}
+      {/* ── Vehicle Grid ───────────────────────────────────────────────────────── */}
       <section className="section-container py-10">
         <Suspense fallback={<GridSkeleton />}>
           <VehicleGrid vehicles={vehicles} />
