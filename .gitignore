@@ -60,3 +60,5 @@ public/models/*/
 next-env.d.ts
 
 public/videos/supra-hero.mp4
+
+.env
