@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Vehicle {
+  id           String        @id @default(cuid())
+  slug         String        @unique
+  name         String
+  category     String
+  description  String
+  priceFrom    Float
+  model3dPath  String
+  colors       Json
+  wheels       Json
+  interiors    Json
+  specs        Json
+  createdAt    DateTime      @default(now())
+  leads        Lead[]
+  reservations Reservation[]
+}
+
+model Lead {
+  id            String       @id @default(cuid())
+  firstName     String
+  lastName      String
+  email         String
+  phone         String?
+  vehicleId     String
+  vehicle       Vehicle      @relation(fields: [vehicleId], references: [id])
+  configuration Json
+  chatHistory   Json
+  type          String
+  status        String       @default("new")
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  reservation   Reservation?
+}
+
+model Reservation {
+  id        String   @id @default(cuid())
+  leadId    String   @unique
+  lead      Lead     @relation(fields: [leadId], references: [id])
+  vehicleId String
+  vehicle   Vehicle  @relation(fields: [vehicleId], references: [id])
+  date      DateTime
+  type      String
+  status    String   @default("pending")
+  notes     String?
+  createdAt DateTime @default(now())
+}
+
+model Admin {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("admin")
+  createdAt DateTime @default(now())
+}

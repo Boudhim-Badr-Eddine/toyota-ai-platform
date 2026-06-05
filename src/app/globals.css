@@ -1,0 +1,228 @@
+@import "tailwindcss";
+
+/* ─── Toyota Brand Design System ─────────────────────────────────────────── */
+:root {
+  --toyota-red: #EB0A1E;
+  --toyota-dark: #080808;
+  --toyota-card: #111111;
+  --toyota-gray: #1A1A1A;
+  --toyota-border: #2A2A2A;
+  --toyota-text: #FFFFFF;
+  --toyota-muted: #9CA3AF;
+  --toyota-gold: #C9A84C;
+
+  --background: #080808;
+  --foreground: #FFFFFF;
+  --card: #111111;
+  --card-foreground: #FFFFFF;
+  --popover: #111111;
+  --popover-foreground: #FFFFFF;
+  --primary: #EB0A1E;
+  --primary-foreground: #FFFFFF;
+  --secondary: #1A1A1A;
+  --secondary-foreground: #FFFFFF;
+  --muted: #1A1A1A;
+  --muted-foreground: #9CA3AF;
+  --accent: #C9A84C;
+  --accent-foreground: #080808;
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
+  --border: #1E1E1E;
+  --input: #1E1E1E;
+  --ring: #EB0A1E;
+  --radius: 0.75rem;
+}
+
+/* ─── Base ───────────────────────────────────────────────────────────────── */
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    font-family: Inter, system-ui, sans-serif;
+    background-color: var(--toyota-dark);
+    color: var(--toyota-text);
+    overflow-x: hidden;
+  }
+
+  /* Premium scrollbar */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: #0A0A0A; }
+  ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 999px; }
+  ::-webkit-scrollbar-thumb:hover { background: #EB0A1E; }
+
+  :focus-visible {
+    outline: 2px solid var(--toyota-red);
+    outline-offset: 2px;
+  }
+
+  /* Remove default button styles */
+  button { cursor: pointer; }
+
+  /* Selection color */
+  ::selection {
+    background: rgba(235, 10, 30, 0.25);
+    color: #fff;
+  }
+}
+
+/* ─── Components ─────────────────────────────────────────────────────────── */
+@layer components {
+  .toyota-card {
+    @apply rounded-2xl border border-white/5 bg-[#111111];
+  }
+
+  .toyota-btn-primary {
+    @apply inline-flex items-center gap-2.5 rounded-full bg-[#EB0A1E] px-7 py-3.5 text-sm font-black text-white tracking-wide
+           transition-all duration-300 hover:shadow-xl hover:shadow-[#EB0A1E]/30 active:scale-95 focus-visible:ring-2 focus-visible:ring-[#EB0A1E];
+  }
+
+  .toyota-btn-secondary {
+    @apply inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-white/5 px-7 py-3.5 text-sm font-semibold
+           text-white/80 backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:text-white hover:border-white/30 active:scale-95;
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-white to-white/50 bg-clip-text text-transparent;
+  }
+
+  .gradient-red {
+    @apply bg-gradient-to-r from-[#EB0A1E] to-[#ff5040] bg-clip-text text-transparent;
+  }
+
+  .gradient-gold {
+    @apply bg-gradient-to-r from-[#C9A84C] to-[#f0d98a] bg-clip-text text-transparent;
+  }
+
+  .glass-card {
+    @apply rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl;
+  }
+
+  .section-container {
+    @apply mx-auto max-w-7xl px-5 sm:px-6 lg:px-10;
+  }
+
+  /* Outline text effect */
+  .text-outline-red {
+    -webkit-text-stroke: 2px #EB0A1E;
+    color: transparent;
+  }
+
+  /* Noise grain overlay */
+  .noise-overlay::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    opacity: 0.035;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+  }
+}
+
+/* ─── Utilities / Animations ─────────────────────────────────────────────── */
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  .animate-slide-in {
+    animation: slideIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  .animate-pulse-red {
+    animation: pulseRed 2.5s ease-in-out infinite;
+  }
+
+  .animate-marquee {
+    animation: marquee 28s linear infinite;
+  }
+
+  .animate-float {
+    animation: float 4s ease-in-out infinite;
+  }
+
+  .animate-glow {
+    animation: glow 3s ease-in-out infinite;
+  }
+
+  /* Hover lift */
+  .hover-lift {
+    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s ease;
+  }
+  .hover-lift:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(32px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-28px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulseRed {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(235, 10, 30, 0.35); }
+  50% { box-shadow: 0 0 0 10px rgba(235, 10, 30, 0); }
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes glow {
+  0%, 100% { opacity: 0.15; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(1.15); }
+}
+
+/* ─── Video hero specific ────────────────────────────────────────────────── */
+.hero-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Cinematic letterbox bars */
+.cinematic-bars::before,
+.cinematic-bars::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 6vh;
+  background: #000;
+  z-index: 5;
+  pointer-events: none;
+}
+.cinematic-bars::before { top: 0; }
+.cinematic-bars::after { bottom: 0; }

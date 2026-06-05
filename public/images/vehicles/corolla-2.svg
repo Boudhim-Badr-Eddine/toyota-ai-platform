@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 200">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#111827"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="200" rx="24" fill="url(#g)"/>
+  <rect x="28" y="68" width="264" height="80" rx="16" fill="#ffffff14"/>
+  <path d="M60 130 H90 C98 130 102 122 110 118 H210 C218 122 222 130 230 130 H260" stroke="#60a5fa" stroke-width="10" fill="none" stroke-linecap="round"/>
+  <circle cx="85" cy="149" r="16" fill="#ffffff16"/>
+  <circle cx="235" cy="149" r="16" fill="#ffffff16"/>
+  <text x="50%" y="42" text-anchor="middle" fill="#f8fafc" font-family="Inter, sans-serif" font-size="22" font-weight="700">Corolla 2026</text>
+  <text x="50%" y="182" text-anchor="middle" fill="#cbd5e1" font-family="Inter, sans-serif" font-size="14">Berline hybride</text>
+</svg>
