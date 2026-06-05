@@ -31,7 +31,7 @@ import { formatPrice, cn } from "@/lib/utils";
 const SLIDES = [
   {
     id: "supra",
-    video: "/videos/supra-hero.mp4",
+    video: "https://drive.google.com/uc?export=download&id=1suXOrHbL31qeae1ItDGfG8n71yfC2KFu",
     poster: "/images/vehicles/supra.jpg",
     eyebrow: "Sport Collection",
     headline: "Performance",
