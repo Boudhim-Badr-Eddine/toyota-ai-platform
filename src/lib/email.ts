@@ -7,7 +7,8 @@ function getTransporter(): Transporter | null {
   const host = process.env.SMTP_HOST ?? "smtp.gmail.com";
   const port = Number(process.env.SMTP_PORT ?? "587");
   const user = process.env.SMTP_USER ?? process.env.GMAIL_USER;
-  const pass = process.env.SMTP_PASS ?? process.env.GMAIL_APP_PASSWORD;
+  const rawPass = process.env.SMTP_PASS ?? process.env.GMAIL_APP_PASSWORD;
+  const pass = rawPass?.replace(/\s/g, "");
 
   if (!user || !pass) {
     return null;
@@ -46,13 +47,15 @@ export async function sendEmail(options: {
     `"Toyota Maroc Platform" <${process.env.SMTP_USER ?? process.env.GMAIL_USER}>`;
 
   try {
-    await transport.sendMail({
+    await transport.verify();
+    const info = await transport.sendMail({
       from,
       to: options.to,
       subject: options.subject,
       html: options.html,
       text: options.text,
     });
+    console.info("[email] Sent:", info.messageId, "→", options.to);
     return true;
   } catch (error) {
     console.error("[email] Send failed:", error);

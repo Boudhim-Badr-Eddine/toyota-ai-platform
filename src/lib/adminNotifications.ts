@@ -50,12 +50,13 @@ function buildPayloadFromLead(
   };
 }
 
-/** Notify admin when a client confirms a lead (devis, SAV — no rendez-vous API call). */
+/** Notify admin when a client confirms a devis / SAV (no rendez-vous API call). */
 export async function notifyAdminLeadConfirmed(lead: LeadWithRelations): Promise<void> {
   if (lead.type !== "quote") return;
 
   const { subject, html, text } = buildAdminNotificationEmail(buildPayloadFromLead(lead));
-  await sendEmail({ to: adminInbox(), subject, html, text });
+  const sent = await sendEmail({ to: adminInbox(), subject, html, text });
+  if (!sent) throw new Error("Admin notification email failed to send");
 }
 
 /** Notify admin when a client confirms achat / essai / rendez-vous with a scheduled slot. */
@@ -70,5 +71,6 @@ export async function notifyAdminReservationConfirmed(
       reservationNotes: reservation.notes,
     })
   );
-  await sendEmail({ to: adminInbox(), subject, html, text });
+  const sent = await sendEmail({ to: adminInbox(), subject, html, text });
+  if (!sent) throw new Error("Admin notification email failed to send");
 }
