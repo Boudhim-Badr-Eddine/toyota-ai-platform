@@ -24,8 +24,10 @@ import { formatPrice, cn } from "@/lib/utils";
 
 // ─── Hero video (Cloudinary) ───────────────────────────────────────────────────
 
-const HERO_VIDEO =
+const DEFAULT_HERO_VIDEO =
   "https://res.cloudinary.com/de73zfmty/video/upload/v1780692824/ytmp3gg-youtube-2025-toyota-gr-supra-overview-toyota-media-cd0zyb-zsc8-001-1080p_peOQ6QCh_online-video-cutter.com_kycvow.mp4";
+
+const HERO_VIDEO = process.env.NEXT_PUBLIC_HERO_VIDEO_URL ?? DEFAULT_HERO_VIDEO;
 
 const HERO = {
   poster: "/images/vehicles/supra.jpg",

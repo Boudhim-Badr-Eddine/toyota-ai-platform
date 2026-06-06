@@ -55,5 +55,8 @@ public/models/*.gltf
 public/models/*/
 !public/models/.gitkeep
 !public/models/README.txt
+
+# hero video — use Cloudinary via NEXT_PUBLIC_HERO_VIDEO_URL, not local MP4s
+public/videos/
 next-env.d.ts
 .env*
