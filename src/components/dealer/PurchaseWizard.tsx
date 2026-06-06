@@ -41,15 +41,12 @@ export function PurchaseWizard() {
   const prefillType = searchParams.get("type") as FormData["type"] | null;
   const { isCustomer, profile } = useProfile();
 
-  const [mounted, setMounted] = useState(false);
   const [step, setStep] = useState(0);
   const [vehicleId, setVehicleId] = useState(
     prefillVehicle || VEHICLES_DATA[0]?.id || ""
   );
 
   useEffect(() => {
-    setMounted(true);
-    setMinAppointmentDate(new Date().toISOString().slice(0, 10));
     if (!prefillVehicle) {
       const savedId = useConfiguratorStore.getState().getConfiguration().vehicleId;
       if (savedId) setVehicleId(savedId);
@@ -66,7 +63,7 @@ export function PurchaseWizard() {
   });
   const [appointmentDate, setAppointmentDate] = useState("");
   const [appointmentTime, setAppointmentTime] = useState("10:00");
-  const [minAppointmentDate, setMinAppointmentDate] = useState("");
+  const [minAppointmentDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [geoLoading, setGeoLoading] = useState(false);
   const [geoDenied, setGeoDenied] = useState(false);
@@ -196,10 +193,6 @@ export function PurchaseWizard() {
       setSubmitting(false);
     }
   };
-
-  if (!mounted) {
-    return <div className="section-container py-20 text-white/40">Chargement…</div>;
-  }
 
   const configSummary = useConfiguratorStore.getState().getConfiguration();
 
