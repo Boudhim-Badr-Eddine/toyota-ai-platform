@@ -14,6 +14,10 @@ import {
   Leaf,
   Star,
   Zap,
+  Volume2,
+  VolumeX,
+  Play,
+  Pause,
 } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { VEHICLES_DATA } from "@/data/vehicles";
@@ -21,7 +25,20 @@ import { formatPrice, cn } from "@/lib/utils";
 
 // ─── Hero slides ─────────────────────────────────────────────────────────────
 
-const SLIDES = [
+type HeroSlide = {
+  id: string;
+  image: string;
+  video?: string;
+  eyebrow: string;
+  headline: string;
+  headlineRed: string;
+  sub: string;
+  cta: string;
+  href: string;
+  objectPosition?: string;
+};
+
+const SLIDES: HeroSlide[] = [
   {
     id: "rav4",
     image: "/images/vehicles/rav4.jpg",
@@ -35,12 +52,15 @@ const SLIDES = [
   {
     id: "supra",
     image: "/images/vehicles/supra.jpg",
+    video:
+      "https://drive.google.com/uc?export=download&id=1suXOrHbL31qeae1ItDGfG8n71yfC2KFu",
     eyebrow: "Sport Collection",
     headline: "Performance",
     headlineRed: "Légendaire",
     sub: "340 ch de pur plaisir de conduite. La Supra — une icône réinventée.",
     cta: "Découvrir la Supra",
     href: "/vehicles/supra",
+    objectPosition: "center center",
   },
   {
     id: "highlander",
@@ -52,7 +72,7 @@ const SLIDES = [
     cta: "Voir le Highlander",
     href: "/vehicles/highlander",
   },
-] as const;
+];
 
 // ─── Category pills ───────────────────────────────────────────────────────────
 
@@ -138,11 +158,71 @@ function SparkleAnim() {
   );
 }
 
+function HeroMedia({
+  slide,
+  active,
+  muted,
+  playing,
+}: {
+  slide: HeroSlide;
+  active: boolean;
+  muted: boolean;
+  playing: boolean;
+}) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (active && playing) {
+      video.play().catch(() => {});
+    } else {
+      video.pause();
+    }
+  }, [active, playing]);
+
+  useEffect(() => {
+    if (videoRef.current) videoRef.current.muted = muted;
+  }, [muted]);
+
+  if (slide.video) {
+    return (
+      <video
+        ref={videoRef}
+        src={slide.video}
+        poster={slide.image}
+        loop
+        muted={muted}
+        playsInline
+        preload="metadata"
+        className="absolute inset-0 h-full w-full object-cover"
+        style={{ objectPosition: slide.objectPosition ?? "center center" }}
+      />
+    );
+  }
+
+  return (
+    <Image
+      src={slide.image}
+      alt={slide.headline}
+      fill
+      className="object-cover"
+      priority={active}
+      sizes="100vw"
+      onError={(e) => {
+        (e.currentTarget as HTMLImageElement).style.display = "none";
+      }}
+    />
+  );
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function HomePage() {
   const [slide, setSlide] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [muted, setMuted] = useState(true);
+  const [playing, setPlaying] = useState(true);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>("all");
 
@@ -157,10 +237,10 @@ export default function HomePage() {
   );
 
   useEffect(() => {
-    if (paused) return;
+    if (paused || !playing) return;
     timerRef.current = setTimeout(() => goTo(slide + 1), 6000);
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
-  }, [slide, paused, goTo]);
+  }, [slide, paused, playing, goTo]);
 
   const featuredVehicles = FEATURED_IDS.map((id) =>
     VEHICLES_DATA.find((v) => v.id === id)
@@ -182,14 +262,11 @@ export default function HomePage() {
               transition={{ duration: 1, ease: "easeInOut" }}
               className="absolute inset-0"
             >
-              <Image
-                src={SLIDES[slide].image}
-                alt={SLIDES[slide].headline}
-                fill
-                className="object-cover"
-                priority
-                sizes="100vw"
-                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+              <HeroMedia
+                slide={SLIDES[slide]}
+                active
+                muted={muted}
+                playing={playing}
               />
               {/* Multi-layer gradient for depth */}
               <div className="absolute inset-0 bg-linear-to-r from-black/80 via-black/45 to-black/10" />
@@ -266,6 +343,28 @@ export default function HomePage() {
               </div>
             </div>
           </div>
+
+          {/* Video controls — visible when slide has video */}
+          {SLIDES[slide].video && (
+            <div className="absolute top-24 right-6 z-20 flex gap-2 sm:right-8">
+              <button
+                type="button"
+                onClick={() => setPlaying((p) => !p)}
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-black/40 text-white backdrop-blur-sm hover:bg-white/10"
+                aria-label={playing ? "Pause vidéo" : "Lire la vidéo"}
+              >
+                {playing ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+              </button>
+              <button
+                type="button"
+                onClick={() => setMuted((m) => !m)}
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-black/40 text-white backdrop-blur-sm hover:bg-white/10"
+                aria-label={muted ? "Activer le son" : "Couper le son"}
+              >
+                {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+              </button>
+            </div>
+          )}
 
           {/* Dot indicators */}
           <div className="absolute bottom-8 left-0 right-0 z-20 flex items-center justify-center gap-3">
