@@ -1,8 +1,10 @@
+import path from "node:path";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Silence Next.js 16 "Turbopack + webpack config" warning
-  turbopack: {},
+  turbopack: {
+    root: path.resolve(__dirname),
+  },
 
   webpack(config) {
     config.module.rules.push({
@@ -16,23 +18,18 @@ const nextConfig: NextConfig = {
 
   images: {
     remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "images.unsplash.com",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "upload.wikimedia.org",
-        pathname: "/**",
-      },
+      { protocol: "https", hostname: "images.unsplash.com", pathname: "/**" },
+      { protocol: "https", hostname: "upload.wikimedia.org", pathname: "/**" },
+      { protocol: "https", hostname: "res.cloudinary.com", pathname: "/**" },
+      { protocol: "https", hostname: "babydrive.com.au", pathname: "/**" },
+      { protocol: "https", hostname: "img.philkotse.com", pathname: "/**" },
+      { protocol: "https", hostname: "burlappcar.com", pathname: "/**" },
       {
         protocol: "https",
         hostname: "*.supabase.co",
         pathname: "/storage/v1/object/public/**",
       },
     ],
-    unoptimized: false,
   },
 };
 

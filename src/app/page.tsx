@@ -1,11 +1,20 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion, useInView, type Variants } from "framer-motion";
+import {
+  motion,
+  AnimatePresence,
+  useInView,
+  useScroll,
+  useTransform,
+  type Variants,
+} from "framer-motion";
 import {
   ArrowRight,
+  ChevronLeft,
+  ChevronRight,
   Bot,
   Sparkles,
   Shield,
@@ -16,652 +25,1086 @@ import {
   VolumeX,
   Play,
   Pause,
-  ChevronDown,
 } from "lucide-react";
-import { AppShell } from "@/components/layout/AppShell";
-import { VEHICLES_DATA } from "@/data/vehicles";
-import { formatPrice, cn } from "@/lib/utils";
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
+import { VEHICLES_DATA, getVehicleDisplayImage } from "@/data/vehicles";
+import { cn } from "@/lib/utils";
 
-// ─── Hero video (Cloudinary) ───────────────────────────────────────────────────
+const HERO_IMAGES = {
+  supra: "/images/vehicles/supra-hero-2.png",
+  rav4: "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=1600&q=85",
+  highlander: "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=1600&q=85",
+  camry: "/images/vehicles/camry-hero-2.png",
+  promo: "/images/vehicles/rav4-hero-2.png",
+} as const;
+
+// ─── Video hero slides (Cloudinary Supra) ─────────────────────────────────────
 
 const DEFAULT_HERO_VIDEO =
   "https://res.cloudinary.com/de73zfmty/video/upload/v1780692824/ytmp3gg-youtube-2025-toyota-gr-supra-overview-toyota-media-cd0zyb-zsc8-001-1080p_peOQ6QCh_online-video-cutter.com_kycvow.mp4";
 
 const HERO_VIDEO = process.env.NEXT_PUBLIC_HERO_VIDEO_URL ?? DEFAULT_HERO_VIDEO;
 
-const HERO = {
-  poster: "/images/vehicles/supra.jpg",
-  eyebrow: "Sport Collection · GR Supra 2025",
-  headline: "Performance",
-  headlineRed: "Légendaire",
-  sub: "340 ch de pur plaisir de conduite. La Supra — une icône réinventée pour la route marocaine.",
-  cta: "Découvrir la Supra",
-  href: "/vehicles/supra",
-  stats: [
-    { label: "3.0L TURBO", sub: "Moteur" },
-    { label: "4.3s", sub: "0-100 km/h" },
-    { label: "500 Nm", sub: "Couple" },
-  ],
-};
-
-type DiscoverCard = {
-  id: string;
-  image: string;
-  eyebrow: string;
-  headline: string;
-  headlineAccent: string;
-  sub: string;
-  cta: string;
-  href: string;
-  accent: string;
-  stats: { label: string; sub: string }[];
-};
-
-const DISCOVER_CARDS: DiscoverCard[] = [
+const VIDEO_SLIDES = [
   {
-    id: "rav4",
-    image: "/images/vehicles/rav4.jpg",
-    eyebrow: "SUV Hybride",
-    headline: "L'Aventure",
-    headlineAccent: "Commence Ici",
-    sub: "Le RAV4 hybride redéfinit l'exploration — économique, spacieux, indestructible.",
-    cta: "Explorer le RAV4",
-    href: "/vehicles/rav4",
-    accent: "from-emerald-500/20 to-transparent",
-    stats: [
-      { label: "218 ch", sub: "Hybride" },
-      { label: "5.8 L", sub: "/100 km" },
-      { label: "AWD", sub: "4×4" },
-    ],
+    id: "supra",
+    video: HERO_VIDEO,
+    eyebrow: "Sport Collection",
+    headline: "Performance",
+    headlineAccent: "Légendaire",
+    sub: "340 ch de pur plaisir de conduite. La Supra — une icône réinventée.",
+    cta: "Découvrir la Supra",
+    href: "/vehicles/supra",
+    objectPosition: "center center",
   },
-  {
-    id: "highlander",
-    image: "/images/vehicles/highlander.jpg",
-    eyebrow: "SUV Premium · 7 places",
-    headline: "Votre Famille,",
-    headlineAccent: "Notre Priorité",
-    sub: "Le Highlander hybride — luxe raffiné, sécurité maximale, zéro compromis.",
-    cta: "Voir le Highlander",
-    href: "/vehicles/highlander",
-    accent: "from-amber-500/20 to-transparent",
-    stats: [
-      { label: "7 places", sub: "Capacité" },
-      { label: "248 ch", sub: "Hybride" },
-      { label: "5★", sub: "NCAP" },
-    ],
-  },
-];
+] as const;
 
-// ─── Category pills ───────────────────────────────────────────────────────────
+// ─── Model showcase slides (all catalog vehicles) ───────────────────────────
+
+const HERO_SLIDES = VEHICLES_DATA.map((vehicle) => ({
+  id: vehicle.id,
+  image: getVehicleDisplayImage(vehicle),
+  eyebrow: vehicle.category,
+  headline: vehicle.name,
+  headlineRed: vehicle.tagline,
+  sub: vehicle.description,
+  cta: `Découvrir ${vehicle.name.replace(/^Toyota\s+/i, "")}`,
+  href: `/vehicles/${vehicle.id}`,
+}));
+
+function getSlideStats(vehicleId: string) {
+  const vehicle = VEHICLES_DATA.find((v) => v.id === vehicleId);
+  if (!vehicle) return [];
+
+  const { specs } = vehicle;
+  return [
+    {
+      label: `${specs.power} ch`,
+      value: "Puissance",
+      sub: specs.engineType,
+    },
+    {
+      label: specs.consumption ? `${specs.consumption} L` : `${specs.zeroto100} s`,
+      value: specs.consumption ? "/100 km" : "0-100 km/h",
+      sub: specs.consumption ? "Consommation" : "Accélération",
+    },
+    {
+      label: `${specs.seats} places`,
+      value: "Capacité",
+      sub: specs.drivetrain,
+    },
+  ];
+}
 
 const CATEGORY_PILLS = [
-  { key: "all", label: "Tous", count: 10 },
+  { key: "all", label: "Tous", count: 13 },
   { key: "suv", label: "SUV", count: 4 },
-  { key: "berline", label: "Berline", count: 2 },
+  { key: "berline", label: "Berline", count: 3 },
   { key: "sport", label: "Sport", count: 1 },
   { key: "hybride", label: "Hybride", count: 6 },
   { key: "pickup", label: "Pick-up", count: 1 },
 ] as const;
 
-// ─── Featured vehicles ────────────────────────────────────────────────────────
-
-// Avoid Supra (hero), RAV4 & Highlander (discover cards) — showcase the rest of the gamme.
-const FEATURED_IDS = ["landcruiser", "camry", "hilux"];
-const FEATURED_TAGLINES: Record<string, string> = {
-  landcruiser: "Indestructible. Luxueux. Légendaire.",
-  camry: "La berline de référence — confort, silence et élégance.",
-  hilux: "Le pick-up le plus fiable au monde, prêt pour le Maroc.",
-  prius: "L'hybride pionnier — efficience et technologie avant-gardiste.",
-  corolla: "La compacte hybride la plus vendue au monde.",
-  chr: "SUV urbain au design audacieux, parfait pour la ville.",
-};
-
 const STATS = [
   { value: "85 ans", label: "d'expérience", icon: Shield },
   { value: "2M+", label: "clients satisfaits", icon: Star },
   { value: "+50", label: "modèles historiques", icon: Zap },
-  { value: "6", label: "modèles hybrides", icon: Leaf },
+  { value: "100 %", label: "hybrides disponibles", icon: Leaf },
 ];
 
-const fadeIn: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" } },
+// ─── Animation variants ───────────────────────────────────────────────────────
+
+const fadeUp: Variants = {
+  hidden: { opacity: 0, y: 40 },
+  visible: (i = 0) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: i * 0.1 },
+  }),
 };
+
 const stagger: Variants = {
   hidden: {},
-  visible: { transition: { staggerChildren: 0.1 } },
+  visible: { transition: { staggerChildren: 0.12 } },
 };
 
-const SPARK_POS = [
-  { x: "12%", y: "25%", d: 0 },
-  { x: "78%", y: "18%", d: 0.5 },
-  { x: "45%", y: "72%", d: 0.9 },
-  { x: "88%", y: "65%", d: 1.3 },
-  { x: "22%", y: "78%", d: 0.65 },
-  { x: "62%", y: "38%", d: 1.1 },
-];
+// ─── Video Hero Slide ─────────────────────────────────────────────────────────
 
-function SparkleAnim() {
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {SPARK_POS.map(({ x, y, d }, i) => (
-        <motion.span
-          key={i}
-          style={{ left: x, top: y, position: "absolute" }}
-          animate={{ opacity: [0, 1, 0], scale: [0.4, 1.3, 0.4] }}
-          transition={{ duration: 2.8, repeat: Infinity, delay: d, ease: "easeInOut" }}
-          className="w-1.5 h-1.5 rounded-full bg-white/50 block"
-        />
-      ))}
-    </div>
-  );
-}
-
-function HeroVideo({ muted, playing }: { muted: boolean; playing: boolean }) {
+function VideoSlide({
+  slide,
+  active,
+  muted,
+  playing,
+}: {
+  slide: (typeof VIDEO_SLIDES)[number];
+  active: boolean;
+  muted: boolean;
+  playing: boolean;
+}) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-    if (playing) video.play().catch(() => {});
-    else video.pause();
-  }, [playing]);
+    const v = videoRef.current;
+    if (!v) return;
+    if (active) {
+      v.currentTime = 0;
+      if (playing) {
+        v.play().catch(() => {});
+      } else {
+        v.pause();
+      }
+    } else {
+      v.pause();
+    }
+  }, [active, playing]);
 
   useEffect(() => {
     if (videoRef.current) videoRef.current.muted = muted;
   }, [muted]);
 
   return (
-    <video
-      ref={videoRef}
-      src={HERO_VIDEO}
-      poster={HERO.poster}
-      loop
-      muted={muted}
-      autoPlay
-      playsInline
-      preload="auto"
-      className="absolute inset-0 h-full w-full object-cover"
-      onError={(e) => {
-        e.currentTarget.style.display = "none";
-      }}
-    />
-  );
-}
-
-function DiscoverModelCard({ card, index }: { card: DiscoverCard; index: number }) {
-  const vehicle = VEHICLES_DATA.find((v) => v.id === card.id);
-
-  return (
-    <motion.article
-      variants={fadeIn}
-      className="group relative min-h-[480px] overflow-hidden rounded-3xl border border-white/[0.08] bg-[#0a0a0a] shadow-2xl shadow-black/40"
+    <motion.div
+      key={slide.id}
+      initial={{ opacity: 0, scale: 1.02 }}
+      animate={{ opacity: active ? 1 : 0, scale: active ? 1 : 1.02 }}
+      transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
+      className="absolute inset-0"
     >
-      <div className="absolute inset-0">
-        <Image
-          src={card.image}
-          alt={`Toyota ${card.id}`}
-          fill
-          className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-          sizes="(max-width: 768px) 100vw, 50vw"
-          onError={(e) => {
-            (e.currentTarget as HTMLImageElement).style.display = "none";
-          }}
+      {slide.video ? (
+        <video
+          ref={videoRef}
+          src={slide.video}
+          loop
+          muted={muted}
+          playsInline
+          preload="auto"
+          className="absolute inset-0 w-full h-full object-cover bg-black"
+          style={{ objectPosition: slide.objectPosition || "center center" }}
         />
-        <div className={cn("absolute inset-0 bg-linear-to-br via-black/50 to-black/90", card.accent)} />
-        <div className="absolute inset-0 bg-linear-to-t from-black via-black/40 to-black/10" />
-      </div>
+      ) : null}
 
-      <div className="relative z-10 flex h-full min-h-[480px] flex-col justify-between p-8 md:p-10">
-        <div className="flex items-start justify-between gap-4">
-          <span className="inline-flex items-center rounded-full border border-white/15 bg-black/40 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-white/80 backdrop-blur-md">
-            {card.eyebrow}
-          </span>
-          <span className="font-mono text-xs text-white/30">0{index + 2}</span>
-        </div>
-
-        <div>
-          <h3 className="text-3xl font-black leading-[1.05] tracking-tight text-white md:text-4xl">
-            {card.headline}
-            <br />
-            <span className="text-toyota-red">{card.headlineAccent}</span>
-          </h3>
-          <p className="mt-4 max-w-md text-sm leading-relaxed text-white/60 md:text-base">{card.sub}</p>
-
-          <div className="mt-6 flex flex-wrap gap-2">
-            {card.stats.map((s) => (
-              <div
-                key={s.sub}
-                className="rounded-xl border border-white/10 bg-black/50 px-3 py-2 backdrop-blur-md"
-              >
-                <p className="text-[9px] font-bold uppercase tracking-widest text-toyota-red">{s.sub}</p>
-                <p className="text-sm font-black text-white">{s.label}</p>
-              </div>
-            ))}
-          </div>
-
-          {vehicle && (
-            <p className="mt-5 text-sm font-semibold text-toyota-gold">
-              À partir de {formatPrice(vehicle.priceFrom)}
-            </p>
-          )}
-
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Link
-              href={card.href}
-              className="inline-flex items-center gap-2 rounded-full bg-toyota-red px-6 py-3 text-sm font-bold text-white shadow-lg shadow-toyota-red/30 transition-all hover:gap-3 hover:bg-toyota-red/90"
-            >
-              {card.cta}
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link
-              href={`/configurator/${card.id}`}
-              className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-6 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/10"
-            >
-              Configurer
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      <div className="pointer-events-none absolute inset-0 rounded-3xl ring-1 ring-inset ring-white/0 transition-all duration-500 group-hover:ring-white/20" />
-    </motion.article>
+      <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/40 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/30" />
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.55) 100%)",
+        }}
+      />
+    </motion.div>
   );
 }
+
+// ─── Horizontal scan line decoration ─────────────────────────────────────────
+
+function ScanLines() {
+  return (
+    <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-[0.04]">
+      <motion.div
+        className="absolute inset-[-4px]"
+        style={{
+          backgroundImage:
+            "repeating-linear-gradient(0deg, #fff 0px, #fff 1px, transparent 1px, transparent 4px)",
+        }}
+        animate={{ y: [0, 4] }}
+        transition={{ duration: 1.8, repeat: Infinity, ease: "linear" }}
+      />
+    </div>
+  );
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function HomePage() {
+  const [videoSlide, setVideoSlide] = useState(0);
+  const [imageSlide, setImageSlide] = useState(0);
+  const [slideDirection, setSlideDirection] = useState(1);
+  const [videoPaused, setVideoPaused] = useState(false);
+  const [imagePaused, setImagePaused] = useState(false);
   const [muted, setMuted] = useState(true);
   const [playing, setPlaying] = useState(true);
   const [activeCategory, setActiveCategory] = useState<string>("all");
 
+  const videoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const imageTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const statsRef = useRef<HTMLDivElement>(null);
-  const featuredRef = useRef<HTMLDivElement>(null);
-  const discoverRef = useRef<HTMLDivElement>(null);
-  const statsInView = useInView(statsRef, { once: true, amount: 0.2 });
-  const featuredInView = useInView(featuredRef, { once: true, amount: 0.1 });
-  const discoverInView = useInView(discoverRef, { once: true, amount: 0.15 });
+  const videoHeroRef = useRef<HTMLDivElement>(null);
 
-  const featuredVehicles = FEATURED_IDS.map((id) =>
-    VEHICLES_DATA.find((v) => v.id === id)
-  ).filter(Boolean);
+  const statsInView = useInView(statsRef, { once: true, amount: 0.2 });
+
+  const { scrollYProgress } = useScroll({
+    target: videoHeroRef,
+    offset: ["start start", "end start"],
+  });
+  const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
+
+  const goToVideo = useCallback(
+    (idx: number) =>
+      setVideoSlide(
+        ((idx % VIDEO_SLIDES.length) + VIDEO_SLIDES.length) % VIDEO_SLIDES.length
+      ),
+    []
+  );
+
+  const goToImage = useCallback((idx: number, dir?: number) => {
+    const len = HERO_SLIDES.length;
+    const next = ((idx % len) + len) % len;
+    setImageSlide((current) => {
+      const forward =
+        dir ?? (next > current || (current === len - 1 && next === 0) ? 1 : -1);
+      setSlideDirection(forward);
+      return next;
+    });
+  }, []);
+
+  useEffect(() => {
+    if (videoPaused || !playing || VIDEO_SLIDES.length <= 1) return;
+    videoTimerRef.current = setTimeout(() => goToVideo(videoSlide + 1), 7000);
+    return () => {
+      if (videoTimerRef.current) clearTimeout(videoTimerRef.current);
+    };
+  }, [videoSlide, videoPaused, playing, goToVideo]);
+
+  useEffect(() => {
+    if (imagePaused) return;
+    imageTimerRef.current = setTimeout(() => goToImage(imageSlide + 1), 6000);
+    return () => {
+      if (imageTimerRef.current) clearTimeout(imageTimerRef.current);
+    };
+  }, [imageSlide, imagePaused, goToImage]);
 
   return (
     <>
-      <AppShell>
-        <div className="flex flex-col">
-          {/* ══ CINEMATIC VIDEO HERO ═══════════════════════════════════════════ */}
-          <section className="relative h-screen min-h-[640px] overflow-hidden bg-black select-none">
-            <HeroVideo muted={muted} playing={playing} />
+      <Header />
+      <main className="flex flex-col bg-[#080808]">
 
-            <div className="absolute inset-0 bg-linear-to-r from-black/90 via-black/55 to-black/20" />
-            <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-black/30" />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_50%,transparent_0%,rgba(0,0,0,0.4)_100%)]" />
+        {/* ══ CINEMATIC VIDEO HERO ══════════════════════════════════════════════ */}
+        <section
+          ref={videoHeroRef}
+          className="relative h-screen min-h-[680px] overflow-hidden bg-black select-none"
+        >
+          <motion.div className="absolute inset-0" style={{ y: heroY }}>
+            {VIDEO_SLIDES.map((s, i) => (
+              <VideoSlide
+                key={s.id}
+                slide={s}
+                active={i === videoSlide}
+                muted={muted}
+                playing={playing}
+              />
+            ))}
+          </motion.div>
 
-            <div className="absolute top-24 right-6 z-20 flex gap-2 sm:right-8">
-              <button
-                type="button"
-                onClick={() => setPlaying((p) => !p)}
-                className="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/50 text-white backdrop-blur-md transition-colors hover:bg-white/15"
-                aria-label={playing ? "Pause vidéo" : "Lire la vidéo"}
-              >
-                {playing ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-              </button>
-              <button
-                type="button"
-                onClick={() => setMuted((m) => !m)}
-                className="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/50 text-white backdrop-blur-md transition-colors hover:bg-white/15"
-                aria-label={muted ? "Activer le son" : "Couper le son"}
-              >
-                {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-              </button>
-            </div>
+          <ScanLines />
 
-            <div className="relative z-10 flex h-full items-center">
-              <div className="section-container w-full">
+          <motion.div
+            className="relative z-10 h-full flex items-start pt-16 lg:pt-20"
+            style={{ opacity: heroOpacity }}
+          >
+            <div className="section-container w-full max-w-2xl ml-0">
+              <AnimatePresence mode="wait">
                 <motion.div
-                  initial={{ opacity: 0, y: 40 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, ease: "easeOut" }}
-                  className="max-w-3xl"
+                  key={"video-text-" + videoSlide}
+                  initial="hidden"
+                  animate="visible"
+                  exit={{ opacity: 0, x: -30, transition: { duration: 0.4 } }}
+                  variants={stagger}
+                  className="max-w-sm"
                 >
-                  <p className="mb-5 text-xs font-bold uppercase tracking-[0.35em] text-toyota-red">
-                    {HERO.eyebrow}
-                  </p>
-                  <h1 className="mb-2 text-5xl font-black leading-[0.95] tracking-tight text-white sm:text-6xl lg:text-7xl xl:text-8xl">
-                    {HERO.headline}
-                  </h1>
-                  <h1 className="mb-7 text-5xl font-black leading-[0.95] tracking-tight text-toyota-red sm:text-6xl lg:text-7xl xl:text-8xl">
-                    {HERO.headlineRed}
-                  </h1>
-                  <p className="mb-10 max-w-xl text-lg leading-relaxed text-white/75 md:text-xl">{HERO.sub}</p>
-                  <div className="flex flex-wrap gap-4">
-                    <Link href={HERO.href} className="toyota-btn-primary inline-flex items-center gap-2.5 px-8 py-3.5">
-                      {HERO.cta}
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                    <Link href="/configurator/supra" className="toyota-btn-secondary inline-flex items-center gap-2 px-8 py-3.5">
-                      Configurer
-                    </Link>
-                  </div>
-                </motion.div>
-              </div>
-            </div>
-
-            <div className="absolute bottom-28 left-0 right-0 z-20 hidden md:block">
-              <div className="section-container">
-                <div className="flex gap-10 lg:gap-16">
-                  {HERO.stats.map((s) => (
-                    <div key={s.sub} className="border-l border-toyota-red/40 pl-5">
-                      <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.2em] text-toyota-red">{s.sub}</p>
-                      <p className="text-2xl font-black text-white lg:text-3xl">{s.label}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <motion.a
-              href="#discover-models"
-              animate={{ y: [0, 10, 0] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute bottom-8 left-1/2 z-20 flex -translate-x-1/2 flex-col items-center gap-2 text-white/45 transition-colors hover:text-white/80"
-            >
-              <span className="text-[10px] font-bold uppercase tracking-[0.25em]">Explorer</span>
-              <ChevronDown className="h-5 w-5" />
-            </motion.a>
-          </section>
-
-          {/* ══ DISCOVER CARDS — scroll to explore ═════════════════════════════ */}
-          <section id="discover-models" className="relative scroll-mt-20 bg-[#050505] py-20 lg:py-28">
-            <div className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-toyota-red/40 to-transparent" />
-            <div className="section-container">
-              <motion.div
-                ref={discoverRef}
-                variants={stagger}
-                initial="hidden"
-                animate={discoverInView ? "visible" : "hidden"}
-              >
-                <motion.div
-                  variants={fadeIn}
-                  className="mb-12 flex flex-col gap-4 md:flex-row md:items-end md:justify-between"
-                >
-                  <div>
-                    <p className="mb-2 text-xs font-bold uppercase tracking-[0.25em] text-toyota-red">
-                      Faites défiler
-                    </p>
-                    <h2 className="text-3xl font-black tracking-tight text-white md:text-4xl lg:text-5xl">
-                      D&apos;autres modèles
-                      <br />
-                      <span className="text-white/40">vous attendent</span>
-                    </h2>
-                  </div>
-                  <Link
-                    href="/vehicles"
-                    className="inline-flex items-center gap-2 text-sm font-semibold text-toyota-muted transition-colors hover:text-white"
+                  <motion.h1
+                    variants={fadeUp}
+                    custom={1}
+                    className="text-[clamp(2.5rem,7vw,5rem)] font-black text-white leading-[0.92] tracking-[-0.03em] mb-1"
                   >
-                    Voir toute la gamme
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
+                    {VIDEO_SLIDES[videoSlide].headline}
+                  </motion.h1>
+                  <motion.h1
+                    variants={fadeUp}
+                    custom={2}
+                    className="text-[clamp(2.5rem,7vw,5rem)] font-black leading-[0.92] tracking-[-0.03em] mb-4"
+                    style={{
+                      WebkitTextStroke: "2px #EB0A1E",
+                      color: "transparent",
+                    }}
+                  >
+                    {VIDEO_SLIDES[videoSlide].headlineAccent}
+                  </motion.h1>
+
+                  <motion.p
+                    variants={fadeUp}
+                    custom={3}
+                    className="text-white/65 text-sm lg:text-base leading-relaxed mb-6 max-w-md font-light"
+                  >
+                    {VIDEO_SLIDES[videoSlide].sub}
+                  </motion.p>
+
+                  <motion.div variants={fadeUp} custom={4} className="flex flex-wrap gap-4 items-center">
+                    <Link
+                      href={VIDEO_SLIDES[videoSlide].href}
+                      className="group inline-flex items-center gap-3 px-8 py-4 bg-toyota-red text-white font-bold text-sm tracking-wide rounded-full transition-all duration-300 hover:px-10 hover:shadow-2xl hover:shadow-toyota-red/40 active:scale-95"
+                    >
+                      {VIDEO_SLIDES[videoSlide].cta}
+                      <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    </Link>
+                    <Link
+                      href="/vehicles"
+                      className="inline-flex items-center gap-3 px-8 py-4 bg-white/8 backdrop-blur-md border border-white/20 text-white font-semibold text-sm tracking-wide rounded-none hover:bg-white/15 hover:border-white/35 transition-all duration-300"
+                    >
+                      Tous les modèles
+                    </Link>
+                  </motion.div>
                 </motion.div>
-
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">
-                  {DISCOVER_CARDS.map((card, i) => (
-                    <DiscoverModelCard key={card.id} card={card} index={i} />
-                  ))}
-                </div>
-              </motion.div>
+              </AnimatePresence>
             </div>
-          </section>
+          </motion.div>
 
-          {/* ══ CATEGORY PILLS ═══════════════════════════════════════════════════ */}
-          <section className="bg-black py-5 border-b border-white/[0.06] sticky top-[72px] z-30">
-            <div className="section-container">
-              <div className="flex items-center gap-3 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
-                <span className="text-white/30 text-[10px] font-bold uppercase tracking-widest shrink-0 mr-1">Gamme</span>
+          {VIDEO_SLIDES.length > 1 && (
+            <div className="absolute bottom-8 left-0 right-0 z-20 flex items-center justify-center gap-2">
+              {VIDEO_SLIDES.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => {
+                    goToVideo(i);
+                    setVideoPaused(true);
+                  }}
+                  aria-label={`Slide ${i + 1}`}
+                  className="group flex items-center"
+                >
+                  <span
+                    className={cn(
+                      "block rounded-full transition-all duration-500",
+                      i === videoSlide
+                        ? "w-12 h-[3px] bg-toyota-red"
+                        : "w-[3px] h-[3px] bg-white/30 group-hover:bg-white/60"
+                    )}
+                  />
+                </button>
+              ))}
+            </div>
+          )}
+
+          {VIDEO_SLIDES.length > 1 && (
+            <>
+              <button
+                onClick={() => {
+                  goToVideo(videoSlide - 1);
+                  setVideoPaused(true);
+                }}
+                className="absolute left-5 sm:left-8 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-none border border-white/20 bg-white/5 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/15 hover:border-white/40 transition-all group"
+                aria-label="Précédent"
+              >
+                <ChevronLeft className="h-5 w-5 group-hover:-translate-x-0.5 transition-transform" />
+              </button>
+              <button
+                onClick={() => {
+                  goToVideo(videoSlide + 1);
+                  setVideoPaused(true);
+                }}
+                className="absolute right-5 sm:right-8 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-none border border-white/20 bg-white/5 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/15 hover:border-white/40 transition-all group"
+                aria-label="Suivant"
+              >
+                <ChevronRight className="h-5 w-5 group-hover:translate-x-0.5 transition-transform" />
+              </button>
+            </>
+          )}
+
+          <div className="absolute bottom-[94px] right-6 z-20 flex flex-col items-center gap-3">
+            <button
+              onClick={() => setPlaying((v) => !v)}
+              className="w-12 h-12 rounded-none border border-white/20 bg-white/5 backdrop-blur-sm flex items-center justify-center text-white/70 hover:text-white hover:bg-white/12 transition-all"
+              aria-label={playing ? "Pause" : "Play"}
+            >
+              {playing ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+            </button>
+            <button
+              onClick={() => setMuted((v) => !v)}
+              className="w-12 h-12 rounded-none border border-white/20 bg-white/5 backdrop-blur-sm flex items-center justify-center text-white/70 hover:text-white hover:bg-white/12 transition-all"
+              aria-label={muted ? "Activer le son" : "Couper le son"}
+            >
+              {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+            </button>
+          </div>
+
+          {VIDEO_SLIDES.length > 1 && (
+            <div className="absolute bottom-9 left-1/2 z-20 hidden sm:flex items-center gap-2 text-white/30 text-xs font-mono tabular-nums -translate-x-1/2">
+              <span className="text-white/70">{String(videoSlide + 1).padStart(2, "0")}</span>
+              <span className="h-px w-5 bg-white/20" />
+              <span>{String(VIDEO_SLIDES.length).padStart(2, "0")}</span>
+            </div>
+          )}
+
+          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#080808] to-transparent pointer-events-none z-10" />
+        </section>
+
+        {/* ══ MODEL SHOWCASE — compact cinematic slider ══════════════════════════ */}
+        <section className="relative bg-[#080808] pt-10 pb-14 lg:pt-14 lg:pb-20">
+          <div className="section-container">
+            <div className="flex items-end justify-between gap-4 mb-6 lg:mb-8">
+              <div>
+                <p className="text-toyota-red text-[10px] font-bold uppercase tracking-[0.4em] mb-2 flex items-center gap-2">
+                  <span className="h-px w-8 bg-toyota-red" />
+                  Explorez la gamme
+                </p>
+                <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight">
+                  Modèles Toyota
+                </h2>
+              </div>
+              <span className="text-white/25 text-xs font-mono tabular-nums hidden sm:block">
+                {String(imageSlide + 1).padStart(2, "0")} / {String(HERO_SLIDES.length).padStart(2, "0")}
+              </span>
+            </div>
+
+            <div className="relative h-[min(52vh,480px)] min-h-[320px] sm:min-h-[380px] overflow-hidden rounded-2xl border border-white/[0.06] bg-black shadow-2xl shadow-black/60 select-none">
+              <AnimatePresence mode="popLayout" initial={false}>
+                <motion.div
+                  key={imageSlide}
+                  custom={slideDirection}
+                  initial={{ opacity: 0, x: slideDirection * 120, scale: 1.04 }}
+                  animate={{ opacity: 1, x: 0, scale: 1 }}
+                  exit={{ opacity: 0, x: slideDirection * -120, scale: 1.02 }}
+                  transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
+                  className="absolute inset-0"
+                >
+                  <motion.div
+                    className="absolute inset-6 sm:inset-10 lg:inset-12"
+                    animate={{ scale: [1, 1.02] }}
+                    transition={{ duration: 7, ease: "linear" }}
+                  >
+                    <Image
+                      src={HERO_SLIDES[imageSlide].image}
+                      alt={HERO_SLIDES[imageSlide].headline}
+                      fill
+                      className="object-contain object-right"
+                      priority={imageSlide < 2}
+                      sizes="(max-width: 1280px) 100vw, 1280px"
+                    />
+                  </motion.div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-black/15" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/25" />
+                  <div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      background:
+                        "radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.45) 100%)",
+                    }}
+                  />
+                </motion.div>
+              </AnimatePresence>
+
+              <ScanLines />
+
+              <div className="relative z-10 h-full flex items-center px-6 sm:px-10 lg:px-14">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={"showcase-text-" + imageSlide}
+                    initial="hidden"
+                    animate="visible"
+                    exit={{ opacity: 0, x: slideDirection * -24, transition: { duration: 0.3 } }}
+                    variants={stagger}
+                    className="max-w-md lg:max-w-lg"
+                  >
+                    <motion.p
+                      variants={fadeUp}
+                      className="text-white/40 text-[10px] font-bold uppercase tracking-[0.35em] mb-3"
+                    >
+                      {HERO_SLIDES[imageSlide].eyebrow}
+                    </motion.p>
+                    <motion.h3
+                      variants={fadeUp}
+                      custom={1}
+                      className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-[0.95] tracking-tight mb-1"
+                    >
+                      {HERO_SLIDES[imageSlide].headline}
+                    </motion.h3>
+                    <motion.h3
+                      variants={fadeUp}
+                      custom={2}
+                      className="text-3xl sm:text-4xl lg:text-5xl font-black leading-[0.95] tracking-tight mb-4"
+                      style={{
+                        WebkitTextStroke: "1.5px #EB0A1E",
+                        color: "transparent",
+                      }}
+                    >
+                      {HERO_SLIDES[imageSlide].headlineRed}
+                    </motion.h3>
+                    <motion.p
+                      variants={fadeUp}
+                      custom={3}
+                      className="text-white/55 text-sm lg:text-base leading-relaxed mb-6 max-w-sm font-light"
+                    >
+                      {HERO_SLIDES[imageSlide].sub}
+                    </motion.p>
+                    <motion.div
+                      variants={fadeUp}
+                      custom={4}
+                      className="hidden md:flex gap-8 mb-6"
+                    >
+                      {getSlideStats(HERO_SLIDES[imageSlide].id).map((s) => (
+                        <div key={s.label}>
+                          <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-toyota-red/80 mb-0.5">
+                            {s.sub}
+                          </p>
+                          <p className="text-lg lg:text-xl font-black text-white">{s.label}</p>
+                        </div>
+                      ))}
+                    </motion.div>
+                    <motion.div variants={fadeUp} custom={5}>
+                      <Link
+                        href={HERO_SLIDES[imageSlide].href}
+                        className="group inline-flex items-center gap-2.5 px-6 py-3 bg-toyota-red text-white font-bold text-xs tracking-wide rounded-full transition-all duration-300 hover:px-8 hover:shadow-xl hover:shadow-toyota-red/35"
+                      >
+                        {HERO_SLIDES[imageSlide].cta}
+                        <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+                      </Link>
+                    </motion.div>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+
+              <button
+                onClick={() => {
+                  goToImage(imageSlide - 1, -1);
+                  setImagePaused(true);
+                }}
+                className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-none border border-white/20 bg-white/5 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/15 hover:border-white/40 transition-all group"
+                aria-label="Précédent"
+              >
+                <ChevronLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
+              </button>
+
+              <button
+                onClick={() => {
+                  goToImage(imageSlide + 1, 1);
+                  setImagePaused(true);
+                }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-none border border-white/20 bg-white/5 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/15 hover:border-white/40 transition-all group"
+                aria-label="Suivant"
+              >
+                <ChevronRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+              </button>
+
+              <div
+                className="absolute bottom-5 right-6 sm:right-10 z-20 flex items-center gap-1.5 max-w-[45%] overflow-x-auto"
+                style={{ scrollbarWidth: "none" }}
+              >
+                {HERO_SLIDES.map((slide, i) => (
+                  <button
+                    key={slide.id}
+                    onClick={() => {
+                      goToImage(i, i > imageSlide ? 1 : -1);
+                      setImagePaused(true);
+                    }}
+                    aria-label={slide.headline}
+                    title={slide.headline}
+                    className="group flex items-center shrink-0"
+                  >
+                    <span
+                      className={cn(
+                        "block rounded-full transition-all duration-500",
+                        i === imageSlide
+                          ? "w-8 h-[3px] bg-toyota-red"
+                          : "w-[3px] h-[3px] bg-white/30 group-hover:bg-white/60"
+                      )}
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ══ CATEGORY NAV ═════════════════════════════════════════════════════ */}
+        <section className="bg-[#080808] pb-6 lg:pb-8">
+          <div className="section-container">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.4 }}
+              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              className="rounded-2xl border border-white/[0.06] bg-black px-4 py-3 lg:px-5"
+            >
+              <div
+                className="flex items-center gap-2 overflow-x-auto"
+                style={{ scrollbarWidth: "none" }}
+              >
+                <span className="text-white/25 text-[10px] font-bold uppercase tracking-[0.35em] shrink-0 mr-1 select-none">
+                  Gamme
+                </span>
                 {CATEGORY_PILLS.map(({ key, label, count }) => (
                   <Link
                     key={key}
                     href={key === "all" ? "/vehicles" : `/vehicles?category=${key}`}
                     onClick={() => setActiveCategory(key)}
                     className={cn(
-                      "shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-md text-xs font-bold uppercase tracking-wide transition-all border",
+                      "shrink-0 inline-flex items-center gap-2 px-3.5 py-2 text-[11px] font-bold tracking-wide transition-all duration-300 border",
                       activeCategory === key
                         ? "bg-toyota-red text-white border-toyota-red"
-                        : "bg-[#121212] text-white/60 border-white/10 hover:border-white/25 hover:text-white"
+                        : "bg-white/[0.03] text-white/45 border-white/[0.08] hover:bg-white/[0.06] hover:text-white/75 hover:border-white/15"
                     )}
                   >
                     {label}
-                    <span className={cn("text-[10px] px-1.5 py-0.5 rounded", activeCategory === key ? "bg-white/20" : "bg-white/10")}>
+                    <span
+                      className={cn(
+                        "text-[9px] font-bold px-1.5 py-0.5",
+                        activeCategory === key
+                          ? "bg-white/20 text-white"
+                          : "bg-white/[0.06] text-white/30"
+                      )}
+                    >
                       {count}
                     </span>
                   </Link>
                 ))}
-              </div>
-            </div>
-          </section>
-
-          {/* ══ FEATURED VEHICLES ════════════════════════════════════════════════ */}
-          <section className="bg-toyota-dark py-20 lg:py-28">
-            <div className="section-container">
-              <div className="flex items-end justify-between mb-12 flex-wrap gap-4">
-                <div>
-                  <p className="text-toyota-red text-xs font-bold uppercase tracking-[0.25em] mb-2">Sélection Premium</p>
-                  <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white tracking-tight">Nos Modèles Phares</h2>
-                </div>
-                <Link href="/vehicles" className="flex items-center gap-2 text-sm font-semibold text-toyota-muted hover:text-white transition-colors">
-                  Voir toute la gamme
-                  <ArrowRight className="h-4 w-4" />
+                <Link
+                  href="/vehicles"
+                  className="shrink-0 ml-auto inline-flex items-center gap-1.5 text-[10px] text-white/30 hover:text-toyota-red transition-colors font-bold whitespace-nowrap tracking-[0.2em] uppercase"
+                >
+                  Tout voir
+                  <ArrowRight className="h-3 w-3" />
                 </Link>
               </div>
+            </motion.div>
+          </div>
+        </section>
 
-              <motion.div
-                ref={featuredRef}
-                variants={stagger}
-                initial="hidden"
-                animate={featuredInView ? "visible" : "hidden"}
-                className="grid grid-cols-1 lg:grid-cols-3 gap-6"
-              >
-                {featuredVehicles.map((vehicle, i) => {
-                  if (!vehicle) return null;
-                  return (
-                    <motion.div
-                      key={vehicle.id}
-                      variants={fadeIn}
-                      whileHover={{ y: -6, transition: { duration: 0.22 } }}
-                      className={cn(
-                        "group relative rounded-2xl overflow-hidden bg-[#111111] border border-white/5 hover:border-toyota-red/30 transition-colors duration-300",
-                        i === 0 ? "lg:col-span-2" : ""
-                      )}
-                    >
-                      <div className={cn("relative overflow-hidden", i === 0 ? "h-72" : "h-64")}>
-                        {vehicle.imageUrl && (
-                          <Image
-                            src={vehicle.imageUrl}
-                            alt={`Toyota ${vehicle.name}`}
-                            fill
-                            className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
-                            sizes={i === 0 ? "(max-width: 1024px) 100vw, 67vw" : "(max-width: 768px) 100vw, 33vw"}
-                            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-                          />
-                        )}
-                        <div className="absolute inset-0 bg-linear-to-t from-[#111111] via-[#111111]/30 to-transparent" />
-                        <div className="absolute inset-0 bg-toyota-red/0 group-hover:bg-toyota-red/5 transition-colors duration-500" />
-                      </div>
-                      <div className="p-6">
-                        <p className="text-toyota-muted/60 text-xs uppercase tracking-widest mb-1">{vehicle.category}</p>
-                        <h3 className="text-white text-xl font-black mb-1.5 group-hover:text-toyota-red transition-colors">{vehicle.name}</h3>
-                        <p className="text-toyota-muted text-sm mb-3 leading-relaxed line-clamp-2">
-                          {FEATURED_TAGLINES[vehicle.id] ?? vehicle.description.slice(0, 80) + "…"}
-                        </p>
-                        <p className="text-toyota-gold font-bold text-lg mb-5">À partir de {formatPrice(vehicle.priceFrom)}</p>
-                        <div className="flex gap-3">
-                          <Link href={"/vehicles/" + vehicle.id} className="flex-1 text-center py-2.5 border border-white/15 text-white text-sm font-semibold rounded-full hover:bg-white/5 transition-colors">
-                            Détails
-                          </Link>
-                          <Link href={"/configurator/" + vehicle.id} className="flex-1 text-center py-2.5 bg-toyota-red text-white text-sm font-bold rounded-full hover:bg-toyota-red/90 transition-colors shadow-lg shadow-toyota-red/20">
-                            Configurer
-                          </Link>
-                        </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </motion.div>
-            </div>
-          </section>
-
-          {/* ══ INGÉNIERIE DE PRÉCISION ═══════════════════════════════════════════ */}
-          <section className="bg-black py-20 lg:py-28 border-t border-white/[0.06]">
-            <div className="section-container">
-              <div className="mb-12">
-                <h2 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tight">Ingénierie de Précision</h2>
-                <div className="h-0.5 w-12 bg-toyota-red mt-4" />
-              </div>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <div className="toyota-panel lg:row-span-2 overflow-hidden group relative min-h-[280px]">
-                  <Image src="/images/vehicles/supra.jpg" alt="Moteur Supra" fill className="object-cover opacity-60 group-hover:scale-105 transition-transform duration-700" />
-                  <div className="absolute inset-0 bg-linear-to-t from-black via-black/50 to-transparent" />
-                  <div className="absolute bottom-0 p-6">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-toyota-red">Performance</span>
-                    <h3 className="text-xl font-black text-white mt-2">Transmission Manuelle à 6 rapports</h3>
-                    <p className="text-white/50 text-sm mt-2 max-w-sm">Contrôle total, réponse instantanée — l&apos;ADN sport Toyota.</p>
-                  </div>
-                </div>
-                <div className="toyota-panel p-6 flex flex-col justify-between min-h-[160px]">
-                  <div className="w-10 h-10 rounded-md bg-toyota-red/15 flex items-center justify-center">
-                    <Zap className="h-5 w-5 text-toyota-red" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-white">Aérodynamisme</h3>
-                    <p className="text-white/45 text-sm mt-2">Stabilité à haute vitesse et efficience énergétique optimisées.</p>
-                    <Link href="/vehicles/supra" className="inline-block mt-4 text-xs font-bold text-toyota-red uppercase tracking-wide hover:underline">En savoir plus →</Link>
-                  </div>
-                </div>
-                <div className="toyota-panel p-6 min-h-[160px]">
-                  <h3 className="text-lg font-bold text-white">Suspension Active</h3>
-                  <p className="text-white/45 text-sm mt-2">Confort quotidien et tenue de route sportive en un seul châssis.</p>
-                  <Link href="/vehicles" className="inline-block mt-4 text-xs font-bold text-toyota-red uppercase tracking-wide hover:underline">Détails techniques →</Link>
-                </div>
-                <div className="toyota-panel lg:col-span-2 overflow-hidden flex flex-col md:flex-row min-h-[180px]">
-                  <div className="p-6 flex-1 flex flex-col justify-center">
-                    <h3 className="text-lg font-bold text-white">Cockpit Centré Conducteur</h3>
-                    <p className="text-white/45 text-sm mt-2">Ergonomie pensée pour le plaisir de conduire — chaque commande à portée de main.</p>
-                  </div>
-                  <div className="relative w-full md:w-72 min-h-[140px] bg-[#1a1a1a]">
-                    <Image src="/images/vehicles/camry.jpg" alt="Intérieur Toyota" fill className="object-cover opacity-80" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* ══ AI ADVISOR BANNER ════════════════════════════════════════════════ */}
-          <section className="relative overflow-hidden py-20 lg:py-24" style={{ background: "linear-gradient(135deg, #0A0A0A 0%, #1a0305 50%, #0A0A0A 100%)" }}>
+        {/* ══ INGÉNIERIE DE PRÉCISION — bento grid ═════════════════════════════ */}
+        <section className="bg-[#080808] py-14 lg:py-20">
+          <div className="section-container">
             <motion.div
-              animate={{ opacity: [0.3, 0.6, 0.3], scale: [1, 1.15, 1] }}
-              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-toyota-red/10 rounded-full blur-3xl pointer-events-none"
-            />
-            <SparkleAnim />
-            <div className="section-container relative z-10">
-              <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
-                <div className="text-center lg:text-left max-w-xl">
-                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-toyota-red/10 border border-toyota-red/25 text-toyota-red text-xs font-bold uppercase tracking-widest mb-5">
-                    <Sparkles className="h-3.5 w-3.5" />
-                    Propulsé par Groq AI
-                  </div>
-                  <h2 className="text-4xl md:text-5xl font-black text-white mb-4 leading-tight">
-                    Notre IA vous trouve
-                    <br />
-                    <span className="text-toyota-red">la Toyota parfaite</span>
-                    <br />
-                    en 2 minutes
-                  </h2>
-                  <p className="text-white/65 text-lg leading-relaxed">
-                    Dites-nous votre budget, vos besoins et votre style de vie. Notre conseiller virtuel analyse tout et vous recommande le modèle idéal.
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={stagger}
+              className="mb-8 lg:mb-10"
+            >
+              <motion.p
+                variants={fadeUp}
+                className="text-toyota-red text-[10px] font-bold uppercase tracking-[0.4em] mb-2 flex items-center gap-2"
+              >
+                <span className="h-px w-8 bg-toyota-red" />
+                Technologie
+              </motion.p>
+              <motion.h2
+                variants={fadeUp}
+                custom={1}
+                className="text-2xl md:text-3xl font-black text-white tracking-tight"
+              >
+                Ingénierie de{" "}
+                <span
+                  style={{ WebkitTextStroke: "1.5px #EB0A1E", color: "transparent" }}
+                >
+                  Précision
+                </span>
+              </motion.h2>
+            </motion.div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                className="lg:row-span-2 overflow-hidden group relative min-h-[300px] rounded-2xl border border-white/[0.06] bg-black"
+              >
+                <Image
+                  src={HERO_IMAGES.supra}
+                  alt="Moteur Supra"
+                  fill
+                  className="object-cover object-center opacity-55 group-hover:scale-105 transition-transform duration-700"
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-black/20" />
+                <ScanLines />
+                <div className="absolute bottom-0 p-6 lg:p-8">
+                  <span className="text-[10px] font-bold uppercase tracking-[0.35em] text-toyota-red">
+                    Performance
+                  </span>
+                  <h3 className="text-xl lg:text-2xl font-black text-white mt-2">
+                    Transmission Manuelle à 6 rapports
+                  </h3>
+                  <p className="text-white/45 text-sm mt-2 max-w-sm font-light">
+                    Contrôle total, réponse instantanée — l&apos;ADN sport Toyota.
                   </p>
                 </div>
-                <div className="flex flex-col items-center gap-6 shrink-0">
-                  <motion.div
-                    animate={{ scale: [1, 1.05, 1], rotate: [0, 2, -2, 0] }}
-                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                    className="w-24 h-24 rounded-3xl bg-toyota-red/15 border border-toyota-red/30 flex items-center justify-center shadow-2xl shadow-toyota-red/20"
-                  >
-                    <Bot className="h-12 w-12 text-toyota-red" />
-                  </motion.div>
-                  <button
-                    onClick={() => window.dispatchEvent(new CustomEvent("openChatWidget"))}
-                    className="inline-flex items-center gap-3 px-10 py-5 bg-toyota-red text-white font-black text-lg rounded-full hover:bg-toyota-red/90 transition-all shadow-2xl shadow-toyota-red/40 hover:shadow-toyota-red/60 hover:gap-5 hover:scale-105"
-                  >
-                    Démarrer →
-                  </button>
-                  <p className="text-white/30 text-xs">Gratuit · Sans inscription · 2 min</p>
-                </div>
-              </div>
-            </div>
-          </section>
+              </motion.div>
 
-          {/* ══ STATS ROW ════════════════════════════════════════════════════════ */}
-          <section className="bg-[#0D0D0D] py-14 border-y border-white/5">
-            <div className="section-container">
               <motion.div
-                ref={statsRef}
-                variants={stagger}
-                initial="hidden"
-                animate={statsInView ? "visible" : "hidden"}
-                className="grid grid-cols-2 lg:grid-cols-4 gap-8"
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.08 }}
+                className="rounded-2xl border border-white/[0.06] bg-black p-6 flex flex-col justify-between min-h-[160px]"
               >
-                {STATS.map(({ value, label, icon: Icon }) => (
-                  <motion.div key={label} variants={fadeIn} className="flex flex-col items-center text-center">
-                    <div className="w-12 h-12 rounded-2xl bg-toyota-red/10 border border-toyota-red/20 flex items-center justify-center mb-4">
-                      <Icon className="h-6 w-6 text-toyota-red" />
-                    </div>
-                    <p className="text-4xl font-black text-white mb-1">{value}</p>
-                    <p className="text-toyota-muted text-sm">{label}</p>
-                  </motion.div>
-                ))}
+                <div className="w-10 h-10 border border-toyota-red/20 bg-toyota-red/10 flex items-center justify-center">
+                  <Zap className="h-5 w-5 text-toyota-red" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-white">Aérodynamisme</h3>
+                  <p className="text-white/40 text-sm mt-2 font-light">
+                    Stabilité à haute vitesse et efficience énergétique optimisées.
+                  </p>
+                  <Link
+                    href="/vehicles/supra"
+                    className="inline-flex items-center gap-1.5 mt-4 text-[10px] font-bold text-toyota-red uppercase tracking-[0.25em] hover:gap-2.5 transition-all"
+                  >
+                    En savoir plus
+                    <ArrowRight className="h-3 w-3" />
+                  </Link>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.16 }}
+                className="rounded-2xl border border-white/[0.06] bg-black p-6 min-h-[160px]"
+              >
+                <h3 className="text-lg font-black text-white">Suspension Active</h3>
+                <p className="text-white/40 text-sm mt-2 font-light">
+                  Confort quotidien et tenue de route sportive en un seul châssis.
+                </p>
+                <Link
+                  href="/vehicles"
+                  className="inline-flex items-center gap-1.5 mt-4 text-[10px] font-bold text-toyota-red uppercase tracking-[0.25em] hover:gap-2.5 transition-all"
+                >
+                  Détails techniques
+                  <ArrowRight className="h-3 w-3" />
+                </Link>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.24 }}
+                className="lg:col-span-2 overflow-hidden flex flex-col md:flex-row min-h-[180px] rounded-2xl border border-white/[0.06] bg-black"
+              >
+                <div className="p-6 lg:p-8 flex-1 flex flex-col justify-center">
+                  <h3 className="text-lg font-black text-white">Cockpit Centré Conducteur</h3>
+                  <p className="text-white/40 text-sm mt-2 font-light max-w-md">
+                    Ergonomie pensée pour le plaisir de conduire — chaque commande à portée de main.
+                  </p>
+                </div>
+                <div className="relative w-full md:w-80 min-h-[160px] bg-[#0d0d0d]">
+                  <Image
+                    src={HERO_IMAGES.camry}
+                    alt="Intérieur Toyota"
+                    fill
+                    className="object-cover object-center opacity-80"
+                    sizes="320px"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-l from-black/60 to-transparent" />
+                </div>
               </motion.div>
             </div>
-          </section>
+          </div>
+        </section>
 
-          {/* ══ FULL-WIDTH PROMO BANNER ══════════════════════════════════════════ */}
-          <section className="relative h-[55vh] min-h-[400px] overflow-hidden">
-            <Image
-              src="/images/vehicles/highlander.jpg"
-              alt="Toyota Highlander"
-              fill
-              className="object-cover"
-              sizes="100vw"
-              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-            />
-            <div className="absolute inset-0 bg-linear-to-r from-black/85 via-black/55 to-black/15" />
-            <div className="absolute inset-0 flex items-center">
-              <div className="section-container">
-                <motion.div
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.65 }}
+        {/* ══ HORIZONTAL MARQUEE STRIP ═════════════════════════════════════════ */}
+        <div className="relative bg-black py-4 overflow-hidden border-y border-white/[0.06]">
+          <div className="absolute inset-0 bg-toyota-red/[0.07]" />
+          <ScanLines />
+          <motion.div
+            animate={{ x: ["0%", "-50%"] }}
+            transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
+            className="relative flex items-center gap-10 whitespace-nowrap"
+          >
+            {Array(8)
+              .fill(null)
+              .map((_, i) => (
+                <span
+                  key={i}
+                  className="flex items-center gap-10 text-white/50 text-[10px] font-bold uppercase tracking-[0.35em]"
                 >
-                  <p className="text-toyota-gold font-bold text-xs uppercase tracking-[0.3em] mb-4">Offres Spéciales 2026</p>
-                  <h2 className="text-4xl md:text-6xl font-black text-white leading-tight mb-6">
-                    L&apos;Été Commence Ici.
-                    <br />
-                    <span className="text-toyota-red">Roulez Toyota.</span>
-                  </h2>
-                  <p className="text-white/70 text-lg mb-8 max-w-md leading-relaxed">
-                    Profitez de nos offres saisonnières exclusives et de conditions de financement avantageuses sur toute la gamme.
-                  </p>
-                  <Link href="/offres" className="inline-flex items-center gap-2.5 px-8 py-4 bg-toyota-red text-white font-bold rounded-full hover:bg-toyota-red/90 transition-all shadow-xl shadow-toyota-red/30 hover:gap-4">
-                    Voir les offres
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
+                  <span className="text-white/70">Performance Légendaire</span>
+                  <span className="text-toyota-red/60">—</span>
+                  <span>Qualité Japonaise</span>
+                  <span className="text-toyota-red/60">—</span>
+                  <span>Innovation Hybride</span>
+                  <span className="text-toyota-red/60">—</span>
+                  <span>Excellence Toyota</span>
+                  <span className="text-toyota-red/60">—</span>
+                </span>
+              ))}
+          </motion.div>
+        </div>
+
+        {/* ══ AI ADVISOR SECTION ═══════════════════════════════════════════════ */}
+        <section className="bg-[#080808] py-14 lg:py-20">
+          <div className="section-container">
+            <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-black">
+              <div
+                className="absolute inset-0 opacity-40"
+                style={{
+                  backgroundImage: `
+                    radial-gradient(ellipse 70% 60% at 75% 50%, rgba(235,10,30,0.14) 0%, transparent 60%),
+                    radial-gradient(ellipse 40% 40% at 15% 80%, rgba(235,10,30,0.06) 0%, transparent 50%)
+                  `,
+                }}
+              />
+              <ScanLines />
+
+              <div className="relative z-10 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center p-8 lg:p-14">
+                <motion.div
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                  variants={stagger}
+                >
+                  <motion.p
+                    variants={fadeUp}
+                    className="text-toyota-red text-[10px] font-bold uppercase tracking-[0.4em] mb-6 flex items-center gap-2"
+                  >
+                    <Sparkles className="h-3 w-3" />
+                    Propulsé par Gemini AI
+                  </motion.p>
+                  <motion.h2
+                    variants={fadeUp}
+                    custom={1}
+                    className="text-3xl md:text-4xl lg:text-5xl font-black text-white leading-[0.95] tracking-tight mb-5"
+                  >
+                    Notre IA vous trouve{" "}
+                    <span
+                      style={{
+                        WebkitTextStroke: "1.5px #EB0A1E",
+                        color: "transparent",
+                      }}
+                    >
+                      la Toyota parfaite
+                    </span>{" "}
+                    en 2 minutes
+                  </motion.h2>
+                  <motion.p
+                    variants={fadeUp}
+                    custom={2}
+                    className="text-white/45 text-sm lg:text-base leading-relaxed mb-8 font-light max-w-md"
+                  >
+                    Dites-nous votre budget, vos besoins et votre style de vie. Notre conseiller
+                    virtuel analyse tout et vous recommande le modèle idéal.
+                  </motion.p>
+                  <motion.div variants={fadeUp} custom={3} className="flex flex-wrap items-center gap-4">
+                    <button
+                      onClick={() => window.dispatchEvent(new CustomEvent("openChatWidget"))}
+                      className="group inline-flex items-center gap-2.5 px-6 py-3 bg-toyota-red text-white font-bold text-xs tracking-wide rounded-full hover:px-8 transition-all duration-300 shadow-lg shadow-toyota-red/25 hover:shadow-toyota-red/40 active:scale-95"
+                    >
+                      Démarrer maintenant
+                      <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+                    </button>
+                    <span className="text-white/25 text-[10px] font-medium tracking-wide">
+                      Gratuit · 2 min · Sans inscription
+                    </span>
+                  </motion.div>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, x: 30 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
+                  className="hidden lg:flex flex-col items-center justify-center"
+                >
+                  <div className="relative">
+                    <motion.div
+                      animate={{ scale: [1, 1.15, 1], opacity: [0.12, 0.25, 0.12] }}
+                      transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+                      className="absolute inset-0 bg-toyota-red/20 blur-3xl"
+                    />
+                    <motion.div
+                      animate={{ y: [-5, 5, -5] }}
+                      transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                      className="relative w-28 h-28 border border-toyota-red/20 bg-gradient-to-br from-[#1a1a1a] to-[#0d0d0d] flex items-center justify-center shadow-xl shadow-toyota-red/10"
+                    >
+                      <Bot className="h-14 w-14 text-toyota-red" />
+                    </motion.div>
+                  </div>
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 16 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.5 }}
+                    className="mt-7 flex flex-wrap gap-2 justify-center max-w-xs"
+                  >
+                    {["Budget: 300k MAD", "7 places", "Hybride", "Famille"].map((tag) => (
+                      <span
+                        key={tag}
+                        className="px-3 py-1.5 bg-white/[0.03] border border-white/[0.08] text-white/35 text-[10px] font-medium tracking-wide"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                    <Link
+                      href="/vehicles/highlander"
+                      className="px-3 py-1.5 bg-toyota-red/10 border border-toyota-red/25 text-toyota-red text-[10px] font-bold hover:bg-toyota-red/20 transition-colors"
+                    >
+                      → Toyota Highlander Hybride
+                    </Link>
+                  </motion.div>
                 </motion.div>
               </div>
             </div>
-          </section>
-        </div>
-      </AppShell>
+          </div>
+        </section>
+
+        {/* ══ STATS ROW ════════════════════════════════════════════════════════ */}
+        <section className="bg-[#080808] py-14 lg:py-20">
+          <div className="section-container">
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={stagger}
+              className="mb-8"
+            >
+              <motion.p
+                variants={fadeUp}
+                className="text-toyota-red text-[10px] font-bold uppercase tracking-[0.4em] mb-2 flex items-center gap-2"
+              >
+                <span className="h-px w-8 bg-toyota-red" />
+                Héritage
+              </motion.p>
+              <motion.h2 variants={fadeUp} custom={1} className="text-2xl md:text-3xl font-black text-white tracking-tight">
+                Toyota en chiffres
+              </motion.h2>
+            </motion.div>
+
+            <motion.div
+              ref={statsRef}
+              variants={stagger}
+              initial="hidden"
+              animate={statsInView ? "visible" : "hidden"}
+              className="rounded-2xl border border-white/[0.06] bg-black grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-white/[0.06]"
+            >
+              {STATS.map(({ value, label, icon: Icon }, i) => (
+                <motion.div
+                  key={label}
+                  variants={fadeUp}
+                  custom={i}
+                  className="flex flex-col items-center text-center px-6 py-10 lg:py-12"
+                >
+                  <div className="w-10 h-10 border border-toyota-red/15 bg-toyota-red/10 flex items-center justify-center mb-4">
+                    <Icon className="h-5 w-5 text-toyota-red" />
+                  </div>
+                  <p className="text-3xl lg:text-4xl font-black text-white mb-1 tracking-tight">
+                    {value}
+                  </p>
+                  <p className="text-white/30 text-[10px] font-bold uppercase tracking-[0.25em]">
+                    {label}
+                  </p>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+        </section>
+
+        {/* ══ PROMO BANNER ═════════════════════════════════════════════════════ */}
+        <section className="bg-[#080808] pb-14 lg:pb-20">
+          <div className="section-container">
+            <motion.div
+              initial={{ opacity: 0, y: 32 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.25 }}
+              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+              className="relative h-[min(48vh,420px)] min-h-[320px] overflow-hidden rounded-2xl border border-white/[0.06] bg-black shadow-2xl shadow-black/60 group"
+            >
+              <motion.div
+                className="absolute inset-y-0 right-0 w-[72%] sm:w-[65%] lg:w-[58%]"
+                animate={{ scale: [1, 1.03] }}
+                transition={{ duration: 14, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
+              >
+                <Image
+                  src={HERO_IMAGES.promo}
+                  alt="Toyota — offres été 2026"
+                  fill
+                  className="object-contain object-center opacity-90 transition-opacity duration-700 group-hover:opacity-100"
+                  sizes="(max-width: 1280px) 65vw, 750px"
+                />
+              </motion.div>
+              <div className="absolute inset-0 bg-gradient-to-r from-black/92 via-black/55 to-black/20" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/30" />
+              <motion.div
+                className="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-toyota-red/20 blur-3xl pointer-events-none"
+                animate={{ opacity: [0.35, 0.65, 0.35], scale: [1, 1.15, 1] }}
+                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+              />
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background:
+                    "radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.5) 100%)",
+                }}
+              />
+              <ScanLines />
+
+              <div className="relative z-10 h-full flex items-center px-6 sm:px-10 lg:px-14">
+                <motion.div
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                  variants={stagger}
+                  className="max-w-lg"
+                >
+                  <motion.p
+                    variants={fadeUp}
+                    className="text-white/40 text-[10px] font-bold uppercase tracking-[0.4em] mb-4 flex items-center gap-2"
+                  >
+                    <span className="h-px w-8 bg-toyota-red" />
+                    Offres Spéciales 2026
+                  </motion.p>
+                  <motion.h2
+                    variants={fadeUp}
+                    custom={1}
+                    className="text-3xl md:text-4xl lg:text-5xl font-black text-white leading-[0.95] tracking-tight mb-4"
+                  >
+                    L&apos;Été Commence Ici.
+                    <br />
+                    <motion.span
+                      className="inline-block"
+                      animate={{
+                        filter: [
+                          "drop-shadow(0 0 0px rgba(235,10,30,0))",
+                          "drop-shadow(0 0 12px rgba(235,10,30,0.35))",
+                          "drop-shadow(0 0 0px rgba(235,10,30,0))",
+                        ],
+                      }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                      style={{
+                        WebkitTextStroke: "1.5px #EB0A1E",
+                        color: "transparent",
+                      }}
+                    >
+                      Roulez Toyota.
+                    </motion.span>
+                  </motion.h2>
+                  <motion.p
+                    variants={fadeUp}
+                    custom={2}
+                    className="text-white/50 text-sm lg:text-base mb-7 max-w-sm leading-relaxed font-light"
+                  >
+                    Profitez de nos offres saisonnières exclusives et de conditions de financement
+                    avantageuses sur toute la gamme.
+                  </motion.p>
+                  <motion.div variants={fadeUp} custom={3}>
+                    <Link
+                      href="/vehicles"
+                      className="group inline-flex items-center gap-2.5 px-6 py-3 bg-toyota-red text-white font-bold text-xs tracking-wide rounded-full hover:px-8 transition-all duration-300 shadow-lg shadow-toyota-red/30 hover:shadow-toyota-red/45"
+                    >
+                      Voir les offres
+                      <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+                    </Link>
+                  </motion.div>
+                </motion.div>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
+      </main>
+      <Footer />
     </>
   );
 }

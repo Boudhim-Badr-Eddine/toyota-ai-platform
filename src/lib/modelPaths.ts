@@ -9,6 +9,9 @@ export const MODEL_PATHS: Record<string, string> = {
   prius:       "/models/prius/scene.gltf",
   chr:         "/models/chr/scene.gltf",
   highlander:  "/models/highlander/scene.gltf",
+  granvia:     "/models/granvia/scene.gltf",
+  "corolla-2": "/models/corolla-2/scene.gltf",
+  kijang:      "/models/kijang/scene.gltf",
 };
 
 export function getModelPath(vehicleId: string): string {

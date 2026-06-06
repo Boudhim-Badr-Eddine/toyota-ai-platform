@@ -1,7 +1,6 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/prisma";
 
 /** Used when DATABASE_URL is unreachable (local dev without Supabase). */
 const DEV_ACCOUNTS = [
@@ -69,6 +68,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const password = credentials.password as string;
 
         try {
+          const { prisma } = await import("@/lib/prisma");
           const customer = await prisma.user.findUnique({ where: { email } });
           if (customer) {
             const valid = await bcrypt.compare(password, customer.password);
@@ -107,7 +107,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   pages: { signIn: "/compte/connexion" },
   session: { strategy: "jwt" },
-  secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
     async jwt({ token, user, trigger, session }) {
       if (user) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -22,12 +22,18 @@ export default function VehicleDetailPage() {
   const params = useParams();
   const id = typeof params.id === "string" ? params.id : Array.isArray(params.id) ? params.id[0] : "";
 
-  const raw = VEHICLES_DATA.find((v) => v.id === id);
-  if (!raw) notFound();
-  const vehicle = getEnrichedVehicle(raw);
-
   const [activeColor, setActiveColor] = useState(0);
   const [galleryIdx, setGalleryIdx] = useState(0);
+
+  const raw = VEHICLES_DATA.find((v) => v.id === id);
+
+  useEffect(() => {
+    setGalleryIdx(0);
+    setActiveColor(0);
+  }, [id]);
+
+  if (!raw) notFound();
+  const vehicle = getEnrichedVehicle(raw);
 
   const images = vehicle.images?.length ? vehicle.images : vehicle.imageUrl ? [vehicle.imageUrl] : [];
 

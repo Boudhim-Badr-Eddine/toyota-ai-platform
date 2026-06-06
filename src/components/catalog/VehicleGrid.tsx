@@ -32,7 +32,7 @@ const FILTERS: { key: FilterKey; label: string; categories: string[] }[] = [
   {
     key: "berline",
     label: "Berline",
-    categories: ["Berline Confort", "Compacte Hybride"],
+    categories: ["Berline", "Berline Confort", "Compacte Hybride"],
   },
   { key: "citadine", label: "Citadine", categories: ["Citadine"] },
   {
