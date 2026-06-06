@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion, type Variants } from "framer-motion";
 import Link from "next/link";
 import { Zap, Users, Fuel, ArrowRight, Settings, Star } from "lucide-react";
 import type { Vehicle } from "@/types";
+import { getVehicleDisplayImage } from "@/data/vehicles";
 import { formatPrice, formatPower, formatConsumption, cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { useCompareStore } from "@/store/compareStore";
@@ -26,6 +27,9 @@ const CATEGORY_CONFIG: Record<
   "Éco/Tech":              { badge: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30", gradientFrom: "from-emerald-950/80", glowColor: "rgba(16,185,129,0.18)" },
   "SUV Urbain":           { badge: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",   gradientFrom: "from-cyan-950/80",     glowColor: "rgba(6,182,212,0.14)" },
   "SUV 7 places":         { badge: "bg-indigo-500/20 text-indigo-400 border-indigo-500/30", gradientFrom: "from-indigo-950/80", glowColor: "rgba(99,102,241,0.18)" },
+  Berline:                { badge: "bg-violet-500/20 text-violet-400 border-violet-500/30", gradientFrom: "from-violet-950/80", glowColor: "rgba(139,92,246,0.18)" },
+  "Van Premium":          { badge: "bg-slate-500/20 text-slate-300 border-slate-500/30", gradientFrom: "from-slate-950/80", glowColor: "rgba(148,163,184,0.14)" },
+  "Monospace Familial":   { badge: "bg-teal-500/20 text-teal-400 border-teal-500/30", gradientFrom: "from-teal-950/80", glowColor: "rgba(20,184,166,0.14)" },
 };
 
 const DEFAULT_CATEGORY_CONFIG = {
@@ -54,10 +58,16 @@ interface VehicleCardProps {
 
 export function VehicleCard({ vehicle, index = 0 }: VehicleCardProps) {
   const [imgError, setImgError] = useState(false);
+  const [imageMounted, setImageMounted] = useState(false);
   const { selectedIds, toggle } = useCompareStore();
   const isCompared = selectedIds.includes(vehicle.id);
 
   const catConfig = CATEGORY_CONFIG[vehicle.category] ?? DEFAULT_CATEGORY_CONFIG;
+  const displayImage = getVehicleDisplayImage(vehicle);
+
+  useEffect(() => {
+    setImageMounted(true);
+  }, []);
 
   return (
     <motion.div
@@ -79,15 +89,15 @@ export function VehicleCard({ vehicle, index = 0 }: VehicleCardProps) {
       <div
         className={cn(
           "relative overflow-hidden aspect-video",
-          (!vehicle.imageUrl || imgError)
+          (!displayImage || imgError)
             ? `bg-linear-to-br to-[#0D0D0D] flex items-center justify-center ${catConfig.gradientFrom}`
             : "bg-[#0D0D0D]"
         )}
       >
-        {/* Photo */}
-        {vehicle.imageUrl && !imgError && (
+        {/* Photo — defer next/image until after hydration to avoid SSR/client src mismatches */}
+        {displayImage && !imgError && imageMounted && (
           <Image
-            src={vehicle.imageUrl}
+            src={displayImage}
             alt={`Toyota ${vehicle.name}`}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -99,9 +109,12 @@ export function VehicleCard({ vehicle, index = 0 }: VehicleCardProps) {
             blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIyNSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMTExMTExIi8+PC9zdmc+"
           />
         )}
+        {displayImage && !imgError && !imageMounted && (
+          <div className="absolute inset-0 bg-[#0D0D0D]" aria-hidden />
+        )}
 
         {/* Fallback */}
-        {(!vehicle.imageUrl || imgError) && (
+        {(!displayImage || imgError) && (
           <div className="flex flex-col items-center justify-center gap-2 select-none">
             <div className="w-16 h-16 rounded-full bg-white/3 border border-white/8 flex items-center justify-center">
               <span className="text-2xl font-black text-white/20 tracking-tighter">

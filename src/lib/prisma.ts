@@ -1,10 +1,5 @@
 import { PrismaClient } from "@prisma/client";
 
-// ─── Prisma Singleton ──────────────────────────────────────────────────────────
-// Prevents multiple PrismaClient instances during Next.js hot reloads in dev.
-// Re-creates the client if the schema changed (e.g. new User model) while dev
-// server is still running — otherwise prisma.user stays undefined and auth fails.
-
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
@@ -18,25 +13,36 @@ function createPrismaClient() {
   });
 }
 
-function getPrismaClient(): PrismaClient {
+export function getPrismaClient(): PrismaClient {
   const existing = globalForPrisma.prisma;
 
-  // Stale singleton after `prisma generate` + schema changes in dev
   if (existing && typeof (existing as PrismaClient & { user?: unknown }).user === "undefined") {
     void existing.$disconnect().catch(() => undefined);
-    const fresh = createPrismaClient();
-    globalForPrisma.prisma = fresh;
-    return fresh;
+    globalForPrisma.prisma = undefined;
   }
 
-  if (existing) return existing;
+  if (globalForPrisma.prisma) return globalForPrisma.prisma;
 
   const client = createPrismaClient();
   globalForPrisma.prisma = client;
   return client;
 }
 
-const prisma = getPrismaClient();
+let lazyPrisma: PrismaClient | undefined;
 
-export { prisma };
+function prismaClient(): PrismaClient {
+  if (!lazyPrisma) lazyPrisma = getPrismaClient();
+  return lazyPrisma;
+}
+
+export const prisma: PrismaClient = new Proxy({} as PrismaClient, {
+  get(_target, prop) {
+    const client = prismaClient();
+    const value = Reflect.get(client, prop, client);
+    return typeof value === "function"
+      ? (value as (...args: unknown[]) => unknown).bind(client)
+      : value;
+  },
+});
+
 export default prisma;
