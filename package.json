@@ -16,7 +16,8 @@
     "ml:install": "pip install -r ml-service/requirements.txt",
     "ml:train": "cd ml-service && python model.py",
     "ml:dev": "cd ml-service && uvicorn main:app --reload --host 0.0.0.0 --port 8000",
-    "test": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' node --require ts-node/register/transpile-only --test tests/smoke.test.ts"
+    "test": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' node --require ts-node/register/transpile-only --test tests/smoke.test.ts",
+    "email:test": "node scripts/test-email.mjs"
   },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
