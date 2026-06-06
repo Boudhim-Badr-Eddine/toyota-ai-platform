@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -20,7 +20,9 @@ import {
 import confetti from "canvas-confetti";
 import { toast } from "sonner";
 import { useConfiguratorStore } from "@/store/configuratorStore";
+import { useProfile } from "@/hooks/useProfile";
 import { formatPrice, cn } from "@/lib/utils";
+import { getChatHistoryForLead } from "@/lib/chatHistory";
 import type { VehicleColor, VehicleWheel, VehicleInterior } from "@/types";
 
 // ─── Zod schema ────────────────────────────────────────────────────────────────
@@ -124,6 +126,7 @@ export function LeadFormContent({
   showSummary = false,
 }: LeadFormContentProps) {
   const store = useConfiguratorStore();
+  const { isCustomer, profile } = useProfile();
 
   // Resolve from props or store
   const vehicleId = vehicleIdProp ?? store.selectedVehicle?.id ?? "";
@@ -146,14 +149,42 @@ export function LeadFormContent({
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { type: "test_drive" },
+    defaultValues: {
+      type: "test_drive",
+      firstName: profile?.firstName ?? "",
+      lastName: profile?.lastName ?? "",
+      email: profile?.email ?? "",
+      phone: profile?.phone ?? "",
+    },
   });
 
   const watchType = watch("type");
 
-  const onSubmit = async (values: FormValues) => {
+  useEffect(() => {
+    if (profile) {
+      reset((prev) => ({
+        ...prev,
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        email: profile.email,
+        phone: profile.phone,
+      }));
+    }
+  }, [profile, reset]);
+
+  const onSubmit = async (formValues: FormValues) => {
     setSubmitStatus("loading");
     setErrorMessage("");
+
+    const values = isCustomer && profile
+      ? {
+          ...formValues,
+          firstName: formValues.firstName || profile.firstName,
+          lastName: formValues.lastName || profile.lastName,
+          email: formValues.email || profile.email,
+          phone: formValues.phone || profile.phone,
+        }
+      : formValues;
 
     try {
       const configuration = {
@@ -174,7 +205,7 @@ export function LeadFormContent({
           phone: values.phone ?? "",
           vehicleId,
           configuration,
-          chatHistory: [],
+          chatHistory: getChatHistoryForLead(),
           type: values.type,
         }),
       });
@@ -184,7 +215,8 @@ export function LeadFormContent({
         throw new Error(data.error ?? "Erreur lors de la soumission");
       }
 
-      const { lead } = (await leadRes.json()) as { lead: { id: string } };
+      const { data: lead } = (await leadRes.json()) as { data: { id: string } };
+      if (!lead?.id) throw new Error("Réponse serveur invalide");
 
       // 2. Create reservation if test drive + date provided
       if (values.type === "test_drive" && values.date) {
@@ -309,7 +341,26 @@ export function LeadFormContent({
         </div>
       </div>
 
+      {/* ── Logged-in profile summary ──────────────────────────────────────── */}
+      {isCustomer && profile && (
+        <div className="bg-toyota-red/5 border border-toyota-red/20 rounded-xl p-4 space-y-2">
+          <p className="text-xs font-bold uppercase tracking-wider text-toyota-red">
+            Vos informations enregistrées
+          </p>
+          <p className="text-white text-sm font-semibold">
+            {profile.firstName} {profile.lastName}
+          </p>
+          <p className="text-toyota-muted text-xs">
+            {profile.email} · {profile.phone}
+          </p>
+          <p className="text-toyota-muted/70 text-[11px]">
+            Confirmez simplement — pas besoin de remplir à nouveau.
+          </p>
+        </div>
+      )}
+
       {/* ── Name row ─────────────────────────────────────────────────────────── */}
+      {!isCustomer && (
       <div className="grid grid-cols-2 gap-3">
         <FormField
           label="Prénom"
@@ -334,7 +385,10 @@ export function LeadFormContent({
           />
         </FormField>
       </div>
+      )}
 
+      {!isCustomer && (
+      <>
       {/* ── Email ────────────────────────────────────────────────────────────── */}
       <FormField label="Email" icon={<Mail className="h-4 w-4" />} error={errors.email?.message}>
         <input
@@ -358,6 +412,8 @@ export function LeadFormContent({
           className={inputClass(!!errors.phone)}
         />
       </FormField>
+      </>
+      )}
 
       {/* ── Date (only when test_drive) ───────────────────────────────────────── */}
       <AnimatePresence initial={false}>
@@ -417,12 +473,12 @@ export function LeadFormContent({
         ) : watchType === "test_drive" ? (
           <>
             <Calendar className="h-4 w-4" />
-            Réserver un essai
+            {isCustomer ? "Confirmer l'essai" : "Réserver un essai"}
           </>
         ) : (
           <>
             <Mail className="h-4 w-4" />
-            Envoyer la demande
+            {isCustomer ? "Confirmer la demande" : "Envoyer la demande"}
           </>
         )}
       </motion.button>

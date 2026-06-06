@@ -4,7 +4,7 @@ import { Providers } from "@/components/providers/Providers";
 import { PageTransition } from "@/components/providers/PageTransition";
 import { Toaster } from "sonner";
 import { DebugPanel } from "@/components/dev/DebugPanel";
-import ChatWidget from "@/components/chat/ChatWidget";
+import { ChatWidgetLoader } from "@/components/chat/ChatWidgetLoader";
 import { ScrollToTop } from "@/components/ui/ScrollToTop";
 import "./globals.css";
 
@@ -51,7 +51,7 @@ export default function RootLayout({
             style: { background: "#111111", border: "1px solid rgba(255,255,255,0.08)", color: "#fff" },
           }}
         />
-        <ChatWidget />
+        <ChatWidgetLoader />
         <ScrollToTop />
         <DebugPanel />
       </body>

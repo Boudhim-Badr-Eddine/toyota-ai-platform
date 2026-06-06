@@ -5,56 +5,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Phone, Clock, Mail, ChevronLeft, Send, CheckCircle2, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-
-// ─── Dealership data ───────────────────────────────────────────────────────────
-
-const DEALERSHIPS = [
-  {
-    city: "Casablanca",
-    name: "Toyota Maroc — Centre Casablanca",
-    address: "Bd Mohammed V, Maarif, Casablanca 20000",
-    phone: "+212 522 XX XX XX",
-    hours: "Lun–Ven 8h–18h · Sam 9h–13h",
-    maps: "https://maps.google.com/?q=Toyota+Casablanca+Maroc",
-    color: "bg-toyota-red",
-  },
-  {
-    city: "Rabat",
-    name: "Toyota Maroc — Rabat-Agdal",
-    address: "Avenue Hassan II, Agdal, Rabat 10090",
-    phone: "+212 537 XX XX XX",
-    hours: "Lun–Ven 8h–18h · Sam 9h–13h",
-    maps: "https://maps.google.com/?q=Toyota+Rabat+Maroc",
-    color: "bg-blue-600",
-  },
-  {
-    city: "Marrakech",
-    name: "Toyota Maroc — Marrakech Guéliz",
-    address: "Avenue Mohamed VI, Guéliz, Marrakech 40000",
-    phone: "+212 524 XX XX XX",
-    hours: "Lun–Ven 8h–18h · Sam 9h–13h",
-    maps: "https://maps.google.com/?q=Toyota+Marrakech+Maroc",
-    color: "bg-orange-600",
-  },
-  {
-    city: "Agadir",
-    name: "Toyota Maroc — Agadir",
-    address: "Avenue Prince Moulay Abdallah, Agadir 80000",
-    phone: "+212 528 XX XX XX",
-    hours: "Lun–Ven 8h–18h · Sam 9h–13h",
-    maps: "https://maps.google.com/?q=Toyota+Agadir+Maroc",
-    color: "bg-emerald-600",
-  },
-  {
-    city: "Fès",
-    name: "Toyota Maroc — Fès-Atlas",
-    address: "Route d'Immouzer, Fès 30000",
-    phone: "+212 535 XX XX XX",
-    hours: "Lun–Ven 8h–18h · Sam 9h–13h",
-    maps: "https://maps.google.com/?q=Toyota+Fes+Maroc",
-    color: "bg-purple-600",
-  },
-];
+import { SectionHeading } from "@/components/ui/SectionHeading";
+import { DEALERSHIPS } from "@/data/dealerships";
+import { dealershipGoogleMaps } from "@/lib/geo";
+import { getChatHistoryForLead } from "@/lib/chatHistory";
+import { VEHICLES_DATA } from "@/data/vehicles";
 
 // ─── Contact form ─────────────────────────────────────────────────────────────
 
@@ -65,6 +20,7 @@ interface FormData {
   lastName: string;
   email: string;
   phone: string;
+  vehicleId: string;
   subject: string;
   message: string;
 }
@@ -84,6 +40,7 @@ function ContactForm() {
     lastName: "",
     email: "",
     phone: "",
+    vehicleId: VEHICLES_DATA[0]?.id ?? "rav4",
     subject: SUBJECTS[0],
     message: "",
   });
@@ -105,10 +62,28 @@ function ContactForm() {
     e.preventDefault();
     if (!validate()) return;
     setSubmitting(true);
-    // Simulate API call
-    await new Promise((r) => setTimeout(r, 1200));
-    setSubmitting(false);
-    setSubmitted(true);
+    try {
+      const res = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firstName: form.firstName,
+          lastName: form.lastName,
+          email: form.email,
+          phone: form.phone,
+          vehicleId: form.vehicleId,
+          configuration: { subject: form.subject, message: form.message },
+          chatHistory: getChatHistoryForLead(),
+          type: "quote",
+        }),
+      });
+      if (!res.ok) throw new Error("Erreur");
+      setSubmitted(true);
+    } catch {
+      setErrors({ message: "Erreur d'envoi. Réessayez." });
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   if (submitted) {
@@ -126,7 +101,7 @@ function ContactForm() {
           Notre équipe vous répondra dans les <strong className="text-white">24 heures</strong> ouvrées.
         </p>
         <button
-          onClick={() => { setSubmitted(false); setForm({ firstName: "", lastName: "", email: "", phone: "", subject: SUBJECTS[0], message: "" }); }}
+          onClick={() => { setSubmitted(false); setForm({ firstName: "", lastName: "", email: "", phone: "", vehicleId: VEHICLES_DATA[0]?.id ?? "", subject: SUBJECTS[0], message: "" }); }}
           className="px-5 py-2 border border-white/10 text-toyota-muted hover:text-white rounded-xl text-sm font-medium transition-colors"
         >
           Envoyer un autre message
@@ -191,6 +166,16 @@ function ContactForm() {
 
       {/* Subject */}
       <div>
+        <label className="block text-xs font-semibold text-toyota-muted/70 mb-1.5">Modèle (optionnel)</label>
+        <select
+          value={form.vehicleId}
+          onChange={(e) => setForm((f) => ({ ...f, vehicleId: e.target.value }))}
+          className="w-full appearance-none bg-white/4 border border-white/10 rounded-xl px-3.5 py-3 text-white text-sm focus:outline-none focus:border-toyota-red/50 mb-4"
+        >
+          {VEHICLES_DATA.map((v) => (
+            <option key={v.id} value={v.id} className="bg-[#111111]">{v.name}</option>
+          ))}
+        </select>
         <label className="block text-xs font-semibold text-toyota-muted/70 mb-1.5">Sujet</label>
         <div className="relative">
           <select
@@ -229,7 +214,7 @@ function ContactForm() {
         disabled={submitting}
         whileHover={{ scale: 1.01 }}
         whileTap={{ scale: 0.98 }}
-        className="w-full flex items-center justify-center gap-2 bg-toyota-red hover:bg-toyota-red/90 disabled:opacity-60 text-white font-bold py-3.5 rounded-xl transition-colors"
+        className="w-full flex items-center justify-center gap-2 toyota-btn-primary disabled:opacity-60 !normal-case"
       >
         {submitting ? (
           <>
@@ -249,15 +234,16 @@ function ContactForm() {
 
 // ─── Dealership accordion ─────────────────────────────────────────────────────
 
-function DealershipCard({ d, defaultOpen }: { d: typeof DEALERSHIPS[0]; defaultOpen?: boolean }) {
+function DealershipCard({ d, defaultOpen }: { d: (typeof DEALERSHIPS)[0]; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(defaultOpen ?? false);
+  const maps = dealershipGoogleMaps(d);
   return (
-    <div className="bg-[#111111] border border-white/5 rounded-xl overflow-hidden">
+    <div className="toyota-panel overflow-hidden">
       <button
         onClick={() => setOpen((v) => !v)}
         className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/3 transition-colors"
       >
-        <div className={cn("w-2 h-2 rounded-full shrink-0", d.color)} />
+        <div className={cn("w-2 h-2 rounded-full shrink-0", d.type === "succursale" ? "bg-toyota-red" : "bg-white/30")} />
         <span className="flex-1 text-left text-white font-semibold text-sm">{d.city}</span>
         <ChevronDown className={cn("h-4 w-4 text-toyota-muted/40 transition-transform duration-200", open && "rotate-180")} />
       </button>
@@ -282,10 +268,10 @@ function DealershipCard({ d, defaultOpen }: { d: typeof DEALERSHIPS[0]; defaultO
               </div>
               <div className="flex items-center gap-2 text-toyota-muted text-xs">
                 <Clock className="h-3.5 w-3.5 shrink-0 text-toyota-muted/50" />
-                {d.hours}
+                Lun–Ven {d.hours.mon ?? "8h–18h"}
               </div>
               <a
-                href={d.maps}
+                href={maps.place}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 text-xs text-toyota-red font-semibold hover:underline underline-offset-2"
@@ -305,31 +291,26 @@ function DealershipCard({ d, defaultOpen }: { d: typeof DEALERSHIPS[0]; defaultO
 
 export default function ContactPage() {
   return (
-    <div className="min-h-screen bg-toyota-dark pt-24 pb-20">
-      <div className="section-container">
-
-        {/* Breadcrumb */}
+    <div className="toyota-page pb-28 lg:pb-20">
+      <div className="section-container py-10 md:py-14">
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 text-toyota-muted hover:text-white text-sm font-medium mb-8 transition-colors"
+          className="inline-flex items-center gap-1.5 text-white/40 hover:text-white text-sm font-medium mb-10 transition-colors"
         >
           <ChevronLeft className="h-4 w-4" />
           Accueil
         </Link>
 
-        {/* Page header */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
           className="mb-12"
         >
-          <h1 className="text-4xl md:text-5xl font-black text-white mb-3 tracking-tight">
-            Contactez-nous
-          </h1>
-          <p className="text-toyota-muted text-lg max-w-xl">
-            Notre équipe est à votre disposition pour répondre à toutes vos questions sur la gamme Toyota.
-          </p>
+          <SectionHeading
+            title="Contactez-nous"
+            subtitle="Notre équipe est à votre disposition pour répondre à toutes vos questions sur la gamme Toyota Maroc."
+          />
         </motion.div>
 
         {/* ── Two-column layout ───────────────────────────────────────────────── */}
@@ -342,7 +323,7 @@ export default function ContactPage() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="lg:col-span-3"
           >
-            <div className="bg-[#111111] border border-white/8 rounded-2xl p-6">
+            <div className="toyota-panel p-6">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-9 h-9 rounded-xl bg-toyota-red/10 border border-toyota-red/20 flex items-center justify-center">
                   <Mail className="h-4 w-4 text-toyota-red" />
@@ -364,7 +345,7 @@ export default function ContactPage() {
             className="lg:col-span-2 space-y-6"
           >
             {/* Contact info */}
-            <div className="bg-[#111111] border border-white/8 rounded-2xl p-5 space-y-4">
+            <div className="toyota-panel p-5 space-y-4">
               <h2 className="text-white font-bold text-sm mb-1">Informations générales</h2>
               {[
                 { icon: Phone, label: "Téléphone", value: "+212 522 XX XX XX" },
@@ -401,8 +382,8 @@ export default function ContactPage() {
             <div>
               <h2 className="text-white font-bold text-sm mb-3">Nos concessions au Maroc</h2>
               <div className="space-y-2">
-                {DEALERSHIPS.map((d, i) => (
-                  <DealershipCard key={d.city} d={d} defaultOpen={i === 0} />
+                {DEALERSHIPS.slice(0, 8).map((d, i) => (
+                  <DealershipCard key={d.id} d={d} defaultOpen={i === 0} />
                 ))}
               </div>
             </div>

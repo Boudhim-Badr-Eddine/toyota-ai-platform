@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useParams, notFound } from "next/navigation";
+import { useParams, useSearchParams, notFound } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, Tag, Camera, Download, X, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
@@ -12,6 +12,7 @@ import { useConfiguratorStore } from "@/store/configuratorStore";
 import { ConfigPanel } from "@/components/configurator/ConfigPanel";
 import { getModelPath } from "@/lib/modelPaths";
 import { cn } from "@/lib/utils";
+import { Photo360Fallback, shouldUsePhotoFallback } from "@/components/configurator/Photo360Fallback";
 
 // ─── Lazy-load CarScene ───────────────────────────────────────────────────────
 
@@ -145,14 +146,20 @@ function ScreenshotModal({
 
 export default function ConfiguratorPage() {
   const params = useParams<{ model: string }>();
+  const searchParams = useSearchParams();
   const modelId = params.model;
 
   const vehicle = getVehicleById(modelId);
-  const { setVehicle, selectedVehicle, selectedColor, selectedWheels, selectedInterior } = useConfiguratorStore();
+  const { setVehicle, selectedVehicle, selectedColor, selectedWheels, selectedInterior, selectedTrim, applyFromUrl } = useConfiguratorStore();
 
   const [screenshotUrl, setScreenshotUrl] = useState<string | null>(null);
-  // Mobile bottom-sheet toggle — must be before early return
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [usePhotoMode] = useState(() =>
+    typeof window !== "undefined" ? shouldUsePhotoFallback() : false
+  );
+  const [showArHint] = useState(() =>
+    typeof window !== "undefined" && "xr" in navigator
+  );
 
   const handleCapture = useCallback(() => {
     const url = captureCanvas();
@@ -167,6 +174,16 @@ export default function ConfiguratorPage() {
       setVehicle(vehicle);
     }
   }, [vehicle, selectedVehicle?.id, setVehicle]);
+
+  useEffect(() => {
+    if (!vehicle || selectedVehicle?.id !== vehicle.id) return;
+    applyFromUrl({
+      colorId: searchParams.get("c") ?? undefined,
+      wheelId: searchParams.get("w") ?? undefined,
+      interiorId: searchParams.get("i") ?? undefined,
+      trimId: searchParams.get("t") ?? undefined,
+    });
+  }, [vehicle, selectedVehicle?.id, searchParams, applyFromUrl]);
 
   if (!vehicle) return notFound();
 
@@ -215,6 +232,23 @@ export default function ConfiguratorPage() {
 
         {/* Screenshot button */}
         <button
+          type="button"
+          onClick={() => {
+            const params = new URLSearchParams({
+              c: selectedColor?.id ?? "",
+              w: selectedWheels?.id ?? "",
+              i: selectedInterior?.id ?? "",
+              t: selectedTrim?.id ?? "",
+            });
+            const url = `${window.location.origin}/configurator/${vehicle.id}?${params}`;
+            void navigator.clipboard.writeText(url);
+            toast.success("Lien de configuration copié");
+          }}
+          className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-toyota-muted hover:text-white text-xs font-medium transition-all"
+        >
+          Partager
+        </button>
+        <button
           onClick={handleCapture}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 text-toyota-muted hover:text-white text-xs font-medium transition-all"
         >
@@ -232,19 +266,37 @@ export default function ConfiguratorPage() {
 
         {/* 3D Viewport — left 60% on desktop */}
         <div className="relative flex-1 min-h-0">
-          {process.env.NODE_ENV === "development" && (
+          {process.env.NODE_ENV === "development" && !usePhotoMode && (
             <div className="fixed top-2 left-2 z-50 bg-black/90 text-green-400 text-xs font-mono p-2 rounded pointer-events-none">
               Model: {getModelPath(vehicle.id)}
             </div>
           )}
-          <CarScene
-            vehicleId={vehicle.id}
-            colorHex={activeColorHex}
-            colorType={activeColorType}
-            vehicleName={vehicle.name}
-            selectedWheelId={selectedWheels?.id ?? ""}
-            selectedInteriorId={selectedInterior?.id ?? ""}
-          />
+          {usePhotoMode ? (
+            <Photo360Fallback
+              images={vehicle.images?.length ? vehicle.images : [vehicle.imageUrl]}
+              vehicleName={vehicle.name}
+              colorHex={activeColorHex}
+            />
+          ) : (
+            <CarScene
+              vehicleId={vehicle.id}
+              colorHex={activeColorHex}
+              colorType={activeColorType}
+              vehicleName={vehicle.name}
+              selectedWheelId={selectedWheels?.id ?? ""}
+              selectedInteriorId={selectedInterior?.id ?? ""}
+            />
+          )}
+
+          {showArHint && !usePhotoMode && (
+            <a
+              href={`/models/${vehicle.id}.glb`}
+              rel="ar"
+              className="lg:hidden absolute bottom-20 left-4 z-20 px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white text-xs font-semibold backdrop-blur-sm"
+            >
+              Vue AR
+            </a>
+          )}
 
           {/* Mobile: floating button to toggle config sheet */}
           <button

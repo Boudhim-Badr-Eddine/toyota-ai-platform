@@ -153,7 +153,7 @@ function GltfModel({ modelPath, colorHex, colorType, selectedWheelId, selectedIn
     if (maxDim === 0) return;
     const scale = 3.5 / maxDim;
     scene.scale.setScalar(scale);
-    scene.position.copy(center.multiplyScalar(-scale));
+    scene.position.copy(center.clone().multiplyScalar(-scale));
     scene.position.y = 0;
   }, [scene]);
 

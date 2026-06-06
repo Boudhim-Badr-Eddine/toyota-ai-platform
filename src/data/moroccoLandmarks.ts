@@ -1,0 +1,412 @@
+export type LandmarkType = "culture" | "nature" | "gastronomie" | "aventure" | "plage";
+
+export interface MoroccoLandmark {
+  id: string;
+  name: string;
+  city: string;
+  description: string;
+  lat: number;
+  lng: number;
+  type: LandmarkType;
+  durationHours: number;
+}
+
+export const MOROCCO_CITIES = [
+  "Casablanca",
+  "Rabat",
+  "Marrakech",
+  "Fès",
+  "Tanger",
+  "Agadir",
+  "Meknès",
+  "Ouarzazate",
+  "Essaouira",
+  "Chefchaouen",
+  "El Jadida",
+  "Tétouan",
+] as const;
+
+export type MoroccoCity = (typeof MOROCCO_CITIES)[number];
+
+export const MOROCCO_LANDMARKS: Record<string, MoroccoLandmark[]> = {
+  Casablanca: [
+    {
+      id: "casa-hassan-ii",
+      name: "Mosquée Hassan II",
+      city: "Casablanca",
+      description: "Chef-d'œuvre architectural face à l'Atlantique — minaret de 210 m.",
+      lat: 33.6085,
+      lng: -7.6328,
+      type: "culture",
+      durationHours: 2,
+    },
+    {
+      id: "casa-corniche",
+      name: "La Corniche d'Aïn Diab",
+      city: "Casablanca",
+      description: "Promenade en bord de mer, clubs et coucher de soleil légendaire.",
+      lat: 33.5932,
+      lng: -7.6624,
+      type: "plage",
+      durationHours: 3,
+    },
+    {
+      id: "casa-medina",
+      name: "Médina & Place Mohammed V",
+      city: "Casablanca",
+      description: "Art déco, souks et café culture au cœur de la métropole.",
+      lat: 33.5951,
+      lng: -7.6188,
+      type: "culture",
+      durationHours: 2,
+    },
+  ],
+  Rabat: [
+    {
+      id: "rabat-hassan",
+      name: "Tour Hassan & Mausolée Mohammed V",
+      city: "Rabat",
+      description: "Symboles de la capitale — histoire et grandeur royale.",
+      lat: 34.0242,
+      lng: -6.8225,
+      type: "culture",
+      durationHours: 2,
+    },
+    {
+      id: "rabat-oudayas",
+      name: "Kasbah des Oudayas",
+      city: "Rabat",
+      description: "Ruelles bleues et jardins andalous sur l'embouchure du Bouregreg.",
+      lat: 34.0356,
+      lng: -6.8361,
+      type: "culture",
+      durationHours: 2,
+    },
+    {
+      id: "rabat-chellah",
+      name: "Chellah Nécropole",
+      city: "Rabat",
+      description: "Ruines romaines et médiévales dans un jardin aux cigognes.",
+      lat: 34.0069,
+      lng: -6.8222,
+      type: "nature",
+      durationHours: 1.5,
+    },
+  ],
+  Marrakech: [
+    {
+      id: "marrakech-jemaa",
+      name: "Place Jemaa el-Fna",
+      city: "Marrakech",
+      description: "Cœur battant de la ville rouge — conteurs, épices et tajines.",
+      lat: 31.6258,
+      lng: -7.9891,
+      type: "gastronomie",
+      durationHours: 3,
+    },
+    {
+      id: "marrakech-majorelle",
+      name: "Jardin Majorelle",
+      city: "Marrakech",
+      description: "Oasis de bleu Klein et cactus — musée Yves Saint Laurent.",
+      lat: 31.6418,
+      lng: -8.0033,
+      type: "nature",
+      durationHours: 2,
+    },
+    {
+      id: "marrakech-atlas",
+      name: "Départ vers l'Atlas",
+      city: "Marrakech",
+      description: "Route panoramique vers Imlil et les villages berbères.",
+      lat: 31.6295,
+      lng: -7.9811,
+      type: "aventure",
+      durationHours: 5,
+    },
+  ],
+  Fès: [
+    {
+      id: "fes-medina",
+      name: "Médina de Fès el-Bali",
+      city: "Fès",
+      description: "Plus grande zone piétonne du monde — tanneries et médersas.",
+      lat: 34.066,
+      lng: -4.9747,
+      type: "culture",
+      durationHours: 4,
+    },
+    {
+      id: "fes-tanneries",
+      name: "Tanneries Chouara",
+      city: "Fès",
+      description: "Cuirs traditionnels depuis le Moyen Âge — spectacle unique.",
+      lat: 34.0665,
+      lng: -4.9737,
+      type: "culture",
+      durationHours: 1,
+    },
+    {
+      id: "fes-borj",
+      name: "Borj Nord & vue sur Fès",
+      city: "Fès",
+      description: "Panorama sur la médina depuis les remparts.",
+      lat: 34.0792,
+      lng: -4.9644,
+      type: "nature",
+      durationHours: 1.5,
+    },
+  ],
+  Tanger: [
+    {
+      id: "tanger-cap",
+      name: "Cap Spartel & Grotte d'Hercule",
+      city: "Tanger",
+      description: "Rencontre Atlantique-Méditerranée — légende mythologique.",
+      lat: 35.7928,
+      lng: -5.9225,
+      type: "nature",
+      durationHours: 2,
+    },
+    {
+      id: "tanger-medina",
+      name: "Médina & Grand Socco",
+      city: "Tanger",
+      description: "Porte de l'Afrique — influences andalouses et internationales.",
+      lat: 35.784,
+      lng: -5.812,
+      type: "culture",
+      durationHours: 2,
+    },
+    {
+      id: "tanger-achakar",
+      name: "Plage d'Achakar",
+      city: "Tanger",
+      description: "Surf, falaises et horizon vers l'Espagne.",
+      lat: 35.756,
+      lng: -5.918,
+      type: "plage",
+      durationHours: 3,
+    },
+  ],
+  Agadir: [
+    {
+      id: "agadir-plage",
+      name: "Baie d'Agadir",
+      city: "Agadir",
+      description: "10 km de plage dorée — soleil 300 jours par an.",
+      lat: 30.4133,
+      lng: -9.6005,
+      type: "plage",
+      durationHours: 4,
+    },
+    {
+      id: "agadir-kasbah",
+      name: "Kasbah d'Agadir Oufella",
+      city: "Agadir",
+      description: "Ruines sur la colline — vue à 360° sur la baie.",
+      lat: 30.4261,
+      lng: -9.6306,
+      type: "culture",
+      durationHours: 1.5,
+    },
+    {
+      id: "agadir-souk",
+      name: "Souk El Had",
+      city: "Agadir",
+      description: "Plus grand souk du Maroc — épices, artisanat et ambiance.",
+      lat: 30.4147,
+      lng: -9.5694,
+      type: "gastronomie",
+      durationHours: 2,
+    },
+  ],
+  Meknès: [
+    {
+      id: "meknes-bab",
+      name: "Bab Mansour",
+      city: "Meknès",
+      description: "Porte monumentale de la ville impériale — zellige somptueux.",
+      lat: 33.8925,
+      lng: -5.5477,
+      type: "culture",
+      durationHours: 1,
+    },
+    {
+      id: "meknes-volubilis",
+      name: "Volubilis (excursion)",
+      city: "Meknès",
+      description: "Ruines romaines classées UNESCO — mosaïques exceptionnelles.",
+      lat: 34.0742,
+      lng: -5.5553,
+      type: "culture",
+      durationHours: 3,
+    },
+  ],
+  Ouarzazate: [
+    {
+      id: "ouarzazate-ksar",
+      name: "Aït Benhaddou",
+      city: "Ouarzazate",
+      description: "Ksar UNESCO — décor de Game of Thrones et Gladiator.",
+      lat: 31.047,
+      lng: -7.1319,
+      type: "culture",
+      durationHours: 3,
+    },
+    {
+      id: "ouarzazate-studios",
+      name: "Atlas Corporation Studios",
+      city: "Ouarzazate",
+      description: "Hollywood du désert — décors de blockbusters.",
+      lat: 30.9197,
+      lng: -6.8936,
+      type: "culture",
+      durationHours: 2,
+    },
+    {
+      id: "ouarzazate-dades",
+      name: "Gorges du Dadès",
+      city: "Ouarzazate",
+      description: "Route des mille kasbahs — paysages de carte postale.",
+      lat: 31.5833,
+      lng: -5.9167,
+      type: "aventure",
+      durationHours: 4,
+    },
+  ],
+  Essaouira: [
+    {
+      id: "essaouira-medina",
+      name: "Médina fortifiée",
+      city: "Essaouira",
+      description: "Remparts atlantiques, galeries d'art et ambiance bohème.",
+      lat: 31.5125,
+      lng: -9.77,
+      type: "culture",
+      durationHours: 3,
+    },
+    {
+      id: "essaouira-port",
+      name: "Port de pêche",
+      city: "Essaouira",
+      description: "Barques bleues, grillades de poisson frais au coucher du soleil.",
+      lat: 31.5089,
+      lng: -9.7694,
+      type: "gastronomie",
+      durationHours: 2,
+    },
+  ],
+  Chefchaouen: [
+    {
+      id: "chefchaouen-medina",
+      name: "Médina bleue",
+      city: "Chefchaouen",
+      description: "Ruelles peintes en bleu — perle du Rif.",
+      lat: 35.1688,
+      lng: -5.2636,
+      type: "culture",
+      durationHours: 3,
+    },
+    {
+      id: "chefchaouen-akchour",
+      name: "Cascades d'Akchour",
+      city: "Chefchaouen",
+      description: "Randonnée vers le Pont de Dieu — nature préservée.",
+      lat: 35.2167,
+      lng: -5.1833,
+      type: "nature",
+      durationHours: 4,
+    },
+  ],
+  "El Jadida": [
+    {
+      id: "jadida-citadelle",
+      name: "Cité Portugaise",
+      city: "El Jadida",
+      description: "Fortification UNESCO — histoire luso-marocaine unique.",
+      lat: 33.2316,
+      lng: -8.5007,
+      type: "culture",
+      durationHours: 2,
+    },
+    {
+      id: "jadida-plage",
+      name: "Plage d'El Jadida",
+      city: "El Jadida",
+      description: "Côte atlantique sauvage entre Casa et Safi.",
+      lat: 33.245,
+      lng: -8.508,
+      type: "plage",
+      durationHours: 3,
+    },
+  ],
+  Tétouan: [
+    {
+      id: "tetouan-medina",
+      name: "Médina de Tétouan",
+      city: "Tétouan",
+      description: "Ville blanche andalouse — UNESCO et artisanat fin.",
+      lat: 35.5785,
+      lng: -5.3681,
+      type: "culture",
+      durationHours: 3,
+    },
+    {
+      id: "tetouan-martil",
+      name: "Martil & côte méditerranéenne",
+      city: "Tétouan",
+      description: "Plages de la Méditerranée à 15 min de la médina.",
+      lat: 35.6167,
+      lng: -5.2833,
+      type: "plage",
+      durationHours: 3,
+    },
+  ],
+};
+
+/** Route suggestions between major cities (km approximatifs) */
+export const CITY_ROUTES: Record<string, { to: string; km: number }[]> = {
+  Casablanca: [
+    { to: "Rabat", km: 87 },
+    { to: "Marrakech", km: 240 },
+    { to: "El Jadida", km: 106 },
+    { to: "Fès", km: 295 },
+  ],
+  Rabat: [
+    { to: "Casablanca", km: 87 },
+    { to: "Fès", km: 198 },
+    { to: "Tanger", km: 220 },
+    { to: "Meknès", km: 148 },
+  ],
+  Marrakech: [
+    { to: "Casablanca", km: 240 },
+    { to: "Essaouira", km: 176 },
+    { to: "Ouarzazate", km: 196 },
+    { to: "Agadir", km: 256 },
+  ],
+  Fès: [
+    { to: "Meknès", km: 58 },
+    { to: "Chefchaouen", km: 198 },
+    { to: "Rabat", km: 198 },
+    { to: "Ouarzazate", km: 360 },
+  ],
+  Tanger: [
+    { to: "Chefchaouen", km: 112 },
+    { to: "Tétouan", km: 60 },
+    { to: "Rabat", km: 220 },
+  ],
+  Agadir: [
+    { to: "Marrakech", km: 256 },
+    { to: "Essaouira", km: 173 },
+    { to: "Ouarzazate", km: 360 },
+  ],
+};
+
+export function getLandmarksForCity(city: string): MoroccoLandmark[] {
+  return MOROCCO_LANDMARKS[city] ?? [];
+}
+
+export function getAllLandmarks(): MoroccoLandmark[] {
+  return Object.values(MOROCCO_LANDMARKS).flat();
+}

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
+import { notifyAdminLeadConfirmed } from "@/lib/adminNotifications";
+import { auth, requireAdmin } from "@/lib/auth";
 
 // ─── Validation schema ─────────────────────────────────────────────────────────
 
@@ -34,15 +35,23 @@ const CreateLeadSchema = z.object({
   email: z.string().email("Email invalide"),
   phone: z.string().regex(/^[+\d\s\-()]{7,20}$/, "Numéro de téléphone invalide").optional().or(z.literal("")),
   vehicleId: z.string().min(1, "L'ID du véhicule est requis"),
+  dealershipId: z.string().optional(),
+  userLat: z.number().optional(),
+  userLng: z.number().optional(),
   configuration: ConfigurationSchema.optional().default({}),
   chatHistory: z.array(ChatMessageSchema).optional().default([]),
-  type: z.enum(["test_drive", "quote"]),
+  type: z.enum(["test_drive", "quote", "purchase"]),
 });
 
 // ─── POST /api/leads ───────────────────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
   try {
+    const { rateLimit, clientIp } = await import("@/lib/rateLimit");
+    if (!rateLimit(`leads:${clientIp(request)}`, 20, 60_000)) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    }
+
     const body: unknown = await request.json();
 
     const parsed = CreateLeadSchema.safeParse(body);
@@ -53,7 +62,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { firstName, lastName, email, phone, vehicleId, configuration, chatHistory, type } =
+    const { firstName, lastName, email, phone, vehicleId, dealershipId, userLat, userLng, configuration, chatHistory, type } =
       parsed.data;
 
     // Resolve vehicleId: accept either the string slug or the DB cuid
@@ -70,6 +79,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    let resolvedDealershipId: string | null = null;
+    if (dealershipId) {
+      const dealership = await prisma.dealership.findFirst({
+        where: { OR: [{ id: dealershipId }, { slug: dealershipId }] },
+      });
+      if (dealership) resolvedDealershipId = dealership.id;
+    }
+
+    const session = await auth();
+    let userId: string | null = null;
+
+    if (session?.user?.role === "customer") {
+      userId = session.user.id;
+    }
+
     const lead = await prisma.lead.create({
       data: {
         firstName,
@@ -77,6 +101,10 @@ export async function POST(request: NextRequest) {
         email,
         phone: phone ?? null,
         vehicleId: vehicle.id,
+        userId,
+        dealershipId: resolvedDealershipId,
+        userLat: userLat ?? null,
+        userLng: userLng ?? null,
         configuration: configuration as object,
         chatHistory: chatHistory as object[],
         type,
@@ -84,8 +112,13 @@ export async function POST(request: NextRequest) {
       },
       include: {
         vehicle: true,
+        dealership: true,
       },
     });
+
+    void notifyAdminLeadConfirmed(lead).catch((err) =>
+      console.error("[POST /api/leads] Admin email failed:", err)
+    );
 
     return NextResponse.json({ data: lead }, { status: 201 });
   } catch (error) {
@@ -98,7 +131,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await requireAdmin();
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -117,7 +150,7 @@ export async function GET(request: NextRequest) {
     const [leads, total] = await Promise.all([
       prisma.lead.findMany({
         where,
-        include: { vehicle: true },
+        include: { vehicle: true, dealership: true },
         orderBy: { createdAt: "desc" },
         skip: (page - 1) * limit,
         take: limit,
@@ -152,7 +185,7 @@ const UpdateLeadSchema = z.object({
 
 export async function PATCH(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await requireAdmin();
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

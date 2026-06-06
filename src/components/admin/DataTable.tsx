@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronUp,
@@ -31,12 +31,16 @@ export interface DataTableProps<T extends Record<string, unknown>> {
   pageSize?: number;
   searchable?: boolean;
   searchPlaceholder?: string;
+  /** Initial search query (e.g. from URL ?q=) */
+  defaultSearch?: string;
   /** Key to use for row key (defaults to "id") */
   rowKey?: string;
   /** Shown when table is empty */
   emptyMessage?: string;
   /** Extra content rendered to the right of the search bar */
   actions?: React.ReactNode;
+  /** Called when a row is clicked */
+  onRowClick?: (row: T) => void;
 }
 
 // ─── Status badge ──────────────────────────────────────────────────────────────
@@ -99,11 +103,13 @@ export function DataTable<T extends Record<string, unknown>>({
   pageSize = 10,
   searchable = true,
   searchPlaceholder = "Rechercher…",
+  defaultSearch = "",
   rowKey = "id",
   emptyMessage = "Aucun résultat",
   actions,
+  onRowClick,
 }: DataTableProps<T>) {
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(defaultSearch);
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [page, setPage] = useState(1);
@@ -157,6 +163,12 @@ export function DataTable<T extends Record<string, unknown>>({
     setSearch(q);
     setPage(1);
   };
+
+  // Sync external search (URL param) into table state
+  useEffect(() => {
+    setSearch(defaultSearch);
+    setPage(1);
+  }, [defaultSearch]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -236,7 +248,11 @@ export function DataTable<T extends Record<string, unknown>>({
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: i * 0.02 }}
-                    className="border-b border-white/3 hover:bg-white/2 transition-colors"
+                    onClick={onRowClick ? () => onRowClick(row) : undefined}
+                    className={cn(
+                      "border-b border-white/3 hover:bg-white/2 transition-colors",
+                      onRowClick && "cursor-pointer"
+                    )}
                   >
                     {columns.map((col) => (
                       <td

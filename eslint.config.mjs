@@ -15,9 +15,12 @@ const eslintConfig = defineConfig([
   ]),
   {
     rules: {
-      // Warn when unicode escapes are used in JSX — use literal UTF-8 chars instead
-      "no-unicode-codepoint-escapes": "off", // not a standard rule name, use below
       "no-useless-escape": "warn",
+      // Legitimate in Next.js apps: URL sync, data fetch on auth, map/chart init
+      "react-hooks/set-state-in-effect": "off",
+      "react-hooks/incompatible-library": "off",
+      "react-hooks/immutability": "off",
+      "@typescript-eslint/no-empty-object-type": "off",
     },
   },
 ]);

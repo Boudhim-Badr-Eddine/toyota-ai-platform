@@ -1,6 +1,6 @@
 # 🚗 Toyota AI Experience Platform
 
-An interactive vehicle consultation and configuration platform for Toyota Morocco. Powered by Google Gemini AI, a real-time 3D configurator (React Three Fiber), and a Python FastAPI ML service for marketing predictions.
+An interactive vehicle consultation and configuration platform for Toyota Morocco. Powered by **Groq** (Llama) AI, a real-time 3D configurator (React Three Fiber), and a Python FastAPI ML service for marketing predictions.
 
 Built by **Badr Eddine Boudhim** (Backend + AI + Architecture) & **Taha** (Frontend + 3D).
 
@@ -8,7 +8,7 @@ Built by **Badr Eddine Boudhim** (Backend + AI + Architecture) & **Taha** (Front
 
 ## ✨ Features
 
-- **AI Chat Advisor** — Gemini 1.5 Flash streaming chatbot that guides users through 5 questions and recommends the perfect Toyota model
+- **AI Chat Advisor** — Groq-powered streaming chatbot that recommends Toyota models with Morocco-aware context
 - **3D Vehicle Configurator** — Interactive React Three Fiber canvas with color, wheel, and interior customization + screenshot export
 - **Vehicle Catalog** — 10 Toyota models with filters, lazy-loaded images, blur placeholders, and hover animations
 - **Lead & Reservation System** — Full CRUD with Prisma + Supabase PostgreSQL
@@ -28,9 +28,9 @@ Built by **Badr Eddine Boudhim** (Backend + AI + Architecture) & **Taha** (Front
 | Framework | Next.js 15 · App Router · TypeScript 5 (strict) |
 | Styling | Tailwind CSS v4 · Framer Motion v12 |
 | 3D | React Three Fiber v9 · @react-three/drei · Three.js |
-| AI | Google Gemini 1.5 Flash · Vercel AI SDK (`useChat`) |
+| AI | Groq (Llama 3) · custom `useChat` hook |
 | Auth | NextAuth.js v5 |
-| ORM | Prisma v7 |
+| ORM | Prisma v6 |
 | Database | Supabase (PostgreSQL) |
 | State | Zustand v5 |
 | Forms | React Hook Form + Zod |
@@ -48,9 +48,9 @@ Make sure you have these installed before starting:
 - **Python** `3.10+` — only needed for the ML service
 - **Git**
 
-You also need free accounts on:
-- [Supabase](https://supabase.com) — free tier is fine
-- [Google AI Studio](https://aistudio.google.com) — for the Gemini API key (free)
+You also need:
+- [Supabase](https://supabase.com) — PostgreSQL database (free tier)
+- [Groq Console](https://console.groq.com) — `GROQ_API_KEY` for AI chat, quiz, and road-trip features
 
 ---
 
@@ -84,7 +84,7 @@ Open `.env.local` and fill in every value. Here's where to get each one:
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase → **Settings** → **API** → **Project URL** |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase → **Settings** → **API** → **anon / public** key |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase → **Settings** → **API** → **service_role** key *(keep secret!)* |
-| `GEMINI_API_KEY` | [aistudio.google.com](https://aistudio.google.com) → **Get API Key** → Create key |
+| `GROQ_API_KEY` | [console.groq.com](https://console.groq.com) → API Keys |
 | `NEXTAUTH_SECRET` | Run `openssl rand -base64 32` in your terminal and paste the output |
 | `NEXTAUTH_URL` | `http://localhost:3000` |
 | `ML_SERVICE_URL` | `http://localhost:8000` (or skip if not running ML service) |

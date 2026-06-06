@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { SlidersHorizontal, Search, X } from "lucide-react";
 import { VehicleCard, cardVariants } from "./VehicleCard";
 import type { Vehicle } from "@/types";
 import { cn } from "@/lib/utils";
+import { useCompareStore } from "@/store/compareStore";
 
 // ─── Filter definitions ────────────────────────────────────────────────────────
 
@@ -75,9 +77,27 @@ interface VehicleGridProps {
 }
 
 export function VehicleGrid({ vehicles }: VehicleGridProps) {
-  const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
+  const searchParams = useSearchParams();
+  const categoryParam = searchParams.get("category") as FilterKey | null;
+  const urlFilter =
+    categoryParam && FILTERS.some((f) => f.key === categoryParam) ? categoryParam : null;
+
+  const [manualFilter, setManualFilter] = useState<FilterKey | null>(null);
+  const activeFilter = urlFilter ?? manualFilter ?? "all";
   const [sort, setSort] = useState<SortKey>("price-asc");
   const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    const compareParam = searchParams.get("compare");
+    if (compareParam) {
+      const ids = compareParam.split(",").filter(Boolean).slice(0, 3);
+      if (ids.length >= 2) {
+        useCompareStore.setState({ selectedIds: ids, drawerOpen: true });
+      }
+    }
+  }, [searchParams]);
+
+  const setActiveFilter = (key: FilterKey) => setManualFilter(key);
 
   // ── Derived list ────────────────────────────────────────────────────────────
   const displayed = useMemo(() => {

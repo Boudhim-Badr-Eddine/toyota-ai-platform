@@ -4,9 +4,11 @@ import { useState } from "react";
 import Image from "next/image";
 import { motion, type Variants } from "framer-motion";
 import Link from "next/link";
-import { Zap, Users, Fuel, ArrowRight, Settings } from "lucide-react";
+import { Zap, Users, Fuel, ArrowRight, Settings, Star } from "lucide-react";
 import type { Vehicle } from "@/types";
 import { formatPrice, formatPower, formatConsumption, cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { useCompareStore } from "@/store/compareStore";
 
 // ─── Category visual config ────────────────────────────────────────────────────
 
@@ -52,6 +54,8 @@ interface VehicleCardProps {
 
 export function VehicleCard({ vehicle, index = 0 }: VehicleCardProps) {
   const [imgError, setImgError] = useState(false);
+  const { selectedIds, toggle } = useCompareStore();
+  const isCompared = selectedIds.includes(vehicle.id);
 
   const catConfig = CATEGORY_CONFIG[vehicle.category] ?? DEFAULT_CATEGORY_CONFIG;
 
@@ -138,10 +142,15 @@ export function VehicleCard({ vehicle, index = 0 }: VehicleCardProps) {
         <h3 className="text-white font-black text-[19px] leading-snug mb-0.5 group-hover:text-toyota-red transition-colors duration-200">
           {vehicle.name}
         </h3>
-        <p className="text-toyota-muted/60 text-xs mb-3.5">
-          À partir de{" "}
-          <span className="text-white/80 font-semibold">{formatPrice(vehicle.priceFrom)}</span>
-        </p>
+        <p className="text-toyota-muted/60 text-xs mb-2 line-clamp-1">{vehicle.tagline}</p>
+        <div className="flex items-center gap-2 mb-3">
+          <div className="flex items-center gap-1 text-xs text-toyota-gold">
+            <Star className="h-3 w-3 fill-toyota-gold" />
+            {vehicle.rating}
+          </div>
+          {vehicle.isHybrid && <Badge variant="success">Hybride</Badge>}
+          {vehicle.isNew && <Badge variant="gold">Nouveau</Badge>}
+        </div>
 
         {/* Spec pills */}
         <div className="flex items-center gap-2 flex-wrap mb-4">
@@ -157,6 +166,16 @@ export function VehicleCard({ vehicle, index = 0 }: VehicleCardProps) {
 
         {/* Action buttons */}
         <div className="flex gap-2 mt-2">
+          <button
+            type="button"
+            onClick={(e) => { e.preventDefault(); toggle(vehicle.id); }}
+            className={cn(
+              "px-3 py-2.5 rounded-xl border text-xs font-semibold transition-all",
+              isCompared ? "border-toyota-red bg-toyota-red/10 text-white" : "border-white/10 text-toyota-muted hover:text-white"
+            )}
+          >
+            {isCompared ? "✓" : "Comparer"}
+          </button>
           <Link
             href={`/configurator/${vehicle.id}`}
             className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-toyota-red hover:bg-toyota-red/90 text-white text-sm font-bold rounded-xl transition-colors shadow-sm shadow-toyota-red/25"

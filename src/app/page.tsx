@@ -15,8 +15,7 @@ import {
   Star,
   Zap,
 } from "lucide-react";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
+import { AppShell } from "@/components/layout/AppShell";
 import { VEHICLES_DATA } from "@/data/vehicles";
 import { formatPrice, cn } from "@/lib/utils";
 
@@ -77,11 +76,29 @@ const FEATURED_TAGLINES: Record<string, string> = {
 
 // ─── Stats ────────────────────────────────────────────────────────────────────
 
+const SLIDE_STATS: Record<string, { label: string; value: string; sub: string }[]> = {
+  supra: [
+    { label: "3.0L TURBO", value: "Moteur", sub: "Moteur" },
+    { label: "4.3s", value: "0-100 KM/H", sub: "0-100 KM/H" },
+    { label: "500 NM", value: "Couple", sub: "Couple" },
+  ],
+  rav4: [
+    { label: "Hybride", value: "218 ch", sub: "Puissance" },
+    { label: "5.8L", value: "/100 km", sub: "Consommation" },
+    { label: "AWD", value: "4x4", sub: "Traction" },
+  ],
+  highlander: [
+    { label: "7 places", value: "SUV", sub: "Capacité" },
+    { label: "Hybride", value: "248 ch", sub: "Puissance" },
+    { label: "5★", value: "NCAP", sub: "Sécurité" },
+  ],
+};
+
 const STATS = [
   { value: "85 ans", label: "d’expérience", icon: Shield },
   { value: "2M+", label: "clients satisfaits", icon: Star },
   { value: "+50", label: "modèles historiques", icon: Zap },
-  { value: "100 %", label: "hybrides disponibles", icon: Leaf },
+  { value: "6", label: "modèles hybrides", icon: Leaf },
 ];
 
 // ─── Animation variants ───────────────────────────────────────────────────────
@@ -151,7 +168,7 @@ export default function HomePage() {
 
   return (
     <>
-      <Header />
+      <AppShell>
       <main className="flex flex-col">
 
         {/* ══ HERO SLIDER ══════════════════════════════════════════════════════ */}
@@ -205,17 +222,11 @@ export default function HomePage() {
                     {SLIDES[slide].sub}
                   </p>
                   <div className="flex flex-wrap gap-4">
-                    <Link
-                      href={SLIDES[slide].href}
-                      className="inline-flex items-center gap-2.5 px-9 py-4 bg-toyota-red text-white font-bold text-base rounded-full hover:bg-toyota-red/90 transition-all hover:gap-4 shadow-xl shadow-toyota-red/30"
-                    >
+                    <Link href={SLIDES[slide].href} className="toyota-btn-primary inline-flex items-center gap-2.5 px-8 py-3.5">
                       {SLIDES[slide].cta}
-                      <ArrowRight className="h-5 w-5" />
+                      <ArrowRight className="h-4 w-4" />
                     </Link>
-                    <Link
-                      href="/vehicles"
-                      className="inline-flex items-center gap-2 px-9 py-4 bg-white/10 backdrop-blur-sm border border-white/30 text-white font-semibold text-base rounded-full hover:bg-white/20 transition-all"
-                    >
+                    <Link href="/vehicles" className="toyota-btn-secondary inline-flex items-center gap-2 px-8 py-3.5">
                       Tous les modèles
                     </Link>
                   </div>
@@ -242,6 +253,20 @@ export default function HomePage() {
             <ChevronRight className="h-5 w-5 group-hover:translate-x-0.5 transition-transform" />
           </button>
 
+          {/* Hero performance stats — mockup bottom-left */}
+          <div className="absolute bottom-24 left-0 right-0 z-20 hidden md:block">
+            <div className="section-container">
+              <div className="flex gap-12">
+                {(SLIDE_STATS[SLIDES[slide].id] ?? SLIDE_STATS.supra).map((s) => (
+                  <div key={s.label}>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-toyota-red mb-1">{s.sub}</p>
+                    <p className="text-2xl lg:text-3xl font-black text-white">{s.label}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
           {/* Dot indicators */}
           <div className="absolute bottom-8 left-0 right-0 z-20 flex items-center justify-center gap-3">
             {SLIDES.map((_, i) => (
@@ -265,41 +290,29 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ══ CATEGORY PILLS ═══════════════════════════════════════════════════ */}
-        <section className="bg-white py-6 border-b border-gray-100 sticky top-[64px] lg:top-[80px] z-30 shadow-sm">
+        {/* ══ CATEGORY PILLS — dark strip ═══════════════════════════════════════ */}
+        <section className="bg-black py-5 border-b border-white/[0.06] sticky top-[72px] z-30">
           <div className="section-container">
             <div className="flex items-center gap-3 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
-              <span className="text-gray-400 text-xs font-semibold uppercase tracking-widest shrink-0 mr-1">
-                Gamme
-              </span>
+              <span className="text-white/30 text-[10px] font-bold uppercase tracking-widest shrink-0 mr-1">Gamme</span>
               {CATEGORY_PILLS.map(({ key, label, count }) => (
                 <Link
                   key={key}
                   href={key === "all" ? "/vehicles" : `/vehicles?category=${key}`}
                   onClick={() => setActiveCategory(key)}
                   className={cn(
-                    "shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all border",
+                    "shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-md text-xs font-bold uppercase tracking-wide transition-all border",
                     activeCategory === key
-                      ? "bg-toyota-red text-white border-toyota-red shadow-md shadow-toyota-red/20"
-                      : "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100 hover:border-gray-300"
+                      ? "bg-toyota-red text-white border-toyota-red"
+                      : "bg-[#121212] text-white/60 border-white/10 hover:border-white/25 hover:text-white"
                   )}
                 >
                   {label}
-                  <span className={cn(
-                    "text-[10px] font-bold px-1.5 py-0.5 rounded-full",
-                    activeCategory === key ? "bg-white/25 text-white" : "bg-gray-200 text-gray-500"
-                  )}>
+                  <span className={cn("text-[10px] px-1.5 py-0.5 rounded", activeCategory === key ? "bg-white/20" : "bg-white/10")}>
                     {count}
                   </span>
                 </Link>
               ))}
-              <Link
-                href="/vehicles"
-                className="shrink-0 ml-auto inline-flex items-center gap-1 text-sm text-gray-400 hover:text-toyota-red transition-colors font-medium whitespace-nowrap"
-              >
-                Tout voir
-                <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
             </div>
           </div>
         </section>
@@ -395,6 +408,51 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* ══ INGÉNIERIE DE PRÉCISION — bento grid ═══════════════════════════════ */}
+        <section className="bg-black py-20 lg:py-28 border-t border-white/[0.06]">
+          <div className="section-container">
+            <div className="mb-12">
+              <h2 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tight">Ingénierie de Précision</h2>
+              <div className="h-0.5 w-12 bg-toyota-red mt-4" />
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="toyota-panel lg:row-span-2 overflow-hidden group relative min-h-[280px]">
+                <Image src="/images/vehicles/supra.jpg" alt="Moteur Supra" fill className="object-cover opacity-60 group-hover:scale-105 transition-transform duration-700" />
+                <div className="absolute inset-0 bg-linear-to-t from-black via-black/50 to-transparent" />
+                <div className="absolute bottom-0 p-6">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-toyota-red">Performance</span>
+                  <h3 className="text-xl font-black text-white mt-2">Transmission Manuelle à 6 rapports</h3>
+                  <p className="text-white/50 text-sm mt-2 max-w-sm">Contrôle total, réponse instantanée — l&apos;ADN sport Toyota.</p>
+                </div>
+              </div>
+              <div className="toyota-panel p-6 flex flex-col justify-between min-h-[160px]">
+                <div className="w-10 h-10 rounded-md bg-toyota-red/15 flex items-center justify-center">
+                  <Zap className="h-5 w-5 text-toyota-red" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white">Aérodynamisme</h3>
+                  <p className="text-white/45 text-sm mt-2">Stabilité à haute vitesse et efficience énergétique optimisées.</p>
+                  <Link href="/vehicles/supra" className="inline-block mt-4 text-xs font-bold text-toyota-red uppercase tracking-wide hover:underline">En savoir plus →</Link>
+                </div>
+              </div>
+              <div className="toyota-panel p-6 min-h-[160px]">
+                <h3 className="text-lg font-bold text-white">Suspension Active</h3>
+                <p className="text-white/45 text-sm mt-2">Confort quotidien et tenue de route sportive en un seul châssis.</p>
+                <Link href="/vehicles" className="inline-block mt-4 text-xs font-bold text-toyota-red uppercase tracking-wide hover:underline">Détails techniques →</Link>
+              </div>
+              <div className="toyota-panel lg:col-span-2 overflow-hidden flex flex-col md:flex-row min-h-[180px]">
+                <div className="p-6 flex-1 flex flex-col justify-center">
+                  <h3 className="text-lg font-bold text-white">Cockpit Centré Conducteur</h3>
+                  <p className="text-white/45 text-sm mt-2">Ergonomie pensée pour le plaisir de conduire — chaque commande à portée de main.</p>
+                </div>
+                <div className="relative w-full md:w-72 min-h-[140px] bg-[#1a1a1a]">
+                  <Image src="/images/vehicles/camry.jpg" alt="Intérieur Toyota" fill className="object-cover opacity-80" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* ══ AI ADVISOR BANNER ════════════════════════════════════════════════ */}
         <section className="relative overflow-hidden py-20 lg:py-24" style={{ background: "linear-gradient(135deg, #0A0A0A 0%, #1a0305 50%, #0A0A0A 100%)" }}>
           {/* Animated red glow */}
@@ -411,7 +469,7 @@ export default function HomePage() {
               <div className="text-center lg:text-left max-w-xl">
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-toyota-red/10 border border-toyota-red/25 text-toyota-red text-xs font-bold uppercase tracking-widest mb-5">
                   <Sparkles className="h-3.5 w-3.5" />
-                  Propulsé par Gemini AI
+                  Propulsé par Groq AI
                 </div>
                 <h2 className="text-4xl md:text-5xl font-black text-white mb-4 leading-tight">
                   Notre IA vous trouve<br />
@@ -503,7 +561,7 @@ export default function HomePage() {
                   Profitez de nos offres saisonnières exclusives et de conditions de financement avantageuses sur toute la gamme.
                 </p>
                 <Link
-                  href="/vehicles"
+                  href="/offres"
                   className="inline-flex items-center gap-2.5 px-8 py-4 bg-toyota-red text-white font-bold rounded-full hover:bg-toyota-red/90 transition-all shadow-xl shadow-toyota-red/30 hover:gap-4"
                 >
                   Voir les offres
@@ -515,7 +573,7 @@ export default function HomePage() {
         </section>
 
       </main>
-      <Footer />
+      </AppShell>
     </>
   );
 }

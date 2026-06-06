@@ -10,54 +10,33 @@ import {
   Users,
   CalendarCheck,
   Car,
+  Settings,
   LogOut,
   Menu,
   X,
   ChevronRight,
-  Shield,
+  BarChart3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-// ─── Nav links ─────────────────────────────────────────────────────────────────
 
 type NavLink = {
   href: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
-  description: string;
   external?: boolean;
 };
 
-const NAV_LINKS: NavLink[] = [
-  {
-    href: "/dashboard",
-    label: "Dashboard",
-    icon: LayoutDashboard,
-    description: "Vue d'ensemble",
-  },
-  {
-    href: "/leads",
-    label: "Leads",
-    icon: Users,
-    description: "Demandes clients",
-  },
-  {
-    href: "/reservations",
-    label: "Réservations",
-    icon: CalendarCheck,
-    description: "Essais planifiés",
-  },
-  {
-    href: "/vehicles",
-    label: "Véhicules",
-    icon: Car,
-    description: "Catalogue modèles",
-    external: true,
-  },
+const MAIN_LINKS: NavLink[] = [
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/leads", label: "Leads", icon: Users },
+  { href: "/reservations", label: "Réservations", icon: CalendarCheck },
+  { href: "/analytics", label: "Analytics", icon: BarChart3 },
+  { href: "/vehicles", label: "Véhicules", icon: Car, external: true },
 ];
 
-
-// ─── Sidebar content (shared between desktop and mobile drawer) ────────────────
+const SYSTEM_LINKS: NavLink[] = [
+  { href: "/dashboard", label: "Paramètres", icon: Settings },
+];
 
 function SidebarContent({ onClose }: { onClose?: () => void }) {
   const pathname = usePathname();
@@ -67,152 +46,127 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
     await signOut({ callbackUrl: "/login" });
   };
 
-  return (
-    <div className="flex flex-col h-full">
-      {/* ── Logo ─────────────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between px-5 py-5 border-b border-white/5">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-toyota-red flex items-center justify-center shadow-lg shadow-toyota-red/30">
-            <span className="text-white font-black text-sm leading-none">T</span>
-          </div>
-          <div>
-            <p className="text-white font-black text-sm leading-tight tracking-tight">Toyota</p>
-            <p className="text-toyota-muted/50 text-[10px] leading-none">Admin Panel</p>
-          </div>
-        </div>
-        {onClose && (
-          <button
-            onClick={onClose}
-            className="w-7 h-7 rounded-full bg-white/5 flex items-center justify-center text-toyota-muted hover:text-white transition-colors"
-          >
-            <X className="h-3.5 w-3.5" />
-          </button>
+  const renderLink = ({ href, label, icon: Icon, external }: NavLink) => {
+    const isActive = !external && (pathname === href || pathname.startsWith(href + "/"));
+    return (
+      <Link
+        key={href + label}
+        href={href}
+        target={external ? "_blank" : undefined}
+        onClick={onClose}
+        className={cn(
+          "group relative flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-200",
+          isActive
+            ? "bg-white/[0.06] text-white"
+            : "text-white/45 hover:bg-white/[0.04] hover:text-white/80"
         )}
+      >
+        {isActive && (
+          <motion.div
+            layoutId="adminActiveBar"
+            className="absolute right-0 top-1/2 h-6 w-0.5 -translate-y-1/2 rounded-full bg-toyota-red"
+          />
+        )}
+        <Icon
+          className={cn(
+            "h-4 w-4 shrink-0",
+            isActive ? "text-toyota-red" : "text-white/35 group-hover:text-white/60"
+          )}
+        />
+        <span className="flex-1 text-xs font-bold uppercase tracking-[0.12em]">{label}</span>
+        {external && <ChevronRight className="h-3 w-3 text-white/20" />}
+      </Link>
+    );
+  };
+
+  return (
+    <div className="flex h-full flex-col">
+      <div className="border-b border-white/[0.06] px-5 py-6">
+        <Link href="/dashboard" className="block" onClick={onClose}>
+          <span className="text-lg font-black tracking-[0.35em] text-white">TOYOTA</span>
+        </Link>
       </div>
 
-      {/* ── Navigation ───────────────────────────────────────────────────── */}
-      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-        <p className="text-[9px] text-toyota-muted/30 font-semibold uppercase tracking-widest px-2 mb-2">
-          Navigation
-        </p>
-        {NAV_LINKS.map(({ href, label, icon: Icon, description, external }) => {
-          const isActive = external ? false : pathname === href || pathname.startsWith(href + "/");
-          return (
-            <Link
-              key={href}
-              href={href}
-              target={external ? "_blank" : undefined}
-              onClick={onClose}
-              className={cn(
-                "group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200",
-                isActive
-                  ? "bg-toyota-red/10 text-white"
-                  : "text-toyota-muted hover:text-white hover:bg-white/4"
-              )}
-            >
-              {/* Active left bar */}
-              {isActive && (
-                <motion.div
-                  layoutId="activeBar"
-                  className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-toyota-red rounded-full"
-                />
-              )}
+      <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-5">
+        <div className="space-y-0.5">{MAIN_LINKS.map(renderLink)}</div>
 
-              <Icon
-                className={cn(
-                  "h-4 w-4 shrink-0 transition-colors",
-                  isActive ? "text-toyota-red" : "text-toyota-muted/60 group-hover:text-white/70"
-                )}
-              />
-              <div className="flex-1 min-w-0">
-                <p className={cn("text-sm font-semibold leading-tight", isActive && "text-white")}>
-                  {label}
-                </p>
-                <p className="text-[10px] text-toyota-muted/40 leading-none mt-0.5">{description}</p>
-              </div>
-              {external && (
-                <ChevronRight className="h-3 w-3 text-toyota-muted/30 group-hover:text-toyota-muted/60 transition-colors" />
-              )}
-            </Link>
-          );
-        })}
+        <div>
+          <p className="mb-2 px-3 text-[9px] font-bold uppercase tracking-[0.2em] text-white/25">
+            Système
+          </p>
+          <div className="space-y-0.5">{SYSTEM_LINKS.map(renderLink)}</div>
+        </div>
       </nav>
 
-      {/* ── User info + logout ────────────────────────────────────────────── */}
-      <div className="px-3 py-4 border-t border-white/5 space-y-2">
-        {/* User card */}
+      <div className="border-t border-white/[0.06] p-3">
         {session?.user && (
-          <div className="flex items-center gap-2.5 px-3 py-2.5 bg-white/3 rounded-xl">
-            <div className="w-7 h-7 rounded-full bg-toyota-red/20 border border-toyota-red/20 flex items-center justify-center shrink-0">
-              <Shield className="h-3.5 w-3.5 text-toyota-red" />
+          <div className="mb-2 flex items-center gap-3 rounded-xl border border-white/[0.06] bg-[#141414] px-3 py-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-toyota-red/20 text-xs font-black text-toyota-red">
+              {(session.user.name ?? "A").charAt(0)}
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-white text-xs font-semibold truncate leading-tight">
-                {session.user.name ?? "Admin"}
-              </p>
-              <p className="text-toyota-muted/50 text-[10px] truncate leading-none mt-0.5">
-                {session.user.email}
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-xs font-bold text-white">{session.user.name ?? "Admin Toyota"}</p>
+              <p className="truncate text-[9px] font-bold uppercase tracking-wider text-white/35">
+                Manager Casablanca
               </p>
             </div>
           </div>
         )}
-
-        {/* Logout */}
         <button
+          type="button"
           onClick={handleSignOut}
-          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-toyota-muted hover:text-red-400 hover:bg-red-500/8 border border-transparent hover:border-red-500/15 transition-all duration-200"
+          className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-xs font-semibold text-white/40 transition-colors hover:bg-red-500/10 hover:text-red-400"
         >
           <LogOut className="h-4 w-4 shrink-0" />
-          <span className="text-sm font-medium">Déconnexion</span>
+          Déconnexion
         </button>
       </div>
     </div>
   );
 }
 
-// ─── AdminSidebar ──────────────────────────────────────────────────────────────
-
 export function AdminSidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
     <>
-      {/* ── Desktop sidebar (fixed left) ─────────────────────────────────── */}
-      <aside className="hidden lg:flex flex-col fixed left-0 top-0 bottom-0 w-60 bg-[#0A0A0A] border-r border-white/5 z-40">
+      <aside className="fixed bottom-0 left-0 top-0 z-40 hidden w-[240px] flex-col border-r border-white/[0.06] bg-[#0A0A0A] lg:flex">
         <SidebarContent />
       </aside>
 
-      {/* ── Mobile: hamburger trigger ─────────────────────────────────────── */}
       <button
+        type="button"
         onClick={() => setMobileOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-50 w-9 h-9 rounded-xl bg-[#111111] border border-white/8 flex items-center justify-center text-toyota-muted hover:text-white transition-colors shadow-lg"
+        className="fixed left-4 top-4 z-50 flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-[#111111] text-white/60 lg:hidden"
         aria-label="Ouvrir le menu"
       >
         <Menu className="h-4 w-4" />
       </button>
 
-      {/* ── Mobile drawer ─────────────────────────────────────────────────── */}
       <AnimatePresence>
         {mobileOpen && (
           <>
-            {/* Backdrop */}
             <motion.div
-              key="backdrop"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMobileOpen(false)}
-              className="lg:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+              className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm lg:hidden"
             />
-            {/* Drawer */}
             <motion.aside
-              key="drawer"
               initial={{ x: -260 }}
               animate={{ x: 0 }}
               exit={{ x: -260 }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="lg:hidden fixed left-0 top-0 bottom-0 w-60 bg-[#0A0A0A] border-r border-white/5 z-50"
+              className="fixed bottom-0 left-0 top-0 z-50 w-[240px] border-r border-white/[0.06] bg-[#0A0A0A] lg:hidden"
             >
+              <button
+                type="button"
+                onClick={() => setMobileOpen(false)}
+                className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/5 text-white/50"
+              >
+                <X className="h-4 w-4" />
+              </button>
               <SidebarContent onClose={() => setMobileOpen(false)} />
             </motion.aside>
           </>

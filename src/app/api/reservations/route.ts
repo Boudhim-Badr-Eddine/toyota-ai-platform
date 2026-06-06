@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
+import { notifyAdminReservationConfirmed } from "@/lib/adminNotifications";
+import { requireAdmin } from "@/lib/auth";
 
 // ─── Validation schemas ────────────────────────────────────────────────────────
 
@@ -87,7 +88,12 @@ export async function POST(request: NextRequest) {
       },
       include: {
         vehicle: true,
-        lead: true,
+        lead: {
+          include: {
+            vehicle: true,
+            dealership: true,
+          },
+        },
       },
     });
 
@@ -96,6 +102,10 @@ export async function POST(request: NextRequest) {
       where: { id: leadId },
       data: { status: "contacted" },
     });
+
+    void notifyAdminReservationConfirmed(reservation).catch((err) =>
+      console.error("[POST /api/reservations] Admin email failed:", err)
+    );
 
     return NextResponse.json({ data: reservation }, { status: 201 });
   } catch (error) {
@@ -108,7 +118,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await requireAdmin();
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -160,7 +170,7 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await requireAdmin();
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

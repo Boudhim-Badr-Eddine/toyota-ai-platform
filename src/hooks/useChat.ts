@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
+import { useCompareStore } from '@/store/compareStore'
+import { setChatHistoryForExport } from '@/lib/chatHistory'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -15,6 +17,13 @@ export interface RecommendationData {
   id: string
   configuratorUrl: string
   detailUrl: string
+  acheterUrl?: string
+}
+
+export interface CompareData {
+  ids: string[]
+  scenario?: string
+  summary?: string
 }
 
 // ─── Vehicle data ────────────────────────────────────────────────────────────
@@ -67,15 +76,32 @@ export function parseRecommendation(text: string): RecommendationData | null {
     id,
     configuratorUrl: conf ? conf[1] : `/configurator/${id}`,
     detailUrl: detail ? detail[1] : `/vehicles/${id}`,
+    acheterUrl: /"acheterUrl"\s*:\s*"([^"]+)"/.exec(text)?.[1] ?? `/acheter?vehicle=${id}`,
+  }
+}
+
+const COMPARE_RE = /\{"compare"\s*:\s*\{[^}]+\}\}/
+
+export function parseCompare(text: string): CompareData | null {
+  const m = COMPARE_RE.exec(text)
+  if (!m) return null
+  try {
+    const parsed = JSON.parse(m[0]) as { compare: CompareData }
+    return parsed.compare
+  } catch {
+    return null
   }
 }
 
 // ─── Welcome message ─────────────────────────────────────────────────────────
 
+/** Fixed timestamp so SSR and client hydration match. */
+const WELCOME_TS = 1_700_000_000_000
+
 export const WELCOME: ChatMessage = {
   id: 'welcome',
   role: 'assistant',
-  ts: Date.now(),
+  ts: WELCOME_TS,
   content: 'Bonjour ! Je suis **Toyota AI Advisor** 🚗 — votre conseiller automobile personnel. En quelques questions, je trouve votre Toyota idéale. Commençons : c\'est quoi votre prénom ?',
 }
 
@@ -92,6 +118,7 @@ export function useChat({ isOpen = false, onRecommendation }: UseChatOptions = {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [recommendation, setRecommendation] = useState<RecommendationData | null>(null)
+  const [compareData, setCompareData] = useState<CompareData | null>(null)
   const [chips, setChips] = useState<string[] | null>(null)
   const [unread, setUnread] = useState(0)
 
@@ -100,9 +127,21 @@ export function useChat({ isOpen = false, onRecommendation }: UseChatOptions = {
   useEffect(() => { isOpenRef.current = isOpen }, [isOpen])
   useEffect(() => { onRecRef.current = onRecommendation }, [onRecommendation])
 
+  useEffect(() => {
+    setChatHistoryForExport(
+      messages.map((m) => ({
+        id: m.id,
+        role: m.role,
+        content: m.content,
+        timestamp: new Date(m.ts).toISOString(),
+      }))
+    )
+  }, [messages])
+
   const clearChat = useCallback(() => {
-    setMessages([{ ...WELCOME, ts: Date.now() }])
+    setMessages([{ ...WELCOME, ts: WELCOME_TS }])
     setRecommendation(null)
+    setCompareData(null)
     setChips(null)
     setError(null)
     setInput('')
@@ -131,10 +170,14 @@ export function useChat({ isOpen = false, onRecommendation }: UseChatOptions = {
     const assistantTs = Date.now() + 1
 
     try {
+      const pageContext = {
+        pathname: typeof window !== 'undefined' ? window.location.pathname : '',
+        compareIds: useCompareStore.getState().selectedIds,
+      }
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: apiMessages }),
+        body: JSON.stringify({ messages: apiMessages, pageContext }),
       })
 
       if (!res.ok) {
@@ -153,7 +196,10 @@ export function useChat({ isOpen = false, onRecommendation }: UseChatOptions = {
         const { done, value } = await reader.read()
         if (done) break
         full += dec.decode(value, { stream: true })
-        const visible = full.replace(/\{[^}]*"recommendation"[^}]*\}/g, '').trim()
+        const visible = full
+          .replace(/\{[^}]*"recommendation"[^}]*\}/g, '')
+          .replace(/\{[^}]*"compare"[^}]*\}/g, '')
+          .trim()
         setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: visible } : m))
       }
 
@@ -161,6 +207,12 @@ export function useChat({ isOpen = false, onRecommendation }: UseChatOptions = {
       if (rec) {
         setRecommendation(rec)
         onRecRef.current?.(rec)
+      }
+
+      const cmp = parseCompare(full)
+      if (cmp && cmp.ids && cmp.ids.length >= 2) {
+        setCompareData(cmp)
+        useCompareStore.setState({ selectedIds: cmp.ids.slice(0, 3), drawerOpen: true })
       }
 
       // Increment unread if widget is closed
@@ -181,5 +233,5 @@ export function useChat({ isOpen = false, onRecommendation }: UseChatOptions = {
     }
   }, [input, isLoading, messages])
 
-  return { messages, input, setInput, isLoading, error, setError, recommendation, chips, unread, markRead, sendMessage, clearChat }
+  return { messages, input, setInput, isLoading, error, setError, recommendation, compareData, chips, unread, markRead, sendMessage, clearChat }
 }

@@ -7,53 +7,14 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight,
-  Zap,
-  Users,
-  Fuel,
-  Clock,
   Settings,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
 import { VEHICLES_DATA } from "@/data/vehicles";
-import { formatPrice, formatPower, formatConsumption, cn } from "@/lib/utils";
-
-// ─── Per-vehicle gallery images ─────────────────────────────────────────────────
-
-const GALLERY: Record<string, string[]> = {
-  supra: [
-    "https://images.unsplash.com/photo-1632245889029-e406faaa34cd?w=1400&q=85",
-    "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=1400&q=85",
-    "https://images.unsplash.com/photo-1568844293986-ca41e4f3c16b?w=1400&q=85",
-  ],
-  rav4: [
-    "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=1400&q=85",
-    "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=1400&q=85",
-    "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=1400&q=85",
-  ],
-  highlander: [
-    "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=1400&q=85",
-    "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=1400&q=85",
-    "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=1400&q=85",
-  ],
-};
-
-// ─── Taglines ───────────────────────────────────────────────────────────────────
-
-const TAGLINES: Record<string, string> = {
-  supra: "L’apogée du sport automobile japonais.",
-  rav4: "Le SUV familial le plus vendu au Maroc.",
-  yaris: "La citadine intelligente par excellence.",
-  corolla: "Fiabilité réinventée, technologie hybride.",
-  camry: "Silencieuse, spacieuse, luxueuse.",
-  landcruiser: "Indestructible. Luxueux. Légendaire.",
-  hilux: "Le pick-up le plus vendu au monde.",
-  prius: "Pionnier de la révolution hybride.",
-  chr: "Le SUV urbain le plus audacieux.",
-  highlander: "Grand espace, luxe raffiné, 7 places.",
-};
+import { getEnrichedVehicle } from "@/data/vehicleEnrichments";
+import { formatPrice, cn } from "@/lib/utils";
+import { VehicleSpecTabs } from "@/components/vehicle/VehicleSpecTabs";
 
 // ─── Page ───────────────────────────────────────────────────────────────────────
 
@@ -61,15 +22,14 @@ export default function VehicleDetailPage() {
   const params = useParams();
   const id = typeof params.id === "string" ? params.id : Array.isArray(params.id) ? params.id[0] : "";
 
-  const vehicle = VEHICLES_DATA.find((v) => v.id === id);
-  if (!vehicle) notFound();
+  const raw = VEHICLES_DATA.find((v) => v.id === id);
+  if (!raw) notFound();
+  const vehicle = getEnrichedVehicle(raw);
 
   const [activeColor, setActiveColor] = useState(0);
   const [galleryIdx, setGalleryIdx] = useState(0);
 
-  const images =
-    GALLERY[vehicle.id] ??
-    (vehicle.imageUrl ? [vehicle.imageUrl] : []);
+  const images = vehicle.images?.length ? vehicle.images : vehicle.imageUrl ? [vehicle.imageUrl] : [];
 
   const related = VEHICLES_DATA.filter(
     (v) => v.id !== vehicle.id && v.category === vehicle.category
@@ -84,9 +44,7 @@ export default function VehicleDetailPage() {
   const nextImg = () => setGalleryIdx((i) => (i + 1) % images.length);
 
   return (
-    <>
-      <Header />
-      <main className="bg-toyota-dark min-h-screen">
+    <div className="bg-toyota-dark min-h-screen pt-16">
         {/* ══ HERO IMAGE ═══════════════════════════════════════════════════════ */}
         <section className="relative h-[75vh] min-h-[520px] overflow-hidden bg-black">
           <AnimatePresence mode="sync">
@@ -198,45 +156,15 @@ export default function VehicleDetailPage() {
               {/* Tagline + Description */}
               <div>
                 <h2 className="text-white text-2xl font-bold mb-2">
-                  {TAGLINES[vehicle.id] ?? vehicle.category}
+                  {vehicle.tagline}
                 </h2>
                 <p className="text-toyota-muted leading-relaxed text-base">
                   {vehicle.description}
                 </p>
               </div>
 
-              {/* Specs grid */}
-              <div>
-                <h2 className="text-white text-2xl font-bold mb-6">
-                  Caractéristiques Techniques
-                </h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                  {[
-                    { Icon: Zap, label: "Puissance", value: formatPower(vehicle.specs.power) },
-                    {
-                      Icon: Fuel,
-                      label: "Consommation",
-                      value: formatConsumption(vehicle.specs.consumption),
-                    },
-                    { Icon: Users, label: "Places", value: vehicle.specs.seats + " places" },
-                    { Icon: Clock, label: "0–100 km/h", value: vehicle.specs.zeroto100 + " s" },
-                    { Icon: Settings, label: "Moteur", value: vehicle.specs.engine },
-                    { Icon: Zap, label: "Couple", value: vehicle.specs.torque + " Nm" },
-                  ].map(({ Icon, label, value }) => (
-                    <motion.div
-                      key={label}
-                      initial={{ opacity: 0, y: 12 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      className="p-5 rounded-xl bg-[#111111] border border-white/5 hover:border-white/10 transition-colors"
-                    >
-                      <Icon className="h-5 w-5 text-toyota-red mb-2.5" />
-                      <p className="text-toyota-muted text-xs mb-1">{label}</p>
-                      <p className="text-white font-bold text-sm">{value}</p>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
+              {/* Full spec tabs */}
+              <VehicleSpecTabs vehicle={vehicle} />
 
               {/* Color options */}
               <div>
@@ -313,7 +241,7 @@ export default function VehicleDetailPage() {
                       Configurer en 3D
                     </Link>
                     <Link
-                      href="/contact"
+                      href={`/acheter?vehicle=${vehicle.id}&type=test_drive`}
                       className="flex items-center justify-center gap-2 w-full py-3.5 border border-white/15 text-white font-semibold rounded-full hover:bg-white/5 transition-colors"
                     >
                       Réserver un Essai
@@ -392,9 +320,7 @@ export default function VehicleDetailPage() {
               </div>
             </div>
           )}
-        </div>
-      </main>
-      <Footer />
-    </>
+      </div>
+    </div>
   );
 }
