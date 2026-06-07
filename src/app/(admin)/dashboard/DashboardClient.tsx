@@ -367,10 +367,10 @@ export function DashboardClient({ data, dbError }: DashboardClientProps) {
                   </div>
                   <div className="h-1 overflow-hidden rounded-full bg-white/[0.06]">
                     <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${pct}%` }}
+                      initial={{ scaleX: 0 }}
+                      animate={{ scaleX: pct / 100 }}
                       transition={{ duration: 0.8, delay: i * 0.1 }}
-                      className="h-full rounded-full bg-linear-to-r from-toyota-red to-toyota-red/40"
+                      className="h-full w-full origin-left rounded-full bg-linear-to-r from-toyota-red to-toyota-red/40 will-change-transform"
                     />
                   </div>
                 </div>
@@ -387,7 +387,7 @@ export function DashboardClient({ data, dbError }: DashboardClientProps) {
 
           <button
             type="button"
-            className="absolute bottom-5 right-5 flex h-11 w-11 items-center justify-center rounded-full bg-toyota-red text-white shadow-lg shadow-toyota-red/40"
+            className="absolute bottom-5 right-5 flex h-11 w-11 items-center justify-center rounded-full bg-toyota-red hover:bg-[#c80918] text-white transition-colors"
             aria-label="Ajouter"
           >
             <Plus className="h-5 w-5" />

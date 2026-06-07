@@ -1,6 +1,7 @@
 "use client";
 
 import { SessionProvider } from "next-auth/react";
+import { MotionConfig } from "framer-motion";
 
 interface ProvidersProps {
   children: React.ReactNode;
@@ -11,5 +12,9 @@ interface ProvidersProps {
 // Add new providers here as the app grows.
 
 export function Providers({ children }: ProvidersProps) {
-  return <SessionProvider>{children}</SessionProvider>;
+  return (
+    <MotionConfig reducedMotion="user">
+      <SessionProvider>{children}</SessionProvider>
+    </MotionConfig>
+  );
 }

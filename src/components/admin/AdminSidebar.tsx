@@ -57,8 +57,8 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
         className={cn(
           "group relative flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-200",
           isActive
-            ? "bg-white/[0.06] text-white"
-            : "text-white/45 hover:bg-white/[0.04] hover:text-white/80"
+            ? "bg-toyota-red/10 text-white"
+            : "text-white/55 hover:bg-white/5 hover:text-white"
         )}
       >
         {isActive && (
@@ -70,11 +70,11 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
         <Icon
           className={cn(
             "h-4 w-4 shrink-0",
-            isActive ? "text-toyota-red" : "text-white/35 group-hover:text-white/60"
+            isActive ? "text-toyota-red" : "text-white/45 group-hover:text-white/70"
           )}
         />
         <span className="flex-1 text-xs font-bold uppercase tracking-[0.12em]">{label}</span>
-        {external && <ChevronRight className="h-3 w-3 text-white/20" />}
+        {external && <ChevronRight className="h-3 w-3 text-white/35" />}
       </Link>
     );
   };
@@ -91,7 +91,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
         <div className="space-y-0.5">{MAIN_LINKS.map(renderLink)}</div>
 
         <div>
-          <p className="mb-2 px-3 text-[9px] font-bold uppercase tracking-[0.2em] text-white/25">
+          <p className="mb-2 px-3 text-[9px] font-bold uppercase tracking-[0.2em] text-white/35">
             Système
           </p>
           <div className="space-y-0.5">{SYSTEM_LINKS.map(renderLink)}</div>
@@ -100,13 +100,13 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
 
       <div className="border-t border-white/[0.06] p-3">
         {session?.user && (
-          <div className="mb-2 flex items-center gap-3 rounded-xl border border-white/[0.06] bg-[#141414] px-3 py-3">
+          <div className="mb-2 flex items-center gap-3 rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 py-3">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-toyota-red/20 text-xs font-black text-toyota-red">
               {(session.user.name ?? "A").charAt(0)}
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate text-xs font-bold text-white">{session.user.name ?? "Admin Toyota"}</p>
-              <p className="truncate text-[9px] font-bold uppercase tracking-wider text-white/35">
+              <p className="truncate text-[9px] font-bold uppercase tracking-wider text-white/45">
                 Manager Casablanca
               </p>
             </div>
@@ -115,7 +115,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
         <button
           type="button"
           onClick={handleSignOut}
-          className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-xs font-semibold text-white/40 transition-colors hover:bg-red-500/10 hover:text-red-400"
+          className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-xs font-semibold text-white/45 transition-colors hover:bg-red-500/10 hover:text-red-400"
         >
           <LogOut className="h-4 w-4 shrink-0" />
           Déconnexion
@@ -130,14 +130,14 @@ export function AdminSidebar() {
 
   return (
     <>
-      <aside className="fixed bottom-0 left-0 top-0 z-40 hidden w-[240px] flex-col border-r border-white/[0.06] bg-[#0A0A0A] lg:flex">
+      <aside className="fixed bottom-0 left-0 top-0 z-40 hidden w-[240px] flex-col border-r border-white/[0.06] bg-[#0a0a0a] lg:flex">
         <SidebarContent />
       </aside>
 
       <button
         type="button"
         onClick={() => setMobileOpen(true)}
-        className="fixed left-4 top-4 z-50 flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-[#111111] text-white/60 lg:hidden"
+        className="fixed left-4 top-4 z-50 flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-[#111] text-white/60 lg:hidden"
         aria-label="Ouvrir le menu"
       >
         <Menu className="h-4 w-4" />
@@ -158,7 +158,7 @@ export function AdminSidebar() {
               animate={{ x: 0 }}
               exit={{ x: -260 }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="fixed bottom-0 left-0 top-0 z-50 w-[240px] border-r border-white/[0.06] bg-[#0A0A0A] lg:hidden"
+              className="fixed bottom-0 left-0 top-0 z-50 w-[240px] border-r border-white/[0.06] bg-[#0a0a0a] lg:hidden"
             >
               <button
                 type="button"

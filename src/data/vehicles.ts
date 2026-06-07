@@ -139,10 +139,10 @@ export const VEHICLES_DATA: Vehicle[] = [
     name: "Toyota Yaris",
     category: "Citadine",
     model3dPath: "/models/yaris.glb",
-    imageUrl: "/images/vehicles/yaris-hero-2.png",
+    imageUrl: "/images/vehicles/yaris-gr-hero.png",
     images: [
-      "/images/vehicles/yaris-hero-2.png",
-      "/images/vehicles/yaris-hero-2.png",
+      "/images/vehicles/yaris-gr-hero.png",
+      "/images/vehicles/yaris-gr-hero.png",
     ],
     tagline: "La ville à votre rythme, sans effort",
     highlights: [
@@ -771,10 +771,10 @@ export const VEHICLES_DATA: Vehicle[] = [
     name: "Toyota Kijang",
     category: "Monospace Familial",
     model3dPath: "/models/kijang/scene.gltf",
-    imageUrl: "/images/vehicles/kijang-hero-1.png",
+    imageUrl: "/images/vehicles/kijang-hero-2.png",
     images: [
-      "/images/vehicles/kijang-hero-1.png",
-      "/images/vehicles/rav4-hero-2.png",
+      "/images/vehicles/kijang-hero-2.png",
+      "/images/vehicles/kijang-hero-2.png",
     ],
     tagline: "L'espace familial repensé",
     highlights: [
@@ -828,9 +828,25 @@ export const VEHICLES_DATA: Vehicle[] = [
 
 // ─── Utility Functions ─────────────────────────────────────────────────────────
 
+const VEHICLE_DISPLAY_IMAGES: Record<string, string> = {
+  supra: "/images/vehicles/supra-hero-2.png",
+  rav4: "/images/vehicles/rav4-hero-2.png",
+  yaris: "/images/vehicles/yaris-gr-hero.png",
+  corolla: "/images/vehicles/corolla-hero-2.png",
+  camry: "/images/vehicles/camry-hero-2.png",
+  landcruiser: "/images/vehicles/landcruiser-hero-2.png",
+  hilux: "/images/vehicles/hilux-hero-2.png",
+  prius: "/images/vehicles/prius-hero-2.png",
+  chr: "/images/vehicles/chr-hero-2.png",
+  highlander: "/images/vehicles/highlander-hero-2.png",
+  granvia: "/images/vehicles/granvia-hero-2.png",
+  "corolla-2": "/images/vehicles/corolla-2-hero-2.png",
+  kijang: "/images/vehicles/kijang-hero-2.png",
+};
+
 /** Same image source used by vehicle cards and the homepage showcase slider. */
 export function getVehicleDisplayImage(vehicle: Vehicle): string {
-  return vehicle.imageUrl;
+  return VEHICLE_DISPLAY_IMAGES[vehicle.id] ?? vehicle.imageUrl;
 }
 
 export function getVehicleById(id: string): Vehicle | undefined {

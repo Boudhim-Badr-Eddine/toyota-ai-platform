@@ -7,6 +7,7 @@ import { Settings2, ChevronRight, Zap } from "lucide-react";
 import { VEHICLES_DATA } from "@/data/vehicles";
 import { formatPrice, cn } from "@/lib/utils";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { BorderDrawButton } from "@/components/ui/BorderDrawButton";
 
 const BADGE_COLORS: Record<string, string> = {
   Sport: "bg-black/80 text-white border-white/20",
@@ -45,7 +46,8 @@ function VehicleConfigCard({ vehicle, index }: { vehicle: typeof VEHICLES_DATA[0
               src={vehicle.imageUrl}
               alt={vehicle.name}
               fill
-              priority={index < 3}
+              priority={index === 0}
+              loading={index === 0 ? "eager" : "lazy"}
               className="object-cover group-hover:scale-[1.03] transition-transform duration-700"
               sizes="(max-width: 640px) 100vw, 33vw"
             />
@@ -97,13 +99,13 @@ export default function ConfiguratorIndexPage() {
 
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="mt-14 text-center">
           <p className="text-white/40 text-sm mb-4">Vous ne savez pas quel modèle choisir ?</p>
-          <button
+          <BorderDrawButton
             onClick={() => window.dispatchEvent(new CustomEvent("open-chat"))}
-            className="toyota-btn-secondary inline-flex items-center gap-2 px-8 py-3"
+            className="px-8 py-3"
           >
             <Settings2 className="h-4 w-4" />
             Demander à l&apos;IA Toyota
-          </button>
+          </BorderDrawButton>
         </motion.div>
       </div>
     </div>

@@ -7,6 +7,7 @@ import { signIn } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { BorderDrawButton } from "@/components/ui/BorderDrawButton";
 import {
   User,
   Mail,
@@ -147,10 +148,11 @@ export default function RegisterPage() {
               <input {...register("confirmPassword")} type="password" placeholder="••••••••" className={inputCls(!!errors.confirmPassword)} />
             </Field>
 
-            <button
+            <BorderDrawButton
               type="submit"
+              accent="red"
               disabled={isSubmitting}
-              className="toyota-btn-primary w-full flex items-center justify-center gap-2 py-3.5 mt-2 disabled:opacity-70"
+              className="w-full justify-center !py-3.5 mt-2"
             >
               {isSubmitting ? (
                 <>
@@ -160,7 +162,7 @@ export default function RegisterPage() {
               ) : (
                 "Créer mon compte"
               )}
-            </button>
+            </BorderDrawButton>
           </form>
 
           <p className="text-center text-sm text-toyota-muted mt-6">

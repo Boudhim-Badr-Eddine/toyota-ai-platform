@@ -42,9 +42,9 @@ export default function OffresPage() {
               type="button"
               onClick={() => setFilter(cat)}
               className={cn(
-                "px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wide border transition-colors",
+                "px-4 py-2 rounded-none text-xs font-bold uppercase tracking-wide border transition-colors",
                 filter === cat
-                  ? "bg-toyota-red border-toyota-red text-white"
+                  ? "border-[#EB0A1E]/40 bg-[#EB0A1E]/[0.08] text-[#EB0A1E]"
                   : "border-white/10 text-toyota-muted hover:text-white hover:border-white/20"
               )}
             >

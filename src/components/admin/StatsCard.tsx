@@ -5,7 +5,7 @@ import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const VARIANT_STYLES = {
-  leads: { accent: "text-emerald-400", bar: "from-emerald-500/60 to-emerald-500/10" },
+  leads: { accent: "text-emerald-600", bar: "from-emerald-500/60 to-emerald-500/10" },
   reservations: { accent: "text-white", bar: "from-blue-500/50 to-blue-500/10" },
   conversion: { accent: "text-white", bar: "from-toyota-gold/50 to-toyota-gold/10" },
   revenue: { accent: "text-white", bar: "from-toyota-red/50 to-toyota-red/10" },
@@ -46,7 +46,7 @@ export function StatsCard({
       className="toyota-kpi-card relative overflow-hidden"
     >
       <div className="flex items-start justify-between gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.04] text-white/50">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/50">
           {icon}
         </div>
         {change !== undefined && (
@@ -55,7 +55,7 @@ export function StatsCard({
               "flex items-center gap-0.5 text-[11px] font-bold",
               changePositive && "text-emerald-400",
               changeNegative && "text-red-400",
-              changeNeutral && "text-white/35"
+              changeNeutral && "text-white/45"
             )}
           >
             {changePositive && <TrendingUp className="h-3 w-3" />}
@@ -68,9 +68,9 @@ export function StatsCard({
       </div>
 
       <p className={cn("mt-4 text-3xl font-black tracking-tight", styles.accent)}>{value}</p>
-      <p className="mt-1 text-xs font-bold uppercase tracking-wider text-white/50">{title}</p>
+      <p className="mt-1 text-xs font-bold uppercase tracking-wider text-white/45">{title}</p>
       {changeLabel && (
-        <p className="mt-0.5 text-[10px] text-white/25">{changeLabel}</p>
+        <p className="mt-0.5 text-[10px] text-white/35">{changeLabel}</p>
       )}
 
       <div

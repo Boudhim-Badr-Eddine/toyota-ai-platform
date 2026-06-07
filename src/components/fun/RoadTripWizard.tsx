@@ -10,6 +10,7 @@ import { ItineraryDayCard, type ItineraryDay } from "./ItineraryDayCard";
 import { TripMap } from "./TripMap";
 import { CartePostaleCard } from "./CartePostaleCard";
 import { cn } from "@/lib/utils";
+import { BorderDrawButton } from "@/components/ui/BorderDrawButton";
 
 interface RoadTripResult {
   title: string;
@@ -137,10 +138,11 @@ export function RoadTripWizard() {
             </div>
           </div>
 
-          <button
+          <BorderDrawButton
             type="submit"
+            accent="red"
             disabled={loading}
-            className="mt-6 toyota-btn-primary w-full md:w-auto inline-flex items-center justify-center gap-2 disabled:opacity-50"
+            className="mt-6 w-full md:w-auto"
           >
             {loading ? (
               <>
@@ -153,7 +155,7 @@ export function RoadTripWizard() {
                 Créer mon road trip
               </>
             )}
-          </button>
+          </BorderDrawButton>
 
           {error && <p className="mt-4 text-sm text-red-400">{error}</p>}
         </form>
@@ -189,10 +191,10 @@ export function RoadTripWizard() {
                     type="button"
                     onClick={() => setActiveDay(d.day)}
                     className={cn(
-                      "rounded-full px-4 py-2 text-xs font-bold uppercase tracking-wide transition-all",
+                      "rounded-none px-4 py-2 text-xs font-bold uppercase tracking-wide transition-colors",
                       activeDay === d.day
-                        ? "bg-toyota-red text-white"
-                        : "bg-white/5 text-white/50 hover:bg-white/10"
+                        ? "border border-white/30 bg-white/[0.08] text-white"
+                        : "border border-transparent bg-white/5 text-white/50 hover:bg-white/10 hover:border-white/15"
                     )}
                   >
                     Jour {d.day}
@@ -221,18 +223,15 @@ export function RoadTripWizard() {
               />
 
               <div className="flex flex-wrap gap-4 justify-center pt-4">
-                <Link
+                <BorderDrawButton
                   href={`/configurator/${result.vehicleId}`}
-                  className="toyota-btn-primary inline-flex items-center gap-2"
+                  accent="red"
                 >
                   Configurer {result.vehicleName.replace("Toyota ", "")}
-                </Link>
-                <Link
-                  href={`/acheter?vehicle=${result.vehicleId}`}
-                  className="toyota-btn-secondary inline-flex items-center gap-2"
-                >
+                </BorderDrawButton>
+                <BorderDrawButton href={`/acheter?vehicle=${result.vehicleId}`}>
                   Réserver un essai
-                </Link>
+                </BorderDrawButton>
               </div>
             </motion.div>
           )}

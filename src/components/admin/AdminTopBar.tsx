@@ -44,7 +44,7 @@ export function AdminTopBar() {
   };
 
   return (
-    <header className="sticky top-0 z-30 border-b border-white/[0.06] bg-[#0A0A0A]/95 backdrop-blur-xl">
+    <header className="sticky top-0 z-30 border-b border-white/[0.06] bg-[#0a0a0a]/95 backdrop-blur-xl">
       <div className="flex flex-col gap-4 px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
         <div className="min-w-0">
           <h1 className="text-2xl font-black tracking-tight text-white lg:text-3xl">{meta.title}</h1>
@@ -58,13 +58,13 @@ export function AdminTopBar() {
           className="flex flex-1 items-center gap-3 lg:max-w-xl lg:mx-8"
         >
           <div className="relative flex-1">
-            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/30" />
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35" />
             <input
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Rechercher un lead…"
-              className="w-full rounded-full border border-white/10 bg-[#141414] py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-white/25 focus:border-toyota-red/40 focus:outline-none"
+              className="w-full rounded-full border border-white/10 bg-white/5 py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-white/35 focus:border-toyota-red/40 focus:outline-none"
             />
           </div>
         </form>
@@ -72,7 +72,7 @@ export function AdminTopBar() {
         <div className="flex items-center gap-3 shrink-0">
           <button
             type="button"
-            className="relative flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-[#141414] text-white/70 transition-colors hover:text-white"
+            className="relative flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/60 transition-colors hover:text-white"
             aria-label="Notifications"
           >
             <Bell className="h-4 w-4" />
@@ -82,7 +82,7 @@ export function AdminTopBar() {
             href="/leads"
             className={cn(
               "inline-flex items-center gap-2 rounded-md bg-toyota-red px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white",
-              "shadow-lg shadow-toyota-red/30 transition-all hover:bg-[#c00818]"
+              "transition-colors hover:bg-[#c00818]"
             )}
           >
             <Plus className="h-4 w-4" />

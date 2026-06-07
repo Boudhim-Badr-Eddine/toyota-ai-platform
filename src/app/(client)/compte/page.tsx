@@ -18,6 +18,7 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/admin/DataTable";
+import { BorderDrawButton } from "@/components/ui/BorderDrawButton";
 
 interface CustomerLead {
   id: string;
@@ -184,10 +185,10 @@ export default function AccountPage() {
 
           {isAdmin ? (
             <div className="p-6 border-t border-white/5 flex flex-wrap gap-3">
-              <Link href="/dashboard" className="toyota-btn-primary inline-flex items-center gap-2 text-sm py-2.5 px-5">
+              <BorderDrawButton href="/dashboard" accent="red" className="!px-5 !py-2.5 !text-sm">
                 <Shield className="h-4 w-4" />
                 Espace Admin
-              </Link>
+              </BorderDrawButton>
               <button
                 onClick={() => signOut({ callbackUrl: "/" })}
                 className="inline-flex items-center gap-2 text-sm py-2.5 px-5 rounded-xl border border-white/10 text-toyota-muted hover:text-white ml-auto"
@@ -255,10 +256,11 @@ export default function AccountPage() {
                     {profileMsg && <p className="text-emerald-400 text-sm">{profileMsg}</p>}
                     {profileError && <p className="text-red-400 text-sm">{profileError}</p>}
 
-                    <button
+                    <BorderDrawButton
                       type="submit"
+                      accent="red"
                       disabled={savingProfile}
-                      className="toyota-btn-primary inline-flex items-center gap-2 text-sm py-2.5 px-5 disabled:opacity-50"
+                      className="!px-5 !py-2.5 !text-sm"
                     >
                       {savingProfile ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -266,7 +268,7 @@ export default function AccountPage() {
                         <Save className="h-4 w-4" />
                       )}
                       Enregistrer
-                    </button>
+                    </BorderDrawButton>
                   </form>
                 </TabsContent>
 
@@ -352,14 +354,14 @@ export default function AccountPage() {
               </Tabs>
 
               <div className="mt-6 pt-6 border-t border-white/5 flex flex-wrap gap-3">
-                <Link href="/acheter" className="toyota-btn-primary inline-flex items-center gap-2 text-sm py-2.5 px-5">
+                <BorderDrawButton href="/acheter" accent="red" className="!px-5 !py-2.5 !text-sm">
                   <ShoppingBag className="h-4 w-4" />
                   Acheter / Essai
-                </Link>
-                <Link href="/configurator" className="toyota-btn-secondary inline-flex items-center gap-2 text-sm py-2.5 px-5">
+                </BorderDrawButton>
+                <BorderDrawButton href="/configurator" className="!px-5 !py-2.5 !text-sm">
                   <Settings2 className="h-4 w-4" />
                   Configurateur
-                </Link>
+                </BorderDrawButton>
                 <button
                   onClick={() => signOut({ callbackUrl: "/" })}
                   className="inline-flex items-center gap-2 text-sm py-2.5 px-5 rounded-xl border border-white/10 text-toyota-muted hover:text-white hover:border-white/20 transition-colors ml-auto"

@@ -6,6 +6,7 @@ import { MapPin, Navigation, Phone } from "lucide-react";
 import type { Dealership } from "@/data/dealerships";
 import { formatDistance, dealershipGoogleMaps } from "@/lib/geo";
 import { cn } from "@/lib/utils";
+import { BorderDrawButton } from "@/components/ui/BorderDrawButton";
 
 export type { DealerWithDistance } from "./DealerMapInner";
 
@@ -116,23 +117,20 @@ export function DealerCard({
         </p>
       </button>
       <div className="flex items-center gap-3 mt-3 px-4 pb-4">
-        <a
+        <BorderDrawButton
           href={dealershipGoogleMaps(dealer).place}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="toyota-btn-ghost inline-flex items-center gap-1 !px-3 !py-1.5"
+          className="!px-3 !py-1.5 !text-xs"
         >
           Google Maps
-        </a>
-        <a
+        </BorderDrawButton>
+        <BorderDrawButton
           href={dealershipGoogleMaps(dealer).directions()}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 rounded-md bg-toyota-red px-3 py-1.5 text-xs font-bold text-white hover:bg-[#c00818]"
+          accent="red"
+          className="!px-3 !py-2 !text-xs font-bold"
         >
           <Navigation className="h-3 w-3" />
           Itinéraire
-        </a>
+        </BorderDrawButton>
         {distanceKm != null && (
           <span className="text-xs font-bold text-toyota-red ml-auto">{formatDistance(distanceKm)}</span>
         )}

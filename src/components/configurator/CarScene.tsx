@@ -1,14 +1,12 @@
 "use client";
 
 import { Suspense, useRef, useEffect, useState, useCallback, Component, type ReactNode } from "react";
-import { Canvas, useThree } from "@react-three/fiber";
-import { OrbitControls, Environment, ContactShadows, Grid, Bounds, useBounds } from "@react-three/drei";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { OrbitControls, Environment, ContactShadows, Grid } from "@react-three/drei";
 import { CarModel, CarModelFallback } from "./CarModel";
 import { DEFAULT_VEHICLE_ANIM } from "@/lib/vehicleHinges";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import * as THREE from "three";
-
-const SCENE_BG = "#0A0A0A";
 
 function CanvasLoader() {
   return (
@@ -21,12 +19,14 @@ function CanvasLoader() {
 
 function LoadingOverlay() {
   return (
-    <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-[#0A0A0A]/90 backdrop-blur-sm z-10 pointer-events-none">
+    <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-toyota-dark/80 backdrop-blur-sm z-10 pointer-events-none">
       <div className="relative w-16 h-16">
         <div className="absolute inset-0 rounded-full border-2 border-white/5" />
         <div className="absolute inset-0 rounded-full border-2 border-t-toyota-red animate-spin" />
       </div>
-      <p className="text-toyota-muted text-sm font-medium tracking-wide">Chargement du modèle 3D…</p>
+      <p className="text-toyota-muted text-sm font-medium tracking-wide">
+        Chargement du modele 3D...
+      </p>
     </div>
   );
 }
@@ -56,24 +56,29 @@ class ModelErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryStat
   }
 }
 
-/** Keeps R3F drawing buffer in sync when the flex layout settles. */
-function CanvasResizeSync({ width, height }: { width: number; height: number }) {
-  const { gl, set, invalidate } = useThree();
-
-  useEffect(() => {
-    if (width <= 0 || height <= 0) return;
-    const dpr = Math.min(window.devicePixelRatio, 2);
-    gl.setPixelRatio(dpr);
-    gl.setSize(width, height, false);
-    set({ size: { width, height, top: 0, left: 0 } });
-    invalidate();
-  }, [gl, set, invalidate, width, height]);
-
-  return null;
-}
-
 interface AutoRotateProps {
   controlsRef: React.RefObject<OrbitControlsImpl | null>;
+}
+
+function DemandInvalidate({ controlsRef }: AutoRotateProps) {
+  const invalidate = useThree((s) => s.invalidate);
+
+  useEffect(() => {
+    const controls = controlsRef.current;
+    if (!controls) return;
+    const onChange = () => invalidate();
+    controls.addEventListener("change", onChange);
+    return () => controls.removeEventListener("change", onChange);
+  }, [controlsRef, invalidate]);
+
+  useFrame(() => {
+    const controls = controlsRef.current;
+    if (controls?.autoRotate || controls?.enableDamping) {
+      invalidate();
+    }
+  });
+
+  return null;
 }
 
 function AutoRotate({ controlsRef }: AutoRotateProps) {
@@ -94,6 +99,7 @@ function AutoRotate({ controlsRef }: AutoRotateProps) {
     };
 
     idleTimer.current = setTimeout(startRotate, 4000);
+
     window.addEventListener("mousemove", resetTimer, { passive: true });
     window.addEventListener("touchstart", resetTimer, { passive: true });
 
@@ -130,7 +136,8 @@ function CameraAnimator({ targetPos, targetFov, lookAt }: CameraAnimatorProps) {
       tRef.current = Math.min(tRef.current + 0.04, 1);
       const e = 1 - Math.pow(1 - tRef.current, 3);
       camera.position.lerpVectors(startPos.current, targetPos, e);
-      (camera as THREE.PerspectiveCamera).fov = startFov.current + (targetFov - startFov.current) * e;
+      (camera as THREE.PerspectiveCamera).fov =
+        startFov.current + (targetFov - startFov.current) * e;
       (camera as THREE.PerspectiveCamera).updateProjectionMatrix();
       camera.lookAt(lookAt);
       if (tRef.current < 1) animRef.current = requestAnimationFrame(step);
@@ -144,15 +151,13 @@ function CameraAnimator({ targetPos, targetFov, lookAt }: CameraAnimatorProps) {
   return null;
 }
 
-function CameraFitHelper({ trigger, active }: { trigger: number; active: boolean }) {
-  const bounds = useBounds();
-
-  useEffect(() => {
-    if (!active) return;
-    bounds.refresh().clip().fit();
-  }, [trigger, active, bounds]);
-
-  return null;
+export interface CarSceneControls {
+  toggleAllDoors: () => void;
+  toggleHood: () => void;
+  toggleViewMode: () => void;
+  viewMode: "exterior" | "interior";
+  showDoorControls: boolean;
+  isReady: boolean;
 }
 
 interface CarSceneProps {
@@ -162,6 +167,7 @@ interface CarSceneProps {
   vehicleName: string;
   selectedWheelId?: string;
   selectedInteriorId?: string;
+  onSceneControlsReady?: (controls: CarSceneControls | null) => void;
 }
 
 export function CarScene({
@@ -171,86 +177,25 @@ export function CarScene({
   vehicleName,
   selectedWheelId = "",
   selectedInteriorId = "",
+  onSceneControlsReady,
 }: CarSceneProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
   const controlsRef = useRef<OrbitControlsImpl | null>(null);
-  const [fitTrigger, setFitTrigger] = useState(0);
-  const [viewport, setViewport] = useState({ width: 0, height: 0 });
-  const [modelReady, setModelReady] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState<"exterior" | "interior">("exterior");
   const [barWidth, setBarWidth] = useState(0);
   const [barVisible, setBarVisible] = useState(false);
   const [vehicleAnim, setVehicleAnim] = useState(DEFAULT_VEHICLE_ANIM);
 
-  const INTERIOR_POS = new THREE.Vector3(0, 0.9, 0.35);
-  const LOOK_AT = new THREE.Vector3(0, 0.85, 0);
-  const INTERIOR_FOV = 68;
+  const EXTERIOR_POS = new THREE.Vector3(5, 2.5, 7);
+  const INTERIOR_POS = new THREE.Vector3(0, 0.8, 0.5);
+  const LOOK_AT = new THREE.Vector3(0, 0.5, 0);
+  const EXTERIOR_FOV = 40;
+  const INTERIOR_FOV = 75;
 
-  const [interiorCamera, setInteriorCamera] = useState(false);
-
-  const fitExteriorView = useCallback(() => {
-    const controls = controlsRef.current;
-    if (controls) {
-      controls.target.set(LOOK_AT.x, LOOK_AT.y, LOOK_AT.z);
-      controls.enablePan = false;
-      controls.minDistance = 1.4;
-      controls.maxDistance = 7;
-      controls.update();
-    }
-    setFitTrigger((n) => n + 1);
-  }, []);
-
-  const isLoading = !modelReady;
-
-  useEffect(() => {
-    if (modelReady && viewMode === "exterior") {
-      const t = setTimeout(() => fitExteriorView(), 80);
-      return () => clearTimeout(t);
-    }
-  }, [modelReady, vehicleId, viewMode, fitExteriorView]);
-
-  const measureViewport = useCallback(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const { width, height } = el.getBoundingClientRect();
-    const w = Math.round(width);
-    const h = Math.round(height);
-    if (w > 0 && h > 0) setViewport({ width: w, height: h });
-  }, []);
-
-  useEffect(() => {
-    measureViewport();
-    const el = containerRef.current;
-    if (!el) return;
-
-    const ro = new ResizeObserver(() => measureViewport());
-    ro.observe(el);
-    window.addEventListener("resize", measureViewport);
-
-    return () => {
-      ro.disconnect();
-      window.removeEventListener("resize", measureViewport);
-    };
-  }, [measureViewport]);
-
-  useEffect(() => {
-    setModelReady(false);
-    setVehicleAnim(DEFAULT_VEHICLE_ANIM);
-    const fallbackTimer = setTimeout(() => setModelReady(true), 12000);
-    return () => clearTimeout(fallbackTimer);
-  }, [vehicleId]);
-
-  useEffect(() => {
-    if (isLoading) {
-      setBarVisible(true);
-      setBarWidth(0);
-      const t = setTimeout(() => setBarWidth(78), 50);
-      return () => clearTimeout(t);
-    }
-    setBarWidth(100);
-    const t = setTimeout(() => setBarVisible(false), 700);
-    return () => clearTimeout(t);
-  }, [isLoading]);
+  const [cameraTarget, setCameraTarget] = useState({
+    pos: EXTERIOR_POS,
+    fov: EXTERIOR_FOV,
+  });
 
   const toggleAllDoors = useCallback(() => {
     setVehicleAnim((prev) => {
@@ -270,28 +215,61 @@ export function CarScene({
     const next = viewMode === "exterior" ? "interior" : "exterior";
     setViewMode(next);
     if (next === "interior") {
-      setInteriorCamera(true);
+      setCameraTarget({ pos: INTERIOR_POS, fov: INTERIOR_FOV });
       if (controlsRef.current) {
         controlsRef.current.enablePan = true;
-        controlsRef.current.minDistance = 0.15;
-        controlsRef.current.maxDistance = 2.5;
+        controlsRef.current.minDistance = 0.1;
+        controlsRef.current.maxDistance = 3;
         controlsRef.current.autoRotate = false;
       }
     } else {
-      setInteriorCamera(false);
+      setCameraTarget({ pos: EXTERIOR_POS, fov: EXTERIOR_FOV });
       if (controlsRef.current) {
         controlsRef.current.enablePan = false;
-        controlsRef.current.minDistance = 1.4;
-        controlsRef.current.maxDistance = 7;
+        controlsRef.current.minDistance = 2;
+        controlsRef.current.maxDistance = 10;
       }
-      setTimeout(() => fitExteriorView(), 50);
     }
-  }, [viewMode, fitExteriorView]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewMode]);
 
-  const canvasReady = viewport.width > 0 && viewport.height > 0;
+  useEffect(() => {
+    onSceneControlsReady?.({
+      toggleAllDoors,
+      toggleHood,
+      toggleViewMode: handleViewToggle,
+      viewMode,
+      showDoorControls: !isLoading && viewMode === "exterior",
+      isReady: !isLoading,
+    });
+    return () => onSceneControlsReady?.(null);
+  }, [onSceneControlsReady, toggleAllDoors, toggleHood, handleViewToggle, isLoading, viewMode]);
+
+  useEffect(() => {
+    setIsLoading(true);
+    setVehicleAnim(DEFAULT_VEHICLE_ANIM);
+  }, [vehicleId]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 600);
+    return () => clearTimeout(timer);
+  }, [vehicleId]);
+
+  useEffect(() => {
+    if (isLoading) {
+      setBarVisible(true);
+      setBarWidth(0);
+      const t = setTimeout(() => setBarWidth(78), 50);
+      return () => clearTimeout(t);
+    } else {
+      setBarWidth(100);
+      const t = setTimeout(() => setBarVisible(false), 700);
+      return () => clearTimeout(t);
+    }
+  }, [isLoading]);
 
   return (
-    <div ref={containerRef} className="absolute inset-0 bg-[#0A0A0A]">
+    <div className="relative w-full h-full bg-toyota-dark">
       {isLoading && <LoadingOverlay />}
 
       {barVisible && (
@@ -306,46 +284,27 @@ export function CarScene({
         </div>
       )}
 
-      <button
-        type="button"
-        onClick={handleViewToggle}
-        className="absolute top-3 right-3 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/15 bg-black/50 backdrop-blur-sm hover:bg-white/10 hover:border-white/30 text-white/70 hover:text-white text-xs font-medium transition-all"
-      >
-        {viewMode === "exterior" ? (
-          <>
-            <span>&#8594;</span>
-            <span>Vue Interieure</span>
-          </>
-        ) : (
-          <>
-            <span>&#8592;</span>
-            <span>Vue Exterieure</span>
-          </>
-        )}
-      </button>
-
-      {!isLoading && viewMode === "exterior" && (
-        <div className="absolute top-3 left-3 z-20 flex flex-col gap-2">
-          <button
-            type="button"
-            onClick={toggleAllDoors}
-            className="px-3 py-1.5 rounded-lg border border-white/15 bg-black/50 backdrop-blur-sm hover:bg-white/10 hover:border-white/30 text-white/70 hover:text-white text-xs font-medium transition-all"
-          >
-            Portes
-          </button>
-          <button
-            type="button"
-            onClick={toggleHood}
-            className="px-3 py-1.5 rounded-lg border border-white/15 bg-black/50 backdrop-blur-sm hover:bg-white/10 hover:border-white/30 text-white/70 hover:text-white text-xs font-medium transition-all"
-          >
-            Capot
-          </button>
-        </div>
+      {!onSceneControlsReady && (
+        <button
+          onClick={handleViewToggle}
+          className="absolute top-3 right-3 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/15 bg-black/50 backdrop-blur-sm hover:bg-white/10 hover:border-white/30 text-white/70 hover:text-white text-xs font-medium transition-all"
+        >
+          {viewMode === "exterior" ? (
+            <>
+              <span>&#8594;</span>
+              <span>Vue Interieure</span>
+            </>
+          ) : (
+            <>
+              <span>&#8592;</span>
+              <span>Vue Exterieure</span>
+            </>
+          )}
+        </button>
       )}
 
       <button
-        type="button"
-        onClick={() => fitExteriorView()}
+        onClick={() => controlsRef.current?.reset()}
         title="Reinitialiser la camera"
         className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 w-9 h-9 flex items-center justify-center rounded-full bg-black/50 border border-white/15 backdrop-blur-sm hover:bg-white/10 hover:border-white/30 text-white/55 hover:text-white transition-all text-lg font-bold select-none"
       >
@@ -361,109 +320,97 @@ export function CarScene({
         />
       )}
 
-      {canvasReady && (
-        <Canvas
-          shadows
-          dpr={[1, 2]}
-          frameloop="always"
-          resize={{ scroll: false, debounce: { scroll: 0, resize: 0 } }}
-          camera={{ position: [3.8, 1.6, 4.6], fov: 36, near: 0.05, far: 200 }}
-          gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}
-          style={{ width: viewport.width, height: viewport.height, display: "block", background: SCENE_BG }}
-          onCreated={({ gl }) => {
-            gl.setClearColor(SCENE_BG, 1);
-          }}
-        >
-          <CanvasResizeSync width={viewport.width} height={viewport.height} />
-          <color attach="background" args={[SCENE_BG]} />
+      <Canvas
+        shadows
+        frameloop="demand"
+        performance={{ min: 0.5 }}
+        camera={{ position: [10, 4, 12], fov: 40, near: 0.1, far: 100 }}
+        gl={{ antialias: true, alpha: false }}
+        style={{ background: "transparent" }}
+        onCreated={({ invalidate }) => {
+          setIsLoading(false);
+          invalidate();
+        }}
+      >
+        <CameraAnimator
+          targetPos={cameraTarget.pos}
+          targetFov={cameraTarget.fov}
+          lookAt={LOOK_AT}
+        />
+        <ambientLight intensity={0.4} />
+        <directionalLight
+          position={[10, 10, 5]}
+          intensity={1.2}
+          castShadow
+          shadow-mapSize={[2048, 2048]}
+          shadow-camera-far={50}
+          shadow-camera-left={-10}
+          shadow-camera-right={10}
+          shadow-camera-top={10}
+          shadow-camera-bottom={-10}
+        />
+        <directionalLight position={[-5, 5, -5]} intensity={0.4} color="#4488ff" />
+        <spotLight position={[0, 10, 0]} intensity={0.5} angle={0.3} />
 
-          {interiorCamera && (
-            <CameraAnimator
-              targetPos={INTERIOR_POS}
-              targetFov={INTERIOR_FOV}
-              lookAt={LOOK_AT}
+        <Environment preset="city" background={false} />
+
+        <Suspense key={vehicleId} fallback={<CanvasLoader />}>
+          <ModelErrorBoundary
+            fallback={
+              <CarModelFallback colorHex={colorHex} vehicleName={vehicleName} />
+            }
+          >
+            <CarModel
+              key={vehicleId}
+              vehicleId={vehicleId}
+              colorHex={colorHex}
+              colorType={colorType}
+              vehicleName={vehicleName}
+              selectedWheelId={selectedWheelId}
+              selectedInteriorId={selectedInteriorId}
+              vehicleAnim={vehicleAnim}
             />
-          )}
+          </ModelErrorBoundary>
+        </Suspense>
 
-          <ambientLight intensity={0.55} />
-          <directionalLight
-            position={[10, 10, 5]}
-            intensity={1.2}
-            castShadow
-            shadow-mapSize={[2048, 2048]}
-            shadow-camera-far={50}
-            shadow-camera-left={-10}
-            shadow-camera-right={10}
-            shadow-camera-top={10}
-            shadow-camera-bottom={-10}
-          />
-          <directionalLight position={[-5, 5, -5]} intensity={0.45} color="#4488ff" />
-          <spotLight position={[0, 10, 0]} intensity={0.5} angle={0.3} />
+        <Grid
+          position={[0, -0.01, 0]}
+          args={[20, 20]}
+          cellSize={0.6}
+          cellThickness={0.5}
+          cellColor="#2a2a2a"
+          sectionSize={3}
+          sectionThickness={1}
+          sectionColor="#333333"
+          fadeDistance={28}
+          fadeStrength={1.5}
+          infiniteGrid
+        />
 
-          <Suspense fallback={null}>
-            <Environment preset="city" background={false} />
-          </Suspense>
+        <ContactShadows
+          position={[0, -0.01, 0]}
+          opacity={0.6}
+          scale={15}
+          blur={2.5}
+          far={4}
+          color="#000000"
+        />
 
-          <Suspense key={vehicleId} fallback={<CanvasLoader />}>
-            <ModelErrorBoundary
-              fallback={<CarModelFallback colorHex={colorHex} vehicleName={vehicleName} />}
-            >
-              <Bounds fit clip observe margin={1.05} maxDuration={0.45}>
-                <CarModel
-                  key={vehicleId}
-                  vehicleId={vehicleId}
-                  colorHex={colorHex}
-                  colorType={colorType}
-                  vehicleName={vehicleName}
-                  selectedWheelId={selectedWheelId}
-                  selectedInteriorId={selectedInteriorId}
-                  vehicleAnim={vehicleAnim}
-                  onLoaded={() => setModelReady(true)}
-                />
-                <CameraFitHelper trigger={fitTrigger} active={viewMode === "exterior"} />
-              </Bounds>
-            </ModelErrorBoundary>
-          </Suspense>
+        <OrbitControls
+          ref={controlsRef}
+          enablePan={false}
+          minDistance={2}
+          maxDistance={10}
+          minPolarAngle={0.2}
+          maxPolarAngle={Math.PI / 2}
+          autoRotateSpeed={0.8}
+          enableDamping
+          dampingFactor={0.08}
+        />
 
-          <Grid
-            position={[0, -0.01, 0]}
-            args={[20, 20]}
-            cellSize={0.6}
-            cellThickness={0.5}
-            cellColor="#2a2a2a"
-            sectionSize={3}
-            sectionThickness={1}
-            sectionColor="#333333"
-            fadeDistance={28}
-            fadeStrength={1.5}
-            infiniteGrid
-          />
-
-          <ContactShadows
-            position={[0, -0.01, 0]}
-            opacity={0.55}
-            scale={10}
-            blur={2.2}
-            far={3.5}
-            color="#000000"
-          />
-
-          <OrbitControls
-            ref={controlsRef}
-            target={LOOK_AT}
-            enablePan={false}
-            minDistance={1.4}
-            maxDistance={7}
-            minPolarAngle={0.25}
-            maxPolarAngle={Math.PI / 2.05}
-            autoRotateSpeed={0.65}
-            enableDamping
-            dampingFactor={0.08}
-          />
-
-          <AutoRotate controlsRef={controlsRef} />
-        </Canvas>
-      )}
+        <DemandInvalidate controlsRef={controlsRef} />
+        <AutoRotate controlsRef={controlsRef} />
+      </Canvas>
     </div>
   );
 }

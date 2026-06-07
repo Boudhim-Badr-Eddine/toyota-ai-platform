@@ -106,6 +106,6 @@ export const OFFERS_DATA: Offer[] = [
     highlight: "TAEG 5,9% fixe",
     ctaLabel: "Calculer ma mensualité",
     ctaHref: "#finance",
-    imageUrl: "/images/vehicles/yaris.jpg",
+    imageUrl: "/images/vehicles/yaris-gr-hero.png",
   },
 ];

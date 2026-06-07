@@ -9,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Eye, EyeOff, Lock, Mail, Loader2, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { BorderDrawButton } from "@/components/ui/BorderDrawButton";
 
 const LoginSchema = z.object({
   email: z.string().email("Adresse email invalide"),
@@ -136,10 +137,11 @@ export default function ClientLoginPage() {
               {errors.password && <p className="text-xs text-red-400">{errors.password.message}</p>}
             </div>
 
-            <button
+            <BorderDrawButton
               type="submit"
+              accent="red"
               disabled={isSubmitting}
-              className="toyota-btn-primary w-full flex items-center justify-center gap-2 py-3 text-sm disabled:opacity-70"
+              className="w-full justify-center !py-3 !text-sm"
             >
               {isSubmitting ? (
                 <>
@@ -149,7 +151,7 @@ export default function ClientLoginPage() {
               ) : (
                 "Se connecter"
               )}
-            </button>
+            </BorderDrawButton>
           </form>
 
           <p className="text-center text-sm text-toyota-muted mt-6">

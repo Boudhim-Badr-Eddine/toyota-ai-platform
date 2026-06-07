@@ -3,13 +3,12 @@
 import Link from "next/link";
 import { Globe, Share2 } from "lucide-react";
 import { toast } from "sonner";
-import { ContactFooterLinks } from "@/components/layout/ContactInfo";
 
 const FOOTER_LINKS = [
   { href: "/terms", label: "Mentions légales" },
   { href: "/privacy", label: "Politique de confidentialité" },
   { href: "/privacy", label: "Cookies" },
-  { href: "/acheter", label: "Acheter / RDV" },
+  { href: "/contact", label: "Contact" },
 ];
 
 export function Footer() {
@@ -36,8 +35,7 @@ export function Footer() {
             <Link href="/" className="font-black text-lg tracking-tight text-white">
               TOYOTA
             </Link>
-            <ContactFooterLinks />
-            <p className="text-[11px] text-white/35 uppercase tracking-wider mt-2" suppressHydrationWarning>
+            <p className="text-[11px] text-white/40 uppercase tracking-wider" suppressHydrationWarning>
               © 2026 Toyota Maroc. Performance légendaire.
             </p>
           </div>

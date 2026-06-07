@@ -4,6 +4,7 @@ import { useRef, useCallback } from "react";
 import Image from "next/image";
 import { Download, Share2, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { BorderDrawButton } from "@/components/ui/BorderDrawButton";
 
 export interface PermisLegendeProps {
   personaTitle: string;
@@ -208,18 +209,14 @@ export function PermisLegendeCard({
       </div>
 
       <div className="flex flex-wrap gap-3">
-        <button type="button" onClick={handleDownload} className="toyota-btn-primary inline-flex items-center gap-2 !py-2.5 !px-5 !text-xs">
+        <BorderDrawButton accent="red" onClick={handleDownload} className="!py-2.5 !px-5 !text-xs">
           <Download className="h-4 w-4" />
           Télécharger
-        </button>
-        <button
-          type="button"
-          onClick={handleWhatsAppShare}
-          className="toyota-btn-secondary inline-flex items-center gap-2 !py-2.5 !px-5 !text-xs"
-        >
+        </BorderDrawButton>
+        <BorderDrawButton onClick={handleWhatsAppShare} className="!py-2.5 !px-5 !text-xs">
           <Share2 className="h-4 w-4" />
           Partager WhatsApp
-        </button>
+        </BorderDrawButton>
       </div>
     </div>
   );

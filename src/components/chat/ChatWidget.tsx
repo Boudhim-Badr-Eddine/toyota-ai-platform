@@ -9,6 +9,9 @@ import type { ReactNode } from "react";
 import { useChat, VEHICLE_DATA } from "@/hooks/useChat";
 import type { ChatMessage, RecommendationData, CompareData } from "@/hooks/useChat";
 import { useCompareStore } from "@/store/compareStore";
+import { cn } from "@/lib/utils";
+import { MOTION_GPU_CLASS } from "@/lib/motion";
+import { BorderDrawButton } from "@/components/ui/BorderDrawButton";
 
 const PANEL_W = 390;
 const PANEL_H = 600;
@@ -17,6 +20,20 @@ const STORAGE_KEY = "toyota-chat-position";
 interface PanelPos {
   x: number;
   y: number;
+}
+
+interface PanelDims {
+  w: number;
+  h: number;
+}
+
+function getPanelDims(): PanelDims {
+  if (typeof window === "undefined") return { w: PANEL_W, h: PANEL_H };
+  const narrow = window.innerWidth < 640;
+  return {
+    w: narrow ? Math.min(PANEL_W, window.innerWidth - 16) : PANEL_W,
+    h: narrow ? Math.min(480, window.innerHeight - 100) : PANEL_H,
+  };
 }
 
 function loadSavedPosition(): PanelPos | null {
@@ -32,18 +49,18 @@ function loadSavedPosition(): PanelPos | null {
   return null;
 }
 
-function defaultPosition(): PanelPos {
+function defaultPosition(dims: PanelDims): PanelPos {
   if (typeof window === "undefined") return { x: 24, y: 24 };
   return {
-    x: window.innerWidth - PANEL_W - 24,
-    y: window.innerHeight - PANEL_H - 96,
+    x: window.innerWidth - dims.w - 16,
+    y: window.innerHeight - dims.h - 88,
   };
 }
 
-function clampPosition(x: number, y: number): PanelPos {
+function clampPosition(x: number, y: number, dims: PanelDims): PanelPos {
   if (typeof window === "undefined") return { x, y };
-  const maxX = Math.max(8, window.innerWidth - PANEL_W - 8);
-  const maxY = Math.max(8, window.innerHeight - PANEL_H - 8);
+  const maxX = Math.max(8, window.innerWidth - dims.w - 8);
+  const maxY = Math.max(8, window.innerHeight - dims.h - 8);
   return {
     x: Math.min(Math.max(8, x), maxX),
     y: Math.min(Math.max(8, y), maxY),
@@ -138,14 +155,14 @@ function groupMessages(msgs: ChatMessage[]): MsgGroup[] {
 function TypingIndicator() {
   return (
     <div className="flex gap-3 items-end">
-      <div className="w-8 h-8 shrink-0 rounded-full bg-[#1a1a1a] ring-1 ring-white/10 flex items-center justify-center">
+      <div className="w-8 h-8 shrink-0 rounded-full bg-[#0a0a0a] ring-1 ring-[#EB0A1E]/25 flex items-center justify-center">
         <span className="text-toyota-red font-black text-[11px]">T</span>
       </div>
       <div className="chat-bubble-ai px-4 py-3 flex gap-1.5 items-center">
         {[0, 1, 2].map((i) => (
           <span
             key={i}
-            className="block w-1.5 h-1.5 rounded-full bg-white/40"
+            className="block w-1.5 h-1.5 rounded-full bg-[#EB0A1E]/70"
             style={{ animation: `bounce 1.1s ease-in-out ${i * 0.18}s infinite` }}
           />
         ))}
@@ -227,9 +244,9 @@ function RecommendationCard({
     <motion.div
       initial={{ opacity: 0, y: 14, scale: 0.96 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      className="rounded-2xl overflow-hidden border border-toyota-red/30 mt-1 shadow-xl shadow-toyota-red/10 bg-gradient-to-br from-[#1a1a1a] to-[#0d0d0d]"
+      className="rounded-2xl overflow-hidden border border-toyota-red/30 mt-1 shadow-xl bg-gradient-to-br from-[#141414] to-[#0a0a0a]"
     >
-      <div className="flex items-center gap-2 px-3 pt-3 pb-2 border-b border-white/5">
+      <div className="flex items-center gap-2 px-3 pt-3 pb-2 border-b border-white/[0.08]">
         <Sparkles size={12} className="text-toyota-gold" />
         <span className="text-[10px] text-toyota-gold font-bold uppercase tracking-[0.12em]">
           Votre match parfait
@@ -237,28 +254,36 @@ function RecommendationCard({
       </div>
       <div className="flex gap-3 px-3 py-3">
         <div className="relative w-[88px] h-[60px] rounded-xl overflow-hidden shrink-0 ring-1 ring-white/10">
-          <Image src={vd.imageUrl} alt={vd.name} fill className="object-cover" sizes="88px" />
+          <Image
+            src={vd.imageUrl}
+            alt={vd.name}
+            fill
+            className="object-cover"
+            sizes="88px"
+            loading="lazy"
+          />
         </div>
         <div className="flex-1 min-w-0 flex flex-col justify-center">
           <p className="text-white font-bold text-[13px] leading-tight">{vd.name}</p>
-          <p className="text-white/45 text-[11px] mt-0.5">{vd.subtitle}</p>
+          <p className="text-white/50 text-[11px] mt-0.5">{vd.subtitle}</p>
           <p className="text-toyota-red font-bold text-[13px] mt-1.5">{vd.price}</p>
         </div>
       </div>
       <div className="flex flex-col gap-2 px-3 pb-3">
         <div className="flex gap-2">
-          <button
+          <BorderDrawButton
+            accent="red"
             onClick={() => onNavigate(data.configuratorUrl)}
-            className="flex-1 py-2.5 rounded-xl bg-toyota-red hover:bg-[#c50016] text-white text-[11px] font-bold transition-all"
+            className="flex-1 !px-2 !py-2.5 !text-[11px] justify-center"
           >
             Configurer
-          </button>
-          <button
+          </BorderDrawButton>
+          <BorderDrawButton
             onClick={() => onNavigate(data.detailUrl)}
-            className="flex-1 py-2.5 rounded-xl border border-white/10 text-white/80 text-[11px] font-semibold hover:bg-white/5"
+            className="flex-1 !px-2 !py-2.5 !text-[11px] justify-center"
           >
             Détails
-          </button>
+          </BorderDrawButton>
         </div>
         <button
           onClick={() => onNavigate(data.acheterUrl ?? `/acheter?vehicle=${data.id}`)}
@@ -276,7 +301,7 @@ function MessageGroupView({ group }: { group: MsgGroup }) {
   return (
     <div className={`flex gap-3 ${isUser ? "flex-row-reverse" : "flex-row"} items-end`}>
       {!isUser ? (
-        <div className="w-8 h-8 shrink-0 rounded-full bg-[#161616] ring-1 ring-white/[0.08] flex items-center justify-center">
+        <div className="w-8 h-8 shrink-0 rounded-full bg-[#0a0a0a] ring-1 ring-[#EB0A1E]/25 flex items-center justify-center">
           <span className="text-toyota-red font-black text-[11px]">T</span>
         </div>
       ) : (
@@ -290,10 +315,10 @@ function MessageGroupView({ group }: { group: MsgGroup }) {
               isUser ? "chat-bubble-user" : "chat-bubble-ai"
             }`}
           >
-            {msg.content ? renderMsg(msg.content) : <span className="text-white/25 italic">...</span>}
+            {msg.content ? renderMsg(msg.content) : <span className="text-white/40 italic">...</span>}
           </div>
         ))}
-        <span className="text-[10px] text-white/20 px-1 tracking-wide" suppressHydrationWarning>
+        <span className="text-[10px] text-white/35 px-1 tracking-wide" suppressHydrationWarning>
           {fmt(group.messages[group.messages.length - 1].ts)}
         </span>
       </div>
@@ -305,6 +330,7 @@ export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
   const [pos, setPos] = useState<PanelPos | null>(null);
+  const [panelDims, setPanelDims] = useState<PanelDims>({ w: PANEL_W, h: PANEL_H });
   const [isDragging, setIsDragging] = useState(false);
   const router = useRouter();
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -317,12 +343,17 @@ export default function ChatWidget() {
     useChat({ isOpen });
 
   useEffect(() => {
-    setPos(loadSavedPosition() ?? defaultPosition());
+    const dims = getPanelDims();
+    setPanelDims(dims);
+    const saved = loadSavedPosition() ?? defaultPosition(dims);
+    setPos(clampPosition(saved.x, saved.y, dims));
   }, []);
 
   useEffect(() => {
     const onResize = () => {
-      setPos((p) => (p ? clampPosition(p.x, p.y) : defaultPosition()));
+      const dims = getPanelDims();
+      setPanelDims(dims);
+      setPos((p) => (p ? clampPosition(p.x, p.y, dims) : defaultPosition(dims)));
     };
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
@@ -379,8 +410,12 @@ export default function ChatWidget() {
     if (!dragState.current) return;
     const dx = e.clientX - dragState.current.startX;
     const dy = e.clientY - dragState.current.startY;
-    setPos(clampPosition(dragState.current.origX + dx, dragState.current.origY + dy));
-  }, []);
+    setPos((p) =>
+      p
+        ? clampPosition(dragState.current!.origX + dx, dragState.current!.origY + dy, panelDims)
+        : p
+    );
+  }, [panelDims]);
 
   const onDragEnd = useCallback((e: React.PointerEvent) => {
     if (!dragState.current) return;
@@ -399,14 +434,7 @@ export default function ChatWidget() {
   }
 
   const groups = groupMessages(messages);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 640);
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
-  }, []);
+  const isNarrow = panelDims.w < PANEL_W;
 
   return (
     <>
@@ -415,43 +443,41 @@ export default function ChatWidget() {
         .w-chat-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 99px; }
         .w-chat-scroll { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.12) transparent; }
         .chat-bubble-ai {
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(255,255,255,0.07);
+          background: linear-gradient(145deg, rgba(255,255,255,0.055) 0%, rgba(255,255,255,0.03) 100%);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-left: 2px solid rgba(235,10,30,0.45);
           color: rgba(255,255,255,0.88);
-          border-radius: 18px 18px 18px 4px;
+          border-radius: 16px 16px 16px 4px;
         }
         .chat-bubble-user {
           background: #fff;
           color: #0a0a0a;
-          border-radius: 18px 18px 4px 18px;
+          border-radius: 16px 16px 4px 16px;
           font-weight: 450;
         }
         .chat-bubble-user strong { color: #0a0a0a; }
         .chat-panel {
-          background: linear-gradient(180deg, #121212 0%, #0a0a0a 100%);
-          box-shadow:
-            0 0 0 1px rgba(255,255,255,0.06),
-            0 24px 80px -12px rgba(0,0,0,0.75),
-            0 0 48px -16px rgba(235,10,30,0.12);
+          background: linear-gradient(180deg, #141414 0%, #0e0e0e 100%);
+          border: 1px solid rgba(255,255,255,0.07);
+          box-shadow: 0 0 0 1px rgba(255,255,255,0.06), 0 24px 64px -12px rgba(0,0,0,0.75);
         }
         .chat-panel-dragging {
-          box-shadow:
-            0 0 0 1px rgba(235,10,30,0.2),
-            0 32px 96px -12px rgba(0,0,0,0.85),
-            0 0 64px -8px rgba(235,10,30,0.25);
+          box-shadow: 0 0 0 1px rgba(255,255,255,0.08), 0 28px 72px -10px rgba(0,0,0,0.8);
         }
         .chat-header-drag:hover .chat-drag-pill { background: rgba(255,255,255,0.35); width: 40px; }
-        .chat-input:focus { box-shadow: 0 0 0 2px rgba(235,10,30,0.25); }
       `}</style>
 
       {/* FAB — follows panel when positioned */}
       <div
-        className="fixed z-[9999] bottom-6 right-6 max-sm:bottom-6 max-sm:right-6"
+        className={cn(MOTION_GPU_CLASS, "gpu-fixed fixed z-[9999] bottom-6 right-6 max-sm:bottom-6 max-sm:right-6")}
         style={
-          isOpen && pos && !isMobile
+          isOpen && pos && !isNarrow
             ? {
-                left: Math.min(pos.x + PANEL_W - 56, typeof window !== "undefined" ? window.innerWidth - 70 : pos.x),
-                top: pos.y + PANEL_H + 8,
+                left: Math.min(
+                  pos.x + panelDims.w - 56,
+                  typeof window !== "undefined" ? window.innerWidth - 70 : pos.x
+                ),
+                top: pos.y + panelDims.h + 8,
                 bottom: "auto",
                 right: "auto",
               }
@@ -464,18 +490,15 @@ export default function ChatWidget() {
               initial={{ opacity: 0, y: 5 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="absolute bottom-full right-0 mb-2 bg-[#111]/95 backdrop-blur border border-white/10 text-white text-xs px-3 py-1.5 rounded-full whitespace-nowrap shadow-xl"
+              className="absolute bottom-full right-0 mb-2 bg-[#141414]/95 backdrop-blur border border-white/10 text-white/80 text-xs px-3 py-1.5 rounded-full whitespace-nowrap shadow-xl"
             >
               Conseiller Toyota IA
             </motion.div>
           )}
         </AnimatePresence>
 
-        {!isOpen && (
-          <span className="absolute inset-[-4px] rounded-full border border-toyota-red/30 animate-pulse" />
-        )}
         {unread > 0 && !isOpen && (
-          <span className="absolute -top-0.5 -right-0.5 z-10 min-w-[18px] h-[18px] px-1 bg-toyota-red rounded-full flex items-center justify-center text-white text-[9px] font-bold ring-2 ring-[#0a0a0a]">
+          <span className="absolute -top-0.5 -right-0.5 z-10 min-w-[18px] h-[18px] px-1 bg-toyota-red rounded-full flex items-center justify-center text-white text-[9px] font-bold ring-2 ring-[#141414]">
             {unread > 9 ? "9+" : unread}
           </span>
         )}
@@ -486,11 +509,11 @@ export default function ChatWidget() {
           onMouseLeave={() => setShowTooltip(false)}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="relative w-[52px] h-[52px] rounded-full bg-[#141414] flex items-center justify-center shadow-xl border border-white/10 hover:border-toyota-red/40 transition-colors group"
+          className="relative w-[52px] h-[52px] rounded-full bg-[#141414] flex items-center justify-center shadow-xl border border-white/10 hover:border-toyota-red/35 transition-colors group"
           aria-label="Ouvrir Toyota AI"
         >
           {isOpen ? (
-            <X size={20} className="text-white/80 group-hover:text-white" strokeWidth={1.75} />
+            <X size={20} className="text-white/70 group-hover:text-white" strokeWidth={1.75} />
           ) : (
             <Bot size={22} className="text-toyota-red" strokeWidth={1.75} />
           )}
@@ -504,21 +527,16 @@ export default function ChatWidget() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.92 }}
             transition={{ type: "spring", stiffness: 400, damping: 32 }}
-            style={
-              isMobile
-                ? undefined
-                : {
-                    left: pos.x,
-                    top: pos.y,
-                    width: PANEL_W,
-                    height: PANEL_H,
-                  }
-            }
-            className={`fixed z-[9998] flex flex-col overflow-hidden chat-panel ${
-              isMobile
-                ? "inset-x-0 bottom-0 w-full h-[75dvh] rounded-t-[28px] rounded-b-none"
-                : `rounded-[28px] ${isDragging ? "chat-panel-dragging scale-[1.01]" : ""}`
-            } transition-shadow duration-200`}
+            style={{
+              left: pos.x,
+              top: pos.y,
+              width: panelDims.w,
+              height: panelDims.h,
+            }}
+            className={cn(
+              cn(MOTION_GPU_CLASS, "gpu-fixed fixed z-[9998] flex flex-col overflow-hidden chat-panel rounded-none"),
+              isDragging && "chat-panel-dragging"
+            )}
           >
             {/* Header — dark glass, draggable */}
             <div
@@ -526,38 +544,34 @@ export default function ChatWidget() {
               onPointerMove={onDragMove}
               onPointerUp={onDragEnd}
               onPointerCancel={onDragEnd}
-              className={`chat-header-drag shrink-0 cursor-grab touch-none select-none border-b border-white/[0.06] bg-[#161616]/95 backdrop-blur-xl ${
-                isDragging ? "cursor-grabbing bg-[#1a1a1a]" : ""
-              }`}
+              className={cn(
+                "chat-header-drag shrink-0 cursor-grab touch-none select-none border-b border-white/[0.06] bg-[#111]/90 backdrop-blur-sm",
+                isDragging && "cursor-grabbing bg-[#161616]"
+              )}
             >
-              {/* iOS-style drag pill */}
               <div className="flex justify-center pt-3 pb-1">
                 <div className="chat-drag-pill h-1 w-9 rounded-full bg-white/20 transition-all duration-200" />
               </div>
 
-              <div className="flex items-center gap-3.5 px-5 pb-4 pt-1">
-                {/* Avatar */}
+              <div className="flex items-center gap-3 px-5 pb-4 pt-1">
                 <div className="relative shrink-0">
-                  <div className="w-11 h-11 rounded-2xl bg-[#0a0a0a] ring-1 ring-white/10 flex items-center justify-center overflow-hidden">
-                    <div className="w-6 h-6 bg-toyota-red rounded-md flex items-center justify-center">
-                      <span className="text-white font-black text-[9px] tracking-tighter">T</span>
-                    </div>
+                  <div className="w-10 h-10 rounded-full bg-[#0a0a0a] ring-1 ring-[#EB0A1E]/25 flex items-center justify-center">
+                    <span className="text-toyota-red font-black text-sm">T</span>
                   </div>
-                  <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full ring-2 ring-[#161616]" />
+                  <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full ring-2 ring-[#111]" />
                 </div>
 
-                {/* Title */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="text-white font-semibold text-[15px] tracking-[-0.01em]">
+                    <p className="text-white font-semibold text-[15px] leading-tight">
                       Toyota AI
                     </p>
-                    <span className="text-[9px] font-bold uppercase tracking-[0.14em] text-toyota-red/90 bg-toyota-red/10 px-1.5 py-0.5 rounded">
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-toyota-red/80 bg-toyota-red/10 px-1.5 py-0.5 rounded">
                       Advisor
                     </span>
                   </div>
-                  <p className="text-white/35 text-[11px] mt-0.5 font-medium">
-                    {isDragging ? "Déplacement…" : "Maintenez et glissez · En ligne"}
+                  <p className="text-white/45 text-[11px] mt-0.5">
+                    {isDragging ? "Déplacement…" : "En ligne · Glissez pour déplacer"}
                   </p>
                 </div>
 
@@ -565,14 +579,14 @@ export default function ChatWidget() {
                 <div className="flex items-center gap-1 shrink-0">
                   <button
                     onClick={clearChat}
-                    className="w-8 h-8 rounded-full hover:bg-white/[0.06] flex items-center justify-center text-white/35 hover:text-white/70 transition-colors"
+                    className="w-8 h-8 rounded-full hover:bg-white/5 flex items-center justify-center text-white/45 hover:text-white transition-colors"
                     title="Nouvelle conversation"
                   >
                     <RotateCcw size={15} strokeWidth={1.75} />
                   </button>
                   <button
                     onClick={() => setIsOpen(false)}
-                    className="w-8 h-8 rounded-full hover:bg-white/[0.06] flex items-center justify-center text-white/35 hover:text-white/70 transition-colors"
+                    className="w-8 h-8 rounded-full hover:bg-white/5 flex items-center justify-center text-white/45 hover:text-white transition-colors"
                   >
                     <X size={16} strokeWidth={1.75} />
                   </button>
@@ -581,7 +595,8 @@ export default function ChatWidget() {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto w-chat-scroll px-4 py-5 space-y-5">
+            <div className="relative flex-1 overflow-hidden">
+              <div className="relative h-full overflow-y-auto w-chat-scroll px-4 py-5 space-y-5">
               {groups.map((group, i) => (
                 <MessageGroupView key={i} group={group} />
               ))}
@@ -593,11 +608,12 @@ export default function ChatWidget() {
                 <CompareInsightCard data={compareData} loading={isLoading} />
               )}
               {error && (
-                <div className="text-xs text-red-300 bg-red-950/40 border border-red-800/30 rounded-xl px-3 py-2">
+                <div className="text-xs text-red-300 bg-red-500/10 border border-red-500/25 rounded-xl px-3 py-2">
                   {error}
                 </div>
               )}
               <div ref={bottomRef} />
+              </div>
             </div>
 
             <AnimatePresence>
@@ -606,14 +622,14 @@ export default function ChatWidget() {
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
-                  className="shrink-0 overflow-hidden border-t border-white/[0.05]"
+                  className="shrink-0 overflow-hidden border-t border-white/[0.06]"
                 >
                   <div className="px-4 py-2.5 flex flex-wrap gap-2">
                     {chips.map((chip) => (
                       <button
                         key={chip}
                         onClick={() => void sendMessage(chip)}
-                        className="text-[11px] px-3.5 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] text-white/55 hover:text-white hover:border-white/20 hover:bg-white/[0.07] transition-all"
+                        className="text-[11px] px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/60 hover:text-white hover:border-toyota-red/30 hover:bg-toyota-red/[0.06] transition-all"
                       >
                         {chip}
                       </button>
@@ -624,8 +640,8 @@ export default function ChatWidget() {
             </AnimatePresence>
 
             {/* Input */}
-            <div className="shrink-0 px-4 py-3.5 border-t border-white/[0.06] bg-[#111111]/90 backdrop-blur-xl">
-              <div className="flex items-center gap-2 rounded-2xl bg-[#0a0a0a] ring-1 ring-white/[0.08] p-1.5 focus-within:ring-toyota-red/30 transition-all">
+            <div className="shrink-0 px-4 py-3.5 border-t border-white/[0.06] bg-[#111]">
+              <div className="flex items-center gap-2 rounded-2xl bg-white/5 ring-1 ring-white/10 p-1.5 focus-within:ring-toyota-red/25 transition-all">
                 <input
                   ref={inputRef}
                   type="text"
@@ -639,17 +655,17 @@ export default function ChatWidget() {
                   }}
                   placeholder="Posez votre question…"
                   disabled={isLoading}
-                  className="chat-input flex-1 bg-transparent px-3 py-2 text-[13px] text-white placeholder:text-white/25 outline-none"
+                  className="flex-1 bg-transparent px-3 py-2 text-[13px] text-white placeholder:text-white/40 outline-none"
                 />
                 <button
                   onClick={() => void sendMessage()}
                   disabled={isLoading || !input.trim()}
-                  className="w-9 h-9 rounded-xl bg-toyota-red disabled:bg-white/[0.06] disabled:opacity-40 flex items-center justify-center transition-all hover:bg-[#d0091a] shrink-0"
+                  className="w-9 h-9 flex items-center justify-center shrink-0 border border-[#EB0A1E]/30 bg-[#EB0A1E]/[0.08] text-[#EB0A1E] hover:bg-[#EB0A1E]/[0.14] disabled:border-white/10 disabled:bg-white/5 disabled:text-white/30 disabled:opacity-40 transition-colors"
                 >
-                  <Send size={15} className="text-white" strokeWidth={2} />
+                  <Send size={15} strokeWidth={2} />
                 </button>
               </div>
-              <p className="text-center text-[9px] text-white/15 mt-2 tracking-wide">
+              <p className="text-center text-[9px] text-white/35 mt-2">
                 Groq · Ctrl+/ · Échap pour fermer
               </p>
             </div>
