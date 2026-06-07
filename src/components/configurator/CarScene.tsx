@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useRef, useEffect, useState, useCallback, Component, type ReactNode } from "react";
-import { Canvas, useThree } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, Environment, ContactShadows, Grid } from "@react-three/drei";
 import { CarModel, CarModelFallback } from "./CarModel";
 import { DEFAULT_VEHICLE_ANIM } from "@/lib/vehicleHinges";
@@ -58,6 +58,27 @@ class ModelErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryStat
 
 interface AutoRotateProps {
   controlsRef: React.RefObject<OrbitControlsImpl | null>;
+}
+
+function DemandInvalidate({ controlsRef }: AutoRotateProps) {
+  const invalidate = useThree((s) => s.invalidate);
+
+  useEffect(() => {
+    const controls = controlsRef.current;
+    if (!controls) return;
+    const onChange = () => invalidate();
+    controls.addEventListener("change", onChange);
+    return () => controls.removeEventListener("change", onChange);
+  }, [controlsRef, invalidate]);
+
+  useFrame(() => {
+    const controls = controlsRef.current;
+    if (controls?.autoRotate || controls?.enableDamping) {
+      invalidate();
+    }
+  });
+
+  return null;
 }
 
 function AutoRotate({ controlsRef }: AutoRotateProps) {
@@ -130,6 +151,15 @@ function CameraAnimator({ targetPos, targetFov, lookAt }: CameraAnimatorProps) {
   return null;
 }
 
+export interface CarSceneControls {
+  toggleAllDoors: () => void;
+  toggleHood: () => void;
+  toggleViewMode: () => void;
+  viewMode: "exterior" | "interior";
+  showDoorControls: boolean;
+  isReady: boolean;
+}
+
 interface CarSceneProps {
   vehicleId: string;
   colorHex: string;
@@ -137,6 +167,7 @@ interface CarSceneProps {
   vehicleName: string;
   selectedWheelId?: string;
   selectedInteriorId?: string;
+  onSceneControlsReady?: (controls: CarSceneControls | null) => void;
 }
 
 export function CarScene({
@@ -146,6 +177,7 @@ export function CarScene({
   vehicleName,
   selectedWheelId = "",
   selectedInteriorId = "",
+  onSceneControlsReady,
 }: CarSceneProps) {
   const controlsRef = useRef<OrbitControlsImpl | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -202,6 +234,18 @@ export function CarScene({
   }, [viewMode]);
 
   useEffect(() => {
+    onSceneControlsReady?.({
+      toggleAllDoors,
+      toggleHood,
+      toggleViewMode: handleViewToggle,
+      viewMode,
+      showDoorControls: !isLoading && viewMode === "exterior",
+      isReady: !isLoading,
+    });
+    return () => onSceneControlsReady?.(null);
+  }, [onSceneControlsReady, toggleAllDoors, toggleHood, handleViewToggle, isLoading, viewMode]);
+
+  useEffect(() => {
     setIsLoading(true);
     setVehicleAnim(DEFAULT_VEHICLE_ANIM);
   }, [vehicleId]);
@@ -240,40 +284,23 @@ export function CarScene({
         </div>
       )}
 
-      <button
-        onClick={handleViewToggle}
-        className="absolute top-3 right-3 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/15 bg-black/50 backdrop-blur-sm hover:bg-white/10 hover:border-white/30 text-white/70 hover:text-white text-xs font-medium transition-all"
-      >
-        {viewMode === "exterior" ? (
-          <>
-            <span>&#8594;</span>
-            <span>Vue Interieure</span>
-          </>
-        ) : (
-          <>
-            <span>&#8592;</span>
-            <span>Vue Exterieure</span>
-          </>
-        )}
-      </button>
-
-      {!isLoading && viewMode === "exterior" && (
-        <div className="absolute top-3 left-3 z-20 flex flex-col gap-2">
-          <button
-            type="button"
-            onClick={toggleAllDoors}
-            className="px-3 py-1.5 rounded-lg border border-white/15 bg-black/50 backdrop-blur-sm hover:bg-white/10 hover:border-white/30 text-white/70 hover:text-white text-xs font-medium transition-all"
-          >
-            Portes
-          </button>
-          <button
-            type="button"
-            onClick={toggleHood}
-            className="px-3 py-1.5 rounded-lg border border-white/15 bg-black/50 backdrop-blur-sm hover:bg-white/10 hover:border-white/30 text-white/70 hover:text-white text-xs font-medium transition-all"
-          >
-            Capot
-          </button>
-        </div>
+      {!onSceneControlsReady && (
+        <button
+          onClick={handleViewToggle}
+          className="absolute top-3 right-3 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/15 bg-black/50 backdrop-blur-sm hover:bg-white/10 hover:border-white/30 text-white/70 hover:text-white text-xs font-medium transition-all"
+        >
+          {viewMode === "exterior" ? (
+            <>
+              <span>&#8594;</span>
+              <span>Vue Interieure</span>
+            </>
+          ) : (
+            <>
+              <span>&#8592;</span>
+              <span>Vue Exterieure</span>
+            </>
+          )}
+        </button>
       )}
 
       <button
@@ -295,10 +322,15 @@ export function CarScene({
 
       <Canvas
         shadows
+        frameloop="demand"
+        performance={{ min: 0.5 }}
         camera={{ position: [10, 4, 12], fov: 40, near: 0.1, far: 100 }}
         gl={{ antialias: true, alpha: false }}
         style={{ background: "transparent" }}
-        onCreated={() => setIsLoading(false)}
+        onCreated={({ invalidate }) => {
+          setIsLoading(false);
+          invalidate();
+        }}
       >
         <CameraAnimator
           targetPos={cameraTarget.pos}
@@ -376,6 +408,7 @@ export function CarScene({
           dampingFactor={0.08}
         />
 
+        <DemandInvalidate controlsRef={controlsRef} />
         <AutoRotate controlsRef={controlsRef} />
       </Canvas>
     </div>

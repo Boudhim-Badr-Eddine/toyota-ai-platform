@@ -83,14 +83,14 @@
 @layer components {
   /* Toyota card style */
   .toyota-card {
-    @apply rounded-2xl border border-white/5 bg-[#111111];
+    @apply rounded-none border border-white/5 bg-[#111111];
   }
 
-  /* Toyota primary button — mockup: slightly rounded, bold */
+  /* Toyota primary button — glass red CTA (prefer BorderDrawButton for animation) */
   .toyota-btn-primary {
-    @apply rounded-md bg-[#EB0A1E] px-6 py-3 font-bold text-white uppercase tracking-wide text-sm transition-all
-           hover:bg-[#c00818] active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-[#EB0A1E]
-           shadow-lg shadow-[#EB0A1E]/25;
+    @apply relative inline-flex items-center justify-center gap-2 px-8 py-4 font-semibold text-sm tracking-wide transition-colors duration-300
+           bg-[#EB0A1E]/[0.08] text-[#EB0A1E] hover:bg-[#EB0A1E]/[0.14] backdrop-blur-md
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EB0A1E]/40;
   }
 
   /* Toyota secondary / ghost button */
@@ -110,11 +110,58 @@
   }
 
   .toyota-panel {
-    @apply rounded-lg border border-white/[0.06] bg-[#121212];
+    @apply rounded-none border border-white/[0.06] bg-[#121212];
   }
 
   .toyota-nav-active {
-    @apply relative text-white after:absolute after:bottom-0 after:left-2 after:right-2 after:h-0.5 after:bg-[#EB0A1E] after:rounded-full;
+    @apply relative text-[#EB0A1E] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[#EB0A1E] after:rounded-full;
+  }
+
+  .nav-cta-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .nav-cta-shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      105deg,
+      transparent 35%,
+      rgba(255, 255, 255, 0.45) 50%,
+      transparent 65%
+    );
+    transform: translateX(-120%) skewX(-12deg);
+    animation: nav-cta-shine 3s ease-in-out infinite;
+    pointer-events: none;
+    border-radius: inherit;
+  }
+
+  .animate-shimmer {
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.03) 0%,
+      rgba(255, 255, 255, 0.08) 50%,
+      rgba(255, 255, 255, 0.03) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.8s ease-in-out infinite;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* GPU layer for fixed / sticky UI chrome */
+  .gpu-fixed {
+    transform: translateZ(0);
+    will-change: transform;
   }
 
   .toyota-kpi-card {
@@ -135,9 +182,9 @@
     @apply bg-linear-to-r from-white via-white to-[#9CA3AF] bg-clip-text text-transparent;
   }
 
-  /* Red gradient accent */
+  /* Red accent text */
   .gradient-red {
-    @apply bg-linear-to-r from-[#EB0A1E] to-[#ff4040] bg-clip-text text-transparent;
+    @apply text-[#EB0A1E];
   }
 
   /* Gold gradient accent */
@@ -186,6 +233,23 @@
   .animate-pulse-red {
     animation: pulseRed 2s ease-in-out infinite;
   }
+
+  .animate-marquee-scroll {
+    animation: marquee-scroll 28s linear infinite;
+  }
+
+  .animate-particle-drift {
+    animation: particle-drift ease-in-out infinite;
+  }
+
+  .animate-tag-float {
+    animation: tag-float ease-in-out infinite;
+  }
+
+  .animate-slide-progress {
+    transform-origin: left center;
+    animation: slide-progress-fill linear forwards;
+  }
 }
 
 @keyframes fadeIn {
@@ -219,6 +283,55 @@
   }
 }
 
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes particle-drift {
+  0%,
+  100% {
+    transform: translate(0, 0);
+    opacity: 0.35;
+  }
+  50% {
+    transform: translate(18px, -28px);
+    opacity: 0.85;
+  }
+}
+
+@keyframes tag-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes slide-progress-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
 @keyframes pulseRed {
   0%,
   100% {
@@ -226,6 +339,35 @@
   }
   50% {
     box-shadow: 0 0 0 8px rgba(235, 10, 30, 0);
+  }
+}
+
+@keyframes nav-cta-shine {
+  0%,
+  78%,
+  100% {
+    transform: translateX(-130%) skewX(-12deg);
+    opacity: 0;
+  }
+  82% {
+    opacity: 1;
+  }
+  92% {
+    transform: translateX(230%) skewX(-12deg);
+    opacity: 1;
+  }
+  96% {
+    opacity: 0;
+  }
+}
+
+@keyframes dna-badge-glow {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.85;
   }
 }
 
@@ -254,7 +396,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 0 2px rgba(235, 10, 30, 0.35);
+  box-shadow: 0 0 0 2px rgba(235, 10, 30, 0.25);
 }
 
 .dealer-pin__logo {
@@ -272,7 +414,7 @@
   background: #eb0a1e;
   border-radius: 50%;
   margin: 2px auto 0;
-  box-shadow: 0 0 0 3px rgba(235, 10, 30, 0.25);
+  box-shadow: 0 0 0 2px rgba(235, 10, 30, 0.2);
 }
 
 .dealer-pin--selected .dealer-pin__head {
@@ -286,7 +428,7 @@
 }
 
 .dealer-pin--succursale .dealer-pin__head {
-  box-shadow: 0 0 0 2px rgba(235, 10, 30, 0.5), 0 0 12px rgba(235, 10, 30, 0.35);
+  box-shadow: 0 0 0 2px rgba(235, 10, 30, 0.35);
 }
 
 .user-pin {
@@ -340,13 +482,13 @@
 }
 
 .dealer-map-shell .leaflet-control-zoom a {
-  background: #111 !important;
-  color: #fff !important;
-  border-color: rgba(255, 255, 255, 0.15) !important;
+  background: #fff !important;
+  color: #111 !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
 }
 
 .dealer-map-shell .leaflet-control-zoom a:hover {
-  background: #1a1a1a !important;
+  background: #f3f4f6 !important;
 }
 
 .dealer-popup {

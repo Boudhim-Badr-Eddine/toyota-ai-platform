@@ -414,7 +414,7 @@ function GltfModel({
     }
   });
 
-  return <primitive object={scene} visible={sceneReady} />;
+  return <primitive object={scene} visible={sceneReady} dispose={null} />;
 }
 
 export function CarModel({

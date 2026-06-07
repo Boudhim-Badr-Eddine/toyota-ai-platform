@@ -103,13 +103,12 @@ export function CompareDrawer() {
               "relative pointer-events-auto w-full max-w-3xl max-h-[min(90vh,820px)] flex flex-col overflow-hidden",
               "rounded-3xl border border-white/10",
               "bg-gradient-to-b from-[#141414] via-[#0c0c0c] to-[#080808]",
-              "shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_32px_80px_-20px_rgba(0,0,0,0.85),0_0_60px_-10px_rgba(235,10,30,0.15)]",
+              "shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_32px_80px_-20px_rgba(0,0,0,0.85)]",
               "xl:-translate-x-[min(180px,12vw)]"
             )}
           >
             {/* Accent glow */}
             <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-toyota-red/80 to-transparent" />
-            <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-64 h-32 bg-toyota-red/20 blur-3xl pointer-events-none" />
 
             {/* Header */}
             <div className="shrink-0 relative px-5 sm:px-6 pt-5 pb-4 border-b border-white/8">
@@ -144,7 +143,14 @@ export function CompareDrawer() {
                   >
                     <div className="relative w-16 h-11 rounded-lg overflow-hidden bg-black/40 shrink-0">
                       {v.imageUrl && (
-                        <Image src={v.imageUrl} alt={v.name} fill className="object-cover" sizes="64px" />
+                        <Image
+                          src={v.imageUrl}
+                          alt={v.name}
+                          fill
+                          className="object-cover"
+                          sizes="64px"
+                          loading="lazy"
+                        />
                       )}
                     </div>
                     <div className="min-w-0">

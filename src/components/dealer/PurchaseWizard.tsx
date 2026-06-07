@@ -213,9 +213,9 @@ export function PurchaseWizard() {
               className={cn(
                 "w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border",
                 i < step
-                  ? "bg-toyota-red border-toyota-red text-white"
+                  ? "border-[#EB0A1E]/40 bg-[#EB0A1E]/[0.12] text-[#EB0A1E]"
                   : i === step
-                    ? "border-toyota-red text-toyota-red"
+                    ? "border-[#EB0A1E]/50 text-[#EB0A1E] bg-[#EB0A1E]/[0.06]"
                     : "border-white/20 text-toyota-muted"
               )}
             >
@@ -242,7 +242,7 @@ export function PurchaseWizard() {
                   onClick={() => setVehicleId(v.id)}
                   className={cn(
                     "flex items-center justify-between p-4 rounded-xl border text-left transition-all",
-                    vehicleId === v.id ? "border-toyota-red bg-toyota-red/10" : "border-white/8 hover:border-white/20"
+                    vehicleId === v.id ? "border-[#EB0A1E]/40 bg-[#EB0A1E]/[0.08]" : "border-white/8 hover:border-white/20"
                   )}
                 >
                   <div>
@@ -261,7 +261,7 @@ export function PurchaseWizard() {
                   onClick={() => setForm((f) => ({ ...f, type: t }))}
                   className={cn(
                     "flex-1 py-2 rounded-xl text-xs font-semibold border transition-all",
-                    form.type === t ? "border-toyota-red bg-toyota-red/10 text-white" : "border-white/8 text-toyota-muted"
+                    form.type === t ? "border-[#EB0A1E]/40 bg-[#EB0A1E]/[0.08] text-[#EB0A1E]" : "border-white/8 text-toyota-muted"
                   )}
                 >
                   {t === "purchase" ? "Achat" : t === "test_drive" ? "Essai" : "Devis"}

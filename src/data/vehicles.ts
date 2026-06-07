@@ -9,35 +9,35 @@ export const VEHICLES_DATA: Vehicle[] = [
     name: "Toyota Supra",
     category: "Sport",
     model3dPath: "/models/supra.glb",
-    imageUrl: "/images/vehicles/supra.jpg",
+    imageUrl: "/images/vehicles/supra-hero-2.png",
     images: [
-      "/images/vehicles/supra.jpg",
-      "/images/vehicles/supra.jpg",
+      "/images/vehicles/supra-hero-2.png",
+      "/images/vehicles/supra-hero-2.png",
     ],
     tagline: "L'art de la performance pure",
     highlights: [
-      "340 ch ÔÇö 0 ├á 100 km/h en 4,3 s",
+      "340 ch — 0 à 100 km/h en 4,3 s",
       "Moteur 6 cylindres en ligne turbo BMW B58",
-      "Propulsion arri├¿re avec diff ├®lectronique",
+      "Propulsion arrière avec diff électronique",
       "Finition cockpit biplace racing",
     ],
-    targetProfiles: ["Sportif", "Passionn├®", "C├®libataire"],
+    targetProfiles: ["Sportif", "Passionné", "Célibataire"],
     isHybrid: false,
     isNew: false,
     rating: 4.8,
     reviewCount: 142,
     priceFrom: 520000,
     colors: [
-      { id: "white-pearl", name: "Blanc Nacr├®", hex: "#F5F5F5", type: "pearl" },
+      { id: "white-pearl", name: "Blanc Nacré", hex: "#F5F5F5", type: "pearl" },
       { id: "black-midnight", name: "Noir Minuit", hex: "#0D0D0D", type: "metallic" },
       { id: "red-toyota", name: "Rouge Toyota", hex: "#EB0A1E", type: "solid" },
-      { id: "blue-storm", name: "Bleu Temp├¬te", hex: "#1B3A6B", type: "metallic" },
+      { id: "blue-storm", name: "Bleu Tempête", hex: "#1B3A6B", type: "metallic" },
       { id: "silver-lunar", name: "Argent Lunaire", hex: "#C0C0C0", type: "metallic" },
     ],
     wheels: [
       { id: "sport-18", name: 'Sport 18"', size: "18 pouces" },
       { id: "racing-19", name: 'Racing 19"', size: "19 pouces" },
-      { id: "forged-20", name: 'Forg├® 20"', size: "20 pouces" },
+      { id: "forged-20", name: 'Forgé 20"', size: "20 pouces" },
     ],
     interiors: [
       { id: "black-fabric", name: "Tissu Noir Sport", material: "fabric", colorHex: "#1A1A1A" },
@@ -64,7 +64,7 @@ export const VEHICLES_DATA: Vehicle[] = [
       warranty: "3 ans / 100 000 km",
     },
     description:
-      "La Toyota Supra repr├®sente l'apog├®e du sport automobile japonais. Avec son moteur turbo 6 cylindres de 340 ch d├®velopp├® en partenariat avec BMW, elle offre une exp├®rience de conduite pure et adr├®nalinique. Propulsion arri├¿re, bo├«te automatique 8 rapports et diff├®rentiel ├®lectronique : chaque virage devient un plaisir.",
+      "La Toyota Supra représente l'apogée du sport automobile japonais. Avec son moteur turbo 6 cylindres de 340 ch développé en partenariat avec BMW, elle offre une expérience de conduite pure et adrénalinique. Propulsion arrière, boîte automatique 8 rapports et différentiel électronique : chaque virage devient un plaisir.",
   },
 
   // ÔöÇÔöÇ 2. Toyota RAV4 ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
@@ -73,10 +73,10 @@ export const VEHICLES_DATA: Vehicle[] = [
     name: "Toyota RAV4",
     category: "SUV Familial",
     model3dPath: "/models/rav4.glb",
-    imageUrl: "/images/vehicles/rav4.jpg",
+    imageUrl: "/images/vehicles/rav4-hero-2.png",
     images: [
-      "/images/vehicles/rav4.jpg",
-      "/images/vehicles/rav4.jpg",
+      "/images/vehicles/rav4-hero-2.png",
+      "/images/vehicles/rav4-hero-2.png",
     ],
     tagline: "Le SUV hybride qui s'adapte ├á tout",
     highlights: [
@@ -139,12 +139,12 @@ export const VEHICLES_DATA: Vehicle[] = [
     name: "Toyota Yaris",
     category: "Citadine",
     model3dPath: "/models/yaris.glb",
-    imageUrl: "/images/vehicles/yaris.jpg",
+    imageUrl: "/images/vehicles/yaris-gr-hero.png",
     images: [
-      "/images/vehicles/yaris.jpg",
-      "/images/vehicles/yaris.jpg",
+      "/images/vehicles/yaris-gr-hero.png",
+      "/images/vehicles/yaris-gr-hero.png",
     ],
-    tagline: "La ville ├á votre rythme, sans effort",
+    tagline: "La ville à votre rythme, sans effort",
     highlights: [
       "Seulement 3,8 L/100 km ÔÇö la plus ├®conomique",
       "Hybride auto-rechargeable de s├®rie",
@@ -194,7 +194,7 @@ export const VEHICLES_DATA: Vehicle[] = [
       warranty: "3 ans / 100 000 km",
     },
     description:
-      "La Yaris hybride est la citadine intelligente par excellence. Compacte, agile et ultra-├®conomique, elle est parfaite pour naviguer dans les villes marocaines. Avec seulement 3,8 L/100 km, elle est la voiture la plus ├®conomique de sa cat├®gorie.",
+      "La Yaris hybride est la citadine intelligente par excellence. Compacte, agile et ultra-économique, elle est parfaite pour naviguer dans les villes marocaines. Avec seulement 3,8 L/100 km, elle est la voiture la plus économique de sa catégorie.",
   },
 
   // ÔöÇÔöÇ 4. Toyota Corolla ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
@@ -203,10 +203,10 @@ export const VEHICLES_DATA: Vehicle[] = [
     name: "Toyota Corolla",
     category: "Compacte Hybride",
     model3dPath: "/models/corolla.glb",
-    imageUrl: "/images/vehicles/corolla.jpg",
+    imageUrl: "/images/vehicles/corolla-hero-2.png",
     images: [
-      "/images/vehicles/corolla.jpg",
-      "/images/vehicles/corolla.jpg",
+      "/images/vehicles/corolla-hero-2.png",
+      "/images/vehicles/corolla-hero-2.png",
     ],
     tagline: "Fiabilit├® l├®gendaire, technologie moderne",
     highlights: [
@@ -267,10 +267,10 @@ export const VEHICLES_DATA: Vehicle[] = [
     name: "Toyota Camry",
     category: "Berline Confort",
     model3dPath: "/models/camry.glb",
-    imageUrl: "/images/vehicles/camry.jpg",
+    imageUrl: "/images/vehicles/camry-hero-2.png",
     images: [
-      "/images/vehicles/camry.jpg",
-      "/images/vehicles/camry.jpg",
+      "/images/vehicles/camry-hero-2.png",
+      "/images/vehicles/camry-hero-2.png",
     ],
     tagline: "Le confort premium accessible",
     highlights: [
@@ -331,10 +331,10 @@ export const VEHICLES_DATA: Vehicle[] = [
     name: "Toyota Land Cruiser",
     category: "Tout-terrain extr├¬me",
     model3dPath: "/models/landcruiser.glb",
-    imageUrl: "/images/vehicles/landcruiser.jpg",
+    imageUrl: "/images/vehicles/landcruiser-hero-2.png",
     images: [
-      "/images/vehicles/landcruiser.jpg",
-      "/images/vehicles/landcruiser.jpg",
+      "/images/vehicles/landcruiser-hero-2.png",
+      "/images/vehicles/landcruiser-hero-2.png",
     ],
     tagline: "Aucune limite, aucun terrain",
     highlights: [
@@ -397,12 +397,12 @@ export const VEHICLES_DATA: Vehicle[] = [
     name: "Toyota Hilux",
     category: "Pick-up utilitaire",
     model3dPath: "/models/hilux.glb",
-    imageUrl: "/images/vehicles/hilux.jpg",
+    imageUrl: "/images/vehicles/hilux-hero-2.png",
     images: [
-      "/images/vehicles/hilux.jpg",
-      "/images/vehicles/hilux.jpg",
+      "/images/vehicles/hilux-hero-2.png",
+      "/images/vehicles/hilux-hero-2.png",
     ],
-    tagline: "Inarr├¬table. Indestructible. Indispensable.",
+    tagline: "Inarrêtable. Indestructible. Indispensable.",
     highlights: [
       "2.8L Diesel D-4D ÔÇö 204 ch et 500 Nm",
       "Charge utile de 1 035 kg",
@@ -464,10 +464,10 @@ export const VEHICLES_DATA: Vehicle[] = [
     name: "Toyota Prius",
     category: "├ëco/Tech",
     model3dPath: "/models/prius.glb",
-    imageUrl: "/images/vehicles/prius.jpg",
+    imageUrl: "/images/vehicles/prius-hero-2.png",
     images: [
-      "/images/vehicles/prius.jpg",
-      "/images/vehicles/prius.jpg",
+      "/images/vehicles/prius-hero-2.png",
+      "/images/vehicles/prius-hero-2.png",
     ],
     tagline: "80 km 100% ├®lectrique, z├®ro compromis",
     highlights: [
@@ -529,10 +529,10 @@ export const VEHICLES_DATA: Vehicle[] = [
     name: "Toyota C-HR",
     category: "SUV Urbain",
     model3dPath: "/models/chr.glb",
-    imageUrl: "/images/vehicles/chr.jpg",
+    imageUrl: "/images/vehicles/chr-hero-2.png",
     images: [
-      "/images/vehicles/chr.jpg",
-      "/images/vehicles/chr.jpg",
+      "/images/vehicles/chr-hero-2.png",
+      "/images/vehicles/chr-hero-2.png",
     ],
     tagline: "Design audacieux, ├óme hybride",
     highlights: [
@@ -594,10 +594,10 @@ export const VEHICLES_DATA: Vehicle[] = [
     name: "Toyota Highlander",
     category: "SUV 7 places",
     model3dPath: "/models/highlander.glb",
-    imageUrl: "/images/vehicles/highlander.jpg",
+    imageUrl: "/images/vehicles/highlander-hero-2.png",
     images: [
-      "/images/vehicles/highlander.jpg",
-      "/images/vehicles/highlander.jpg",
+      "/images/vehicles/highlander-hero-2.png",
+      "/images/vehicles/highlander-hero-2.png",
     ],
     tagline: "Grand SUV, grande famille, grand confort",
     highlights: [
@@ -659,10 +659,10 @@ export const VEHICLES_DATA: Vehicle[] = [
     name: "Toyota Granvia",
     category: "Van Premium",
     model3dPath: "/models/granvia/scene.gltf",
-    imageUrl: "/images/vehicles/hilux.jpg",
+    imageUrl: "/images/vehicles/granvia-hero-2.png",
     images: [
-      "/images/vehicles/hilux.jpg",
-      "/images/vehicles/highlander.jpg",
+      "/images/vehicles/granvia-hero-2.png",
+      "/images/vehicles/granvia-hero-2.png",
     ],
     tagline: "Le voyage en classe affaires",
     highlights: [
@@ -715,10 +715,10 @@ export const VEHICLES_DATA: Vehicle[] = [
     name: "Toyota Corolla 2026",
     category: "Berline",
     model3dPath: "/models/corolla-2/scene.gltf",
-    imageUrl: "/images/vehicles/corolla.jpg",
+    imageUrl: "/images/vehicles/corolla-2-hero-2.png",
     images: [
-      "/images/vehicles/corolla.jpg",
-      "/images/vehicles/corolla.jpg",
+      "/images/vehicles/corolla-2-hero-2.png",
+      "/images/vehicles/corolla-2-hero-2.png",
     ],
     tagline: "L'élégance technologique au quotidien",
     highlights: [
@@ -771,10 +771,10 @@ export const VEHICLES_DATA: Vehicle[] = [
     name: "Toyota Kijang",
     category: "Monospace Familial",
     model3dPath: "/models/kijang/scene.gltf",
-    imageUrl: "/images/vehicles/hilux.jpg",
+    imageUrl: "/images/vehicles/kijang-hero-2.png",
     images: [
-      "/images/vehicles/hilux.jpg",
-      "/images/vehicles/rav4.jpg",
+      "/images/vehicles/kijang-hero-2.png",
+      "/images/vehicles/kijang-hero-2.png",
     ],
     tagline: "L'espace familial repensé",
     highlights: [
@@ -828,9 +828,25 @@ export const VEHICLES_DATA: Vehicle[] = [
 
 // ÔöÇÔöÇÔöÇ Utility Functions ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 
+const VEHICLE_DISPLAY_IMAGES: Record<string, string> = {
+  supra: "/images/vehicles/supra-hero-2.png",
+  rav4: "/images/vehicles/rav4-hero-2.png",
+  yaris: "/images/vehicles/yaris-gr-hero.png",
+  corolla: "/images/vehicles/corolla-hero-2.png",
+  camry: "/images/vehicles/camry-hero-2.png",
+  landcruiser: "/images/vehicles/landcruiser-hero-2.png",
+  hilux: "/images/vehicles/hilux-hero-2.png",
+  prius: "/images/vehicles/prius-hero-2.png",
+  chr: "/images/vehicles/chr-hero-2.png",
+  highlander: "/images/vehicles/highlander-hero-2.png",
+  granvia: "/images/vehicles/granvia-hero-2.png",
+  "corolla-2": "/images/vehicles/corolla-2-hero-2.png",
+  kijang: "/images/vehicles/kijang-hero-2.png",
+};
+
 /** Same image source used by vehicle cards and the homepage showcase slider. */
 export function getVehicleDisplayImage(vehicle: Vehicle): string {
-  return vehicle.imageUrl;
+  return VEHICLE_DISPLAY_IMAGES[vehicle.id] ?? vehicle.imageUrl;
 }
 
 export function getVehicleById(id: string): Vehicle | undefined {

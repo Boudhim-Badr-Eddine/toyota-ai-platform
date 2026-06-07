@@ -60,8 +60,7 @@ const VEHICLE_IMAGES = {
     "https://tmna.aemassets.toyota.com/is/image/toyota/toyota/jellies/max/2026/corolla/le/1852/1k3/1.png?fmt=png-alpha&wid=930&qlt=90",
   ],
   kijang: [
-    "https://tmna.aemassets.toyota.com/is/image/toyota/toyota/jellies/max/2026/highlander//6959/3t3/36/5.png?fmt=png-alpha&wid=930&qlt=90",
-    "https://tmna.aemassets.toyota.com/is/image/toyota/toyota/jellies/max/2026/rav4//4530/m22/36/3.png?fmt=png-alpha&wid=930&qlt=90",
+    "https://content.toyota.com.ph/uploads/vehicles/49/001_49_1687327845800_000.webp",
   ],
 };
 

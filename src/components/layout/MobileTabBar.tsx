@@ -22,7 +22,7 @@ export function MobileTabBar() {
   return (
     <nav
       aria-label="Navigation mobile"
-      className="fixed bottom-0 inset-x-0 z-50 lg:hidden border-t border-white/10 bg-black/80 backdrop-blur-xl pb-[env(safe-area-inset-bottom)]"
+      className="gpu-fixed fixed bottom-0 inset-x-0 z-50 lg:hidden border-t border-white/10 bg-black/80 backdrop-blur-xl pb-[env(safe-area-inset-bottom)]"
     >
       <div className="flex items-stretch justify-around h-16">
         {TABS.map(({ href, label, icon: Icon, action }) => {

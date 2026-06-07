@@ -3,8 +3,8 @@ import { Inter } from "next/font/google";
 import { Providers } from "@/components/providers/Providers";
 import { PageTransition } from "@/components/providers/PageTransition";
 import { Toaster } from "sonner";
-import { DebugPanel } from "@/components/dev/DebugPanel";
 import { ChatWidgetLoader } from "@/components/chat/ChatWidgetLoader";
+import { DebugPanelLoader } from "@/components/dev/DebugPanelLoader";
 import { ScrollToTop } from "@/components/ui/ScrollToTop";
 import "./globals.css";
 
@@ -53,7 +53,7 @@ export default function RootLayout({
         />
         <ChatWidgetLoader />
         <ScrollToTop />
-        <DebugPanel />
+        <DebugPanelLoader />
       </body>
     </html>
   );

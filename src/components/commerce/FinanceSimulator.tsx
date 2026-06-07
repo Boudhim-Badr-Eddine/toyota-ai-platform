@@ -37,13 +37,13 @@ export function FinanceSimulator({ defaultPrice = 350000, className }: FinanceSi
     <div
       id="finance"
       className={cn(
-        "toyota-card rounded-2xl border border-white/5 p-6 lg:p-8",
+        "toyota-card rounded-none border border-white/[0.08] p-6 lg:p-8",
         className
       )}
     >
       <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-xl bg-toyota-red/10 border border-toyota-red/20 flex items-center justify-center">
-          <Calculator className="h-5 w-5 text-toyota-red" />
+        <div className="w-10 h-10 rounded-none bg-white/[0.04] border border-white/10 flex items-center justify-center">
+          <Calculator className="h-5 w-5 text-white/50" />
         </div>
         <div>
           <h2 className="text-white text-xl font-bold">Simulateur de financement</h2>
@@ -59,7 +59,7 @@ export function FinanceSimulator({ defaultPrice = 350000, className }: FinanceSi
             step={5000}
             value={price}
             onChange={(e) => setPrice(Number(e.target.value) || 0)}
-            className="w-full rounded-xl border border-white/10 bg-white/5 px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-toyota-red/50"
+            className="w-full rounded-none border border-white/10 bg-white/[0.04] px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#EB0A1E]/30"
           />
         </Field>
         <Field label="Apport (MAD)">
@@ -70,7 +70,7 @@ export function FinanceSimulator({ defaultPrice = 350000, className }: FinanceSi
             step={5000}
             value={downPayment}
             onChange={(e) => setDownPayment(Math.min(price, Number(e.target.value) || 0))}
-            className="w-full rounded-xl border border-white/10 bg-white/5 px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-toyota-red/50"
+            className="w-full rounded-none border border-white/10 bg-white/[0.04] px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#EB0A1E]/30"
           />
         </Field>
         <Field label="Durée">
@@ -81,9 +81,9 @@ export function FinanceSimulator({ defaultPrice = 350000, className }: FinanceSi
                 type="button"
                 onClick={() => setTerm(m)}
                 className={cn(
-                  "px-3 py-2 rounded-lg text-xs font-bold border transition-colors",
+                  "px-3 py-2 rounded-none text-xs font-bold border transition-colors",
                   term === m
-                    ? "bg-toyota-red border-toyota-red text-white"
+                    ? "border-[#EB0A1E]/40 bg-[#EB0A1E]/[0.08] text-[#EB0A1E]"
                     : "border-white/10 text-toyota-muted hover:text-white hover:border-white/20"
                 )}
               >
@@ -100,12 +100,19 @@ export function FinanceSimulator({ defaultPrice = 350000, className }: FinanceSi
             step={0.1}
             value={rate}
             onChange={(e) => setRate(Number(e.target.value))}
-            className="w-full accent-toyota-red"
+            className={cn(
+              "w-full h-2 appearance-none cursor-pointer bg-white/[0.08] rounded-none",
+              "[&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-none [&::-webkit-slider-thumb]:bg-white/70 [&::-webkit-slider-thumb]:border [&::-webkit-slider-thumb]:border-white/30",
+              "[&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-none [&::-moz-range-thumb]:bg-white/70 [&::-moz-range-thumb]:border [&::-moz-range-thumb]:border-white/30"
+            )}
+            style={{
+              background: `linear-gradient(to right, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.35) ${((rate - 3) / 9) * 100}%, rgba(255,255,255,0.08) ${((rate - 3) / 9) * 100}%, rgba(255,255,255,0.08) 100%)`,
+            }}
           />
         </Field>
       </div>
 
-      <div className="rounded-xl bg-[#111111] border border-white/5 p-5">
+      <div className="rounded-none bg-[#111111] border border-white/[0.08] p-5">
         <p className="text-toyota-muted text-xs uppercase tracking-wider mb-1">Mensualité estimée</p>
         <p className="text-4xl font-black text-white mb-4">
           {formatPrice(monthly)}
@@ -139,7 +146,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg bg-white/[0.03] px-2 py-2">
+    <div className="rounded-none border border-white/[0.06] bg-white/[0.03] px-2 py-2">
       <p className="text-[9px] uppercase tracking-wider text-toyota-muted/50">{label}</p>
       <p className="text-xs font-bold text-white mt-0.5">{value}</p>
     </div>

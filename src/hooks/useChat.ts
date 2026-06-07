@@ -31,7 +31,7 @@ export interface CompareData {
 export const VEHICLE_DATA: Record<string, { name: string; subtitle: string; price: string; imageUrl: string }> = {
   supra:       { name: 'Toyota GR Supra',         subtitle: 'Sport',              price: '520 000 MAD', imageUrl: '/images/vehicles/supra.jpg' },
   rav4:        { name: 'Toyota RAV4 Hybride',      subtitle: 'SUV Familial',       price: '310 000 MAD', imageUrl: '/images/vehicles/rav4.jpg' },
-  yaris:       { name: 'Toyota Yaris Cross',       subtitle: 'Citadine',           price: '175 000 MAD', imageUrl: '/images/vehicles/yaris.jpg' },
+  yaris:       { name: 'Toyota Yaris',             subtitle: 'Citadine',           price: '175 000 MAD', imageUrl: '/images/vehicles/yaris-gr-hero.png' },
   corolla:     { name: 'Toyota Corolla Hybride',   subtitle: 'Berline',            price: '235 000 MAD', imageUrl: '/images/vehicles/corolla.jpg' },
   camry:       { name: 'Toyota Camry Hybride',     subtitle: 'Berline Premium',    price: '280 000 MAD', imageUrl: '/images/vehicles/camry.jpg' },
   landcruiser: { name: 'Toyota Land Cruiser 300',  subtitle: 'Tout-Terrain',       price: '680 000 MAD', imageUrl: '/images/vehicles/landcruiser.jpg' },

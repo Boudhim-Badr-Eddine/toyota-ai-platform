@@ -8,6 +8,7 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { DEALERSHIPS } from "@/data/dealerships";
 import { VEHICLES_DATA } from "@/data/vehicles";
 import { getChatHistoryForLead } from "@/lib/chatHistory";
+import { BorderDrawButton } from "@/components/ui/BorderDrawButton";
 
 const SERVICE_TYPES = [
   { id: "revision", label: "Révision périodique" },
@@ -110,10 +111,10 @@ export function ServiceBookingClient() {
             <input type="time" value={form.time} onChange={(e) => setForm((f) => ({ ...f, time: e.target.value }))} className="rounded-md border border-white/10 bg-black/40 px-3 py-2.5 text-sm text-white" />
           </div>
 
-          <button type="submit" disabled={submitting} className="toyota-btn-primary w-full flex items-center justify-center gap-2 !normal-case">
+          <BorderDrawButton type="submit" accent="red" disabled={submitting} className="w-full justify-center !normal-case">
             <Wrench className="h-4 w-4" />
             {submitting ? "Envoi…" : "Demander un rendez-vous SAV"}
-          </button>
+          </BorderDrawButton>
 
           <p className="text-[11px] text-white/30 flex items-center gap-2">
             <MapPin className="h-3 w-3" />

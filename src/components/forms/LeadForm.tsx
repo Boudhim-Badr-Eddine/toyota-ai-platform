@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion, AnimatePresence } from "framer-motion";
+import { BorderDrawButton } from "@/components/ui/BorderDrawButton";
 import * as Dialog from "@radix-ui/react-dialog";
 import {
   User,
@@ -458,12 +459,11 @@ export function LeadFormContent({
       </AnimatePresence>
 
       {/* ── Submit ───────────────────────────────────────────────────────────── */}
-      <motion.button
-        whileHover={{ scale: 1.01 }}
-        whileTap={{ scale: 0.98 }}
+      <BorderDrawButton
         type="submit"
+        accent="red"
         disabled={submitStatus === "loading"}
-        className="w-full flex items-center justify-center gap-2 py-3.5 bg-toyota-red hover:bg-toyota-red/90 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-colors shadow-lg shadow-toyota-red/20"
+        className="w-full"
       >
         {submitStatus === "loading" ? (
           <>
@@ -481,7 +481,7 @@ export function LeadFormContent({
             {isCustomer ? "Confirmer la demande" : "Envoyer la demande"}
           </>
         )}
-      </motion.button>
+      </BorderDrawButton>
 
       <p className="text-toyota-muted/40 text-[11px] text-center">
         Vos données sont protégées et ne seront jamais partagées.

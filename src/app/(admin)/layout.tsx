@@ -14,7 +14,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A]">
+    <div className="min-h-screen bg-black">
       <AdminSidebar />
       <div className="lg:pl-[240px]">
         <Suspense fallback={<div className="h-[88px] border-b border-white/[0.06]" />}>

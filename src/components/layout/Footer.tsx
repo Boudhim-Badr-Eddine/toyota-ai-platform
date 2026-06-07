@@ -35,7 +35,7 @@ export function Footer() {
             <Link href="/" className="font-black text-lg tracking-tight text-white">
               TOYOTA
             </Link>
-            <p className="text-[11px] text-white/35 uppercase tracking-wider" suppressHydrationWarning>
+            <p className="text-[11px] text-white/40 uppercase tracking-wider" suppressHydrationWarning>
               © 2026 Toyota Maroc. Performance légendaire.
             </p>
           </div>
