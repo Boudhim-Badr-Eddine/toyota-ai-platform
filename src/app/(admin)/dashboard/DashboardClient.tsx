@@ -195,10 +195,11 @@ function categoryBadge(category: string) {
 
 interface DashboardClientProps {
   data: DashboardData;
-  adminName: string;
+  adminName?: string;
+  dbError?: string | null;
 }
 
-export function DashboardClient({ data }: DashboardClientProps) {
+export function DashboardClient({ data, dbError }: DashboardClientProps) {
   const { stats, leadsByVehicle, recentReservations } = data;
   const leadTrend = pctChange(stats.newLeadsMonth, stats.previousMonthLeads);
   const reservationTrend = pctChange(stats.monthReservations, stats.previousMonthReservations);
@@ -213,6 +214,13 @@ export function DashboardClient({ data }: DashboardClientProps) {
 
   return (
     <div className="space-y-6 p-6 lg:p-8">
+      {dbError && (
+        <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+          Base de données indisponible — connectez Supabase puis exécutez{" "}
+          <code className="text-amber-100">npm run db:setup</code>. Les comptes démo admin fonctionnent
+          sans DB pour la connexion.
+        </div>
+      )}
       <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
         <StatsCard
           title="Total Leads"

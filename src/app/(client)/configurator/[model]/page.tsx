@@ -154,12 +154,13 @@ export default function ConfiguratorPage() {
 
   const [screenshotUrl, setScreenshotUrl] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [usePhotoMode] = useState(() =>
-    typeof window !== "undefined" ? shouldUsePhotoFallback() : false
-  );
-  const [showArHint] = useState(() =>
-    typeof window !== "undefined" && "xr" in navigator
-  );
+  const [usePhotoMode, setUsePhotoMode] = useState(false);
+  const [showArHint, setShowArHint] = useState(false);
+
+  useEffect(() => {
+    setUsePhotoMode(shouldUsePhotoFallback());
+    setShowArHint("xr" in navigator);
+  }, []);
 
   const handleCapture = useCallback(() => {
     const url = captureCanvas();
@@ -265,7 +266,7 @@ export default function ConfiguratorPage() {
       <div className="flex-1 flex flex-col lg:flex-row min-h-0 relative">
 
         {/* 3D Viewport — left 60% on desktop */}
-        <div className="relative flex-1 min-h-0">
+        <div className="relative flex-1 min-h-[320px] lg:min-h-0">
           {process.env.NODE_ENV === "development" && !usePhotoMode && (
             <div className="fixed top-2 left-2 z-50 bg-black/90 text-green-400 text-xs font-mono p-2 rounded pointer-events-none">
               Model: {getModelPath(vehicle.id)}

@@ -133,7 +133,43 @@ export default async function DashboardPage() {
   const session = await auth();
   if (!session || session.user?.role !== "admin") redirect("/login");
 
-  const data = await fetchDashboardData();
+  let data;
+  let dbError: string | null = null;
+  try {
+    data = await fetchDashboardData();
+  } catch (error) {
+    console.error("[dashboard] DB error:", error);
+    dbError =
+      error instanceof Error
+        ? error.message
+        : "Base de données indisponible — vérifiez DATABASE_URL et lancez npm run db:setup";
+    data = {
+      stats: {
+        totalLeads: 0,
+        newLeadsToday: 0,
+        newLeadsMonth: 0,
+        previousMonthLeads: 0,
+        totalReservations: 0,
+        pendingReservations: 0,
+        monthReservations: 0,
+        previousMonthReservations: 0,
+        convertedLeads: 0,
+        previousMonthConverted: 0,
+        conversionRate: 0,
+        topVehicle: "—",
+        estimatedRevenueM: 0,
+      },
+      leadsByVehicle: [],
+      recentLeads: [],
+      recentReservations: [],
+    };
+  }
 
-  return <DashboardClient data={data} adminName={session.user?.name ?? "Admin"} />;
+  return (
+    <DashboardClient
+      data={data}
+      adminName={session.user?.name ?? "Admin"}
+      dbError={dbError}
+    />
+  );
 }

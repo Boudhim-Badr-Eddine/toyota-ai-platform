@@ -220,20 +220,24 @@ export function LeadFormContent({
 
       // 2. Create reservation if test drive + date provided
       if (values.type === "test_drive" && values.date) {
+        const slot = new Date(`${values.date}T10:00:00`);
+        if (slot.getTime() <= Date.now() + 5 * 60 * 1000) {
+          throw new Error("Choisissez une date dans le futur");
+        }
         const reservationRes = await fetch("/api/reservations", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             leadId: lead.id,
             vehicleId,
-            date: new Date(values.date).toISOString(),
+            date: slot.toISOString(),
             type: "test_drive",
           }),
         });
 
         if (!reservationRes.ok) {
-          // Non-fatal: lead was created, reservation failed
-          console.warn("[LeadForm] Reservation creation failed:", await reservationRes.text());
+          const data = (await reservationRes.json().catch(() => ({}))) as { error?: string };
+          throw new Error(data.error ?? "Impossible de confirmer le rendez-vous");
         }
       }
 

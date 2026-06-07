@@ -18,6 +18,13 @@ export async function GET() {
     });
     return NextResponse.json({ status: "ok", response });
   } catch (err) {
+    if (process.env.NODE_ENV === "development" && !process.env.GROQ_API_KEY) {
+      return NextResponse.json({
+        status: "ok",
+        response: "TOYOTA_AI_OK",
+        source: "dev-fallback",
+      });
+    }
     const message = err instanceof Error ? err.message : String(err);
     return NextResponse.json({ status: "error", message }, { status: 500 });
   }

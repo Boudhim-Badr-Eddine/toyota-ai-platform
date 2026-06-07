@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ShoppingBag } from "lucide-react";
 import { PurchaseWizard } from "@/components/dealer/PurchaseWizard";
+import { ContactStrip } from "@/components/layout/ContactInfo";
 
 export const metadata: Metadata = {
   title: "Acheter votre Toyota",
@@ -30,6 +31,9 @@ export default function AcheterPage() {
       <Suspense fallback={<div className="section-container py-20 text-white/40">Chargement…</div>}>
         <PurchaseWizard />
       </Suspense>
+      <div className="section-container pb-16">
+        <ContactStrip />
+      </div>
     </div>
   );
 }

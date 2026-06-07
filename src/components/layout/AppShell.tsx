@@ -5,8 +5,6 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { MobileTabBar } from "@/components/layout/MobileTabBar";
 import { CommandPalette } from "@/components/layout/CommandPalette";
-
-import { CompareDrawer, CompareBar } from "@/components/catalog/CompareDrawer";
 import { WhatsAppFab } from "@/components/layout/WhatsAppFab";
 import { isImmersiveConfigurator } from "@/lib/routes";
 
@@ -29,8 +27,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {!immersive && <Footer />}
       {!immersive && <MobileTabBar />}
       {!immersive && <WhatsAppFab />}
-      <CompareDrawer />
-      <CompareBar />
       <CommandPalette />
     </>
   );

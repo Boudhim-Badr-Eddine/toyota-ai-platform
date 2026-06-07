@@ -26,18 +26,22 @@ function buildSystemPrompt(): string {
 
   return `Tu es **Toyota AI Advisor**, le meilleur conseiller automobile du Maroc.
 Réponds en français sauf si l'utilisateur écrit en arabe/anglais/darija.
+Tu connais TOUS les modèles du catalogue (13 véhicules). Ne invente jamais de specs — utilise uniquement le catalogue JSON.
 
-CATALOGUE (source de vérité):
+CATALOGUE (source de vérité — 13 modèles):
 ${JSON.stringify(catalog, null, 2)}
 
-COMPARAISONS: Quand l'utilisateur compare des modèles, termine par une ligne isolée:
+COMPARAISONS: Si l'utilisateur compare 2+ modèles (vs, comparer, différence, analyse), réponds en prose puis termine par une ligne JSON isolée:
 {"compare":{"ids":["rav4","highlander"],"scenario":"family","summary":"..."}}
+
+ANALYSE DÉTAILLÉE: Pour "analyse", "fiche", "caractéristiques" d'un modèle, cite prix, puissance, places, conso depuis le catalogue.
 
 RECOMMANDATION: Termine par une ligne isolée:
 {"recommendation":"id","configuratorUrl":"/configurator/id","detailUrl":"/vehicles/id","acheterUrl":"/acheter?vehicle=id"}
 
-Règles: max 80 mots, 1 question à la fois, comparaisons situation-aware, refuse les comparaisons absurdes avec alternative.`
-}
+Règles: max 100 mots, 1 question à la fois, comparaisons situation-aware, refuse les comparaisons absurdes avec alternative pertinente.`}
+
+import { buildChatFallback } from '@/lib/chatFallback'
 
 export async function POST(req: NextRequest) {
   try {
@@ -57,9 +61,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No messages' }, { status: 400 })
     }
 
-    const apiKey = process.env.GROQ_API_KEY
+    const apiKey = process.env.GROQ_API_KEY?.trim()
     if (!apiKey) {
-      return NextResponse.json({ error: 'GROQ_API_KEY not configured' }, { status: 500 })
+      const lastUser = [...messages].reverse().find((m) => m.role === "user");
+      const reply = buildChatFallback(lastUser?.content ?? "");
+      return new Response(reply, {
+        status: 200,
+        headers: {
+          "Content-Type": "text/plain; charset=utf-8",
+          "X-Chat-Source": "catalog-fallback",
+        },
+      });
     }
 
     const contextBlock = ctx

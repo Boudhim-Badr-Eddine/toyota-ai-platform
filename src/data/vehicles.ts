@@ -1,43 +1,43 @@
 ﻿import type { Vehicle, UserPreferences } from "@/types";
 
-// ÔöÇÔöÇÔöÇ Complete Vehicle Catalog (10 Models) ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+// ─── Complete Vehicle Catalog (10 Models) ──────────────────────────────────────
 
 export const VEHICLES_DATA: Vehicle[] = [
-  // ÔöÇÔöÇ 1. Toyota Supra ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  // ── 1. Toyota Supra ──────────────────────────────────────────────────────────
   {
     id: "supra",
     name: "Toyota Supra",
     category: "Sport",
     model3dPath: "/models/supra.glb",
-    imageUrl: "/images/vehicles/supra.jpg",
+    imageUrl: "/images/vehicles/supra-hero-2.png",
     images: [
-      "/images/vehicles/supra.jpg",
-      "/images/vehicles/supra.jpg",
+      "/images/vehicles/supra-hero-2.png",
+      "/images/vehicles/supra-hero-2.png",
     ],
     tagline: "L'art de la performance pure",
     highlights: [
-      "340 ch ÔÇö 0 ├á 100 km/h en 4,3 s",
+      "340 ch — 0 à 100 km/h en 4,3 s",
       "Moteur 6 cylindres en ligne turbo BMW B58",
-      "Propulsion arri├¿re avec diff ├®lectronique",
+      "Propulsion arrière avec diff électronique",
       "Finition cockpit biplace racing",
     ],
-    targetProfiles: ["Sportif", "Passionn├®", "C├®libataire"],
+    targetProfiles: ["Sportif", "Passionné", "Célibataire"],
     isHybrid: false,
     isNew: false,
     rating: 4.8,
     reviewCount: 142,
     priceFrom: 520000,
     colors: [
-      { id: "white-pearl", name: "Blanc Nacr├®", hex: "#F5F5F5", type: "pearl" },
+      { id: "white-pearl", name: "Blanc Nacré", hex: "#F5F5F5", type: "pearl" },
       { id: "black-midnight", name: "Noir Minuit", hex: "#0D0D0D", type: "metallic" },
       { id: "red-toyota", name: "Rouge Toyota", hex: "#EB0A1E", type: "solid" },
-      { id: "blue-storm", name: "Bleu Temp├¬te", hex: "#1B3A6B", type: "metallic" },
+      { id: "blue-storm", name: "Bleu Tempête", hex: "#1B3A6B", type: "metallic" },
       { id: "silver-lunar", name: "Argent Lunaire", hex: "#C0C0C0", type: "metallic" },
     ],
     wheels: [
       { id: "sport-18", name: 'Sport 18"', size: "18 pouces" },
       { id: "racing-19", name: 'Racing 19"', size: "19 pouces" },
-      { id: "forged-20", name: 'Forg├® 20"', size: "20 pouces" },
+      { id: "forged-20", name: 'Forgé 20"', size: "20 pouces" },
     ],
     interiors: [
       { id: "black-fabric", name: "Tissu Noir Sport", material: "fabric", colorHex: "#1A1A1A" },
@@ -64,26 +64,26 @@ export const VEHICLES_DATA: Vehicle[] = [
       warranty: "3 ans / 100 000 km",
     },
     description:
-      "La Toyota Supra repr├®sente l'apog├®e du sport automobile japonais. Avec son moteur turbo 6 cylindres de 340 ch d├®velopp├® en partenariat avec BMW, elle offre une exp├®rience de conduite pure et adr├®nalinique. Propulsion arri├¿re, bo├«te automatique 8 rapports et diff├®rentiel ├®lectronique : chaque virage devient un plaisir.",
+      "La Toyota Supra représente l'apogée du sport automobile japonais. Avec son moteur turbo 6 cylindres de 340 ch développé en partenariat avec BMW, elle offre une expérience de conduite pure et adrénalinique. Propulsion arrière, boîte automatique 8 rapports et différentiel électronique : chaque virage devient un plaisir.",
   },
 
-  // ÔöÇÔöÇ 2. Toyota RAV4 ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  // ── 2. Toyota RAV4 ───────────────────────────────────────────────────────────
   {
     id: "rav4",
     name: "Toyota RAV4",
     category: "SUV Familial",
     model3dPath: "/models/rav4.glb",
-    imageUrl: "/images/vehicles/rav4.jpg",
+    imageUrl: "/images/vehicles/rav4-hero-2.png",
     images: [
-      "/images/vehicles/rav4.jpg",
-      "/images/vehicles/rav4.jpg",
+      "/images/vehicles/rav4-hero-2.png",
+      "/images/vehicles/rav4-hero-2.png",
     ],
-    tagline: "Le SUV hybride qui s'adapte ├á tout",
+    tagline: "Le SUV hybride qui s'adapte à tout",
     highlights: [
-      "2.5L Hybride ÔÇö 222 ch et 6,0 L/100 km",
-      "Int├®grale AWD-i intelligente en option",
+      "2.5L Hybride — 222 ch et 6,0 L/100 km",
+      "Intégrale AWD-i intelligente en option",
       "580 L de coffre modulable",
-      "Toyota Safety Sense 2.0 de s├®rie",
+      "Toyota Safety Sense 2.0 de série",
     ],
     targetProfiles: ["Famille", "Professionnel", "Aventurier"],
     isHybrid: true,
@@ -92,11 +92,11 @@ export const VEHICLES_DATA: Vehicle[] = [
     reviewCount: 389,
     priceFrom: 310000,
     colors: [
-      { id: "white-pearl", name: "Blanc Nacr├®", hex: "#F5F5F5", type: "pearl" },
+      { id: "white-pearl", name: "Blanc Nacré", hex: "#F5F5F5", type: "pearl" },
       { id: "black-midnight", name: "Noir Minuit", hex: "#0D0D0D", type: "metallic" },
       { id: "grey-urban", name: "Gris Urbain", hex: "#6B7280", type: "metallic" },
       { id: "blue-dynamic", name: "Bleu Dynamique", hex: "#2563EB", type: "metallic" },
-      { id: "red-emotion", name: "Rouge ├ëmotion", hex: "#DC2626", type: "solid" },
+      { id: "red-emotion", name: "Rouge Émotion", hex: "#DC2626", type: "solid" },
     ],
     wheels: [
       { id: "alloy-17", name: 'Aluminium 17"', size: "17 pouces" },
@@ -130,28 +130,28 @@ export const VEHICLES_DATA: Vehicle[] = [
       warranty: "3 ans / 100 000 km",
     },
     description:
-      "Le RAV4 hybride est le SUV familial par excellence. Spacieux, ├®conomique et polyvalent, il s'adapte parfaitement ├á tous les styles de vie marocains. Avec sa technologie hybride auto-rechargeable et son int├®grale intelligente, il traverse les terrains urbains comme les pistes sahariennes.",
+      "Le RAV4 hybride est le SUV familial par excellence. Spacieux, économique et polyvalent, il s'adapte parfaitement à tous les styles de vie marocains. Avec sa technologie hybride auto-rechargeable et son intégrale intelligente, il traverse les terrains urbains comme les pistes sahariennes.",
   },
 
-  // ÔöÇÔöÇ 3. Toyota Yaris ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  // ── 3. Toyota Yaris ──────────────────────────────────────────────────────────
   {
     id: "yaris",
     name: "Toyota Yaris",
     category: "Citadine",
     model3dPath: "/models/yaris.glb",
-    imageUrl: "/images/vehicles/yaris.jpg",
+    imageUrl: "/images/vehicles/yaris-hero-2.png",
     images: [
-      "/images/vehicles/yaris.jpg",
-      "/images/vehicles/yaris.jpg",
+      "/images/vehicles/yaris-hero-2.png",
+      "/images/vehicles/yaris-hero-2.png",
     ],
-    tagline: "La ville ├á votre rythme, sans effort",
+    tagline: "La ville à votre rythme, sans effort",
     highlights: [
-      "Seulement 3,8 L/100 km ÔÇö la plus ├®conomique",
-      "Hybride auto-rechargeable de s├®rie",
-      "Compacte 3,94 m ÔÇö id├®ale pour se garer",
-      "├ëcran 9\" avec CarPlay & Android Auto",
+      "Seulement 3,8 L/100 km — la plus économique",
+      "Hybride auto-rechargeable de série",
+      "Compacte 3,94 m — idéale pour se garer",
+      "Écran 9\" avec CarPlay & Android Auto",
     ],
-    targetProfiles: ["Citadin", "Jeune actif", "├ëconome"],
+    targetProfiles: ["Citadin", "Jeune actif", "Économe"],
     isHybrid: true,
     isNew: false,
     rating: 4.6,
@@ -162,7 +162,7 @@ export const VEHICLES_DATA: Vehicle[] = [
       { id: "red-flash", name: "Rouge Flash", hex: "#EB0A1E", type: "solid" },
       { id: "yellow-solar", name: "Jaune Solaire", hex: "#FCD34D", type: "solid" },
       { id: "grey-tech", name: "Gris Tech", hex: "#9CA3AF", type: "metallic" },
-      { id: "blue-electric", name: "Bleu ├ëlectrique", hex: "#3B82F6", type: "metallic" },
+      { id: "blue-electric", name: "Bleu Électrique", hex: "#3B82F6", type: "metallic" },
     ],
     wheels: [
       { id: "steel-15", name: 'Acier 15"', size: "15 pouces" },
@@ -194,23 +194,23 @@ export const VEHICLES_DATA: Vehicle[] = [
       warranty: "3 ans / 100 000 km",
     },
     description:
-      "La Yaris hybride est la citadine intelligente par excellence. Compacte, agile et ultra-├®conomique, elle est parfaite pour naviguer dans les villes marocaines. Avec seulement 3,8 L/100 km, elle est la voiture la plus ├®conomique de sa cat├®gorie.",
+      "La Yaris hybride est la citadine intelligente par excellence. Compacte, agile et ultra-économique, elle est parfaite pour naviguer dans les villes marocaines. Avec seulement 3,8 L/100 km, elle est la voiture la plus économique de sa catégorie.",
   },
 
-  // ÔöÇÔöÇ 4. Toyota Corolla ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  // ── 4. Toyota Corolla ─────────────────────────────────────────────────────────
   {
     id: "corolla",
     name: "Toyota Corolla",
     category: "Compacte Hybride",
     model3dPath: "/models/corolla.glb",
-    imageUrl: "/images/vehicles/corolla.jpg",
+    imageUrl: "/images/vehicles/corolla-hero-2.png",
     images: [
-      "/images/vehicles/corolla.jpg",
-      "/images/vehicles/corolla.jpg",
+      "/images/vehicles/corolla-hero-2.png",
+      "/images/vehicles/corolla-hero-2.png",
     ],
-    tagline: "Fiabilit├® l├®gendaire, technologie moderne",
+    tagline: "Fiabilité légendaire, technologie moderne",
     highlights: [
-      "1.8L Hybride ÔÇö 140 ch et 4,5 L/100 km",
+      "1.8L Hybride — 140 ch et 4,5 L/100 km",
       "La voiture la plus vendue de l'histoire",
       "Coffre de 361 L avec plancher plat",
       "Garantie 3 ans incluse",
@@ -222,7 +222,7 @@ export const VEHICLES_DATA: Vehicle[] = [
     reviewCount: 672,
     priceFrom: 235000,
     colors: [
-      { id: "white-pearl", name: "Blanc Nacr├®", hex: "#F5F5F5", type: "pearl" },
+      { id: "white-pearl", name: "Blanc Nacré", hex: "#F5F5F5", type: "pearl" },
       { id: "black-midnight", name: "Noir Minuit", hex: "#0D0D0D", type: "metallic" },
       { id: "grey-silver", name: "Gris Argent", hex: "#9CA3AF", type: "metallic" },
       { id: "red-crimson", name: "Rouge Cramoisi", hex: "#B91C1C", type: "solid" },
@@ -258,39 +258,39 @@ export const VEHICLES_DATA: Vehicle[] = [
       warranty: "3 ans / 100 000 km",
     },
     description:
-      "La Corolla hybride incarne la fiabilit├® Toyota r├®invent├®e. ├ël├®gante et technologique, elle offre le parfait ├®quilibre entre confort quotidien et conscience ├®cologique. La voiture la plus vendue de l'histoire continue d'├®voluer avec une motorisation hybride efficiente.",
+      "La Corolla hybride incarne la fiabilité Toyota réinventée. Élégante et technologique, elle offre le parfait équilibre entre confort quotidien et conscience écologique. La voiture la plus vendue de l'histoire continue d'évoluer avec une motorisation hybride efficiente.",
   },
 
-  // ÔöÇÔöÇ 5. Toyota Camry ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  // ── 5. Toyota Camry ──────────────────────────────────────────────────────────
   {
     id: "camry",
     name: "Toyota Camry",
     category: "Berline Confort",
     model3dPath: "/models/camry.glb",
-    imageUrl: "/images/vehicles/camry.jpg",
+    imageUrl: "/images/vehicles/camry-hero-2.png",
     images: [
-      "/images/vehicles/camry.jpg",
-      "/images/vehicles/camry.jpg",
+      "/images/vehicles/camry-hero-2.png",
+      "/images/vehicles/camry-hero-2.png",
     ],
     tagline: "Le confort premium accessible",
     highlights: [
-      "2.5L Hybride ÔÇö 218 ch et 5,2 L/100 km",
-      "Int├®rieur luxueux avec cuir de s├®rie",
+      "2.5L Hybride — 218 ch et 5,2 L/100 km",
+      "Intérieur luxueux avec cuir de série",
       "Isolation phonique niveau berline premium",
-      "Head-up display et syst├¿me audio JBL",
+      "Head-up display et système audio JBL",
     ],
-    targetProfiles: ["Cadre", "Famille ais├®e", "Longue distance"],
+    targetProfiles: ["Cadre", "Famille aisée", "Longue distance"],
     isHybrid: true,
     isNew: false,
     rating: 4.6,
     reviewCount: 298,
     priceFrom: 280000,
     colors: [
-      { id: "white-pearl", name: "Blanc Nacr├®", hex: "#F5F5F5", type: "pearl" },
+      { id: "white-pearl", name: "Blanc Nacré", hex: "#F5F5F5", type: "pearl" },
       { id: "black-obsidian", name: "Noir Obsidien", hex: "#0A0A0A", type: "metallic" },
       { id: "grey-platinum", name: "Gris Platine", hex: "#E5E7EB", type: "metallic" },
-      { id: "silver-chrome", name: "Argent Chrom├®", hex: "#D1D5DB", type: "metallic" },
-      { id: "bronze-gold", name: "Bronze Dor├®", hex: "#C9A84C", type: "metallic" },
+      { id: "silver-chrome", name: "Argent Chromé", hex: "#D1D5DB", type: "metallic" },
+      { id: "bronze-gold", name: "Bronze Doré", hex: "#C9A84C", type: "metallic" },
     ],
     wheels: [
       { id: "alloy-17", name: 'Aluminium 17"', size: "17 pouces" },
@@ -322,26 +322,26 @@ export const VEHICLES_DATA: Vehicle[] = [
       warranty: "3 ans / 100 000 km",
     },
     description:
-      "La Camry hybride red├®finit la berline de confort. Silencieuse, spacieuse et luxueuse, elle offre une exp├®rience de conduite apaisante pour les longs trajets. Son habitacle premium avec finitions soign├®es rivalise avec des berlines deux fois plus ch├¿res.",
+      "La Camry hybride redéfinit la berline de confort. Silencieuse, spacieuse et luxueuse, elle offre une expérience de conduite apaisante pour les longs trajets. Son habitacle premium avec finitions soignées rivalise avec des berlines deux fois plus chères.",
   },
 
-  // ÔöÇÔöÇ 6. Toyota Land Cruiser ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  // ── 6. Toyota Land Cruiser ────────────────────────────────────────────────────
   {
     id: "landcruiser",
     name: "Toyota Land Cruiser",
-    category: "Tout-terrain extr├¬me",
+    category: "Tout-terrain extrême",
     model3dPath: "/models/landcruiser.glb",
-    imageUrl: "/images/vehicles/landcruiser.jpg",
+    imageUrl: "/images/vehicles/landcruiser-hero-2.png",
     images: [
-      "/images/vehicles/landcruiser.jpg",
-      "/images/vehicles/landcruiser.jpg",
+      "/images/vehicles/landcruiser-hero-2.png",
+      "/images/vehicles/landcruiser-hero-2.png",
     ],
     tagline: "Aucune limite, aucun terrain",
     highlights: [
-      "3.3L V6 Diesel ÔÇö 309 ch et 700 Nm de couple",
-      "Bo├«te de transfert 4WD avec blocages",
+      "3.3L V6 Diesel — 309 ch et 700 Nm de couple",
+      "Boîte de transfert 4WD avec blocages",
       "7 places luxueuses tout-terrain",
-      "Capacit├® de remorquage 3 500 kg",
+      "Capacité de remorquage 3 500 kg",
     ],
     targetProfiles: ["Aventurier", "Famille", "Grand voyageur"],
     isHybrid: false,
@@ -350,10 +350,10 @@ export const VEHICLES_DATA: Vehicle[] = [
     reviewCount: 187,
     priceFrom: 680000,
     colors: [
-      { id: "white-pearl", name: "Blanc Nacr├®", hex: "#F5F5F5", type: "pearl" },
+      { id: "white-pearl", name: "Blanc Nacré", hex: "#F5F5F5", type: "pearl" },
       { id: "black-midnight", name: "Noir Minuit", hex: "#0D0D0D", type: "metallic" },
       { id: "grey-granite", name: "Gris Granit", hex: "#4B5563", type: "metallic" },
-      { id: "beige-desert", name: "Beige D├®sert", hex: "#D4B896", type: "solid" },
+      { id: "beige-desert", name: "Beige Désert", hex: "#D4B896", type: "solid" },
       { id: "green-military", name: "Vert Militaire", hex: "#365314", type: "solid" },
     ],
     wheels: [
@@ -388,25 +388,25 @@ export const VEHICLES_DATA: Vehicle[] = [
       warranty: "3 ans / 100 000 km",
     },
     description:
-      "Le Land Cruiser est une l├®gende tout-terrain indestructible. Con├ºu pour les terrains les plus extr├¬mes du Maroc et du Sahara, il allie puissance brute et luxe raffin├®. Son V6 biturbo diesel de 700 Nm et sa transmission 4WD int├®grale le rendent imbattable en hors-piste.",
+      "Le Land Cruiser est une légende tout-terrain indestructible. Conçu pour les terrains les plus extrêmes du Maroc et du Sahara, il allie puissance brute et luxe raffiné. Son V6 biturbo diesel de 700 Nm et sa transmission 4WD intégrale le rendent imbattable en hors-piste.",
   },
 
-  // ÔöÇÔöÇ 7. Toyota Hilux ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  // ── 7. Toyota Hilux ──────────────────────────────────────────────────────────
   {
     id: "hilux",
     name: "Toyota Hilux",
     category: "Pick-up utilitaire",
     model3dPath: "/models/hilux.glb",
-    imageUrl: "/images/vehicles/hilux.jpg",
+    imageUrl: "/images/vehicles/hilux-hero-2.png",
     images: [
-      "/images/vehicles/hilux.jpg",
-      "/images/vehicles/hilux.jpg",
+      "/images/vehicles/hilux-hero-2.png",
+      "/images/vehicles/hilux-hero-2.png",
     ],
-    tagline: "Inarr├¬table. Indestructible. Indispensable.",
+    tagline: "Inarrêtable. Indestructible. Indispensable.",
     highlights: [
-      "2.8L Diesel D-4D ÔÇö 204 ch et 500 Nm",
+      "2.8L Diesel D-4D — 204 ch et 500 Nm",
       "Charge utile de 1 035 kg",
-      "Remorquage jusqu'├á 3 500 kg",
+      "Remorquage jusqu'à 3 500 kg",
       "Le pick-up le plus vendu au monde",
     ],
     targetProfiles: ["Professionnel", "Artisan", "Agriculteur", "Aventurier"],
@@ -417,7 +417,7 @@ export const VEHICLES_DATA: Vehicle[] = [
     priceFrom: 295000,
     colors: [
       { id: "white-solid", name: "Blanc Glacier", hex: "#FFFFFF", type: "solid" },
-      { id: "black-metallic", name: "Noir M├®tallique", hex: "#1A1A1A", type: "metallic" },
+      { id: "black-metallic", name: "Noir Métallique", hex: "#1A1A1A", type: "metallic" },
       { id: "grey-silver", name: "Argent Glacier", hex: "#9CA3AF", type: "metallic" },
       { id: "red-strong", name: "Rouge Puissance", hex: "#991B1B", type: "solid" },
       { id: "blue-workman", name: "Bleu Travail", hex: "#1E3A8A", type: "solid" },
@@ -442,7 +442,7 @@ export const VEHICLES_DATA: Vehicle[] = [
       zeroto100: 10.5,
       topSpeed: 175,
       consumption: 8.5,
-      trunkLiters: 0, // plateau ext├®rieur
+      trunkLiters: 0, // plateau extérieur
       seats: 5,
       weight: 2015,
       length: 5330,
@@ -458,25 +458,25 @@ export const VEHICLES_DATA: Vehicle[] = [
       "Le Hilux est le pick-up le plus vendu au monde depuis plus de 50 ans. Robuste, fiable et polyvalent, il est indispensable pour les professionnels et les aventuriers marocains. Sa garde au sol de 310 mm et son 4WD permanent le rendent imbattable.",
   },
 
-  // ÔöÇÔöÇ 8. Toyota Prius ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  // ── 8. Toyota Prius ──────────────────────────────────────────────────────────
   {
     id: "prius",
     name: "Toyota Prius",
-    category: "├ëco/Tech",
+    category: "Éco/Tech",
     model3dPath: "/models/prius.glb",
-    imageUrl: "/images/vehicles/prius.jpg",
+    imageUrl: "/images/vehicles/prius-hero-2.png",
     images: [
-      "/images/vehicles/prius.jpg",
-      "/images/vehicles/prius.jpg",
+      "/images/vehicles/prius-hero-2.png",
+      "/images/vehicles/prius-hero-2.png",
     ],
-    tagline: "80 km 100% ├®lectrique, z├®ro compromis",
+    tagline: "80 km 100% électrique, zéro compromis",
     highlights: [
-      "PHEV ÔÇö 80 km en mode 100% ├®lectrique",
-      "1,0 L/100 km en cycle mixte recharg├®",
+      "PHEV — 80 km en mode 100% électrique",
+      "1,0 L/100 km en cycle mixte rechargé",
       "Charge rapide DC en 2h30",
-      "Design a├®rodynamique Cx 0,27",
+      "Design aérodynamique Cx 0,27",
     ],
-    targetProfiles: ["├ëcolo", "Technophile", "Navetteur urbain"],
+    targetProfiles: ["Écolo", "Technophile", "Navetteur urbain"],
     isHybrid: true,
     isNew: true,
     rating: 4.5,
@@ -486,11 +486,11 @@ export const VEHICLES_DATA: Vehicle[] = [
       { id: "white-pure", name: "Blanc Solaire", hex: "#F9FAFB", type: "pearl" },
       { id: "black-midnight", name: "Noir Midnight", hex: "#0A0A0A", type: "metallic" },
       { id: "grey-titanium", name: "Gris Titane", hex: "#6B7280", type: "metallic" },
-      { id: "silver-eco", name: "Argent ├ëco", hex: "#D1D5DB", type: "metallic" },
-      { id: "green-eco", name: "Vert ├ëco", hex: "#166534", type: "metallic" },
+      { id: "silver-eco", name: "Argent Éco", hex: "#D1D5DB", type: "metallic" },
+      { id: "green-eco", name: "Vert Éco", hex: "#166534", type: "metallic" },
     ],
     wheels: [
-      { id: "eco-15", name: '├ëco 15"', size: "15 pouces" },
+      { id: "eco-15", name: 'Éco 15"', size: "15 pouces" },
       { id: "aero-17", name: 'Aero 17"', size: "17 pouces" },
       { id: "tech-19", name: 'Tech 19"', size: "19 pouces" },
     ],
@@ -500,7 +500,7 @@ export const VEHICLES_DATA: Vehicle[] = [
       { id: "white-leather", name: "Cuir Blanc Tech", material: "leather", colorHex: "#F9FAFB" },
     ],
     specs: {
-      engine: "2.0L Hybride Plug-in (A25A-FXS + moteur ├®lectrique)",
+      engine: "2.0L Hybride Plug-in (A25A-FXS + moteur électrique)",
       engineType: "PHEV",
       power: 223,
       torque: 205,
@@ -517,38 +517,38 @@ export const VEHICLES_DATA: Vehicle[] = [
       width: 1780,
       height: 1430,
       wheelbase: 2750,
-      warranty: "3 ans / 100 000 km ÔÇö 8 ans batterie",
+      warranty: "3 ans / 100 000 km — 8 ans batterie",
     },
     description:
-      "La Prius PHEV r├®volutionne la mobilit├® ├®co-responsable. Avec sa technologie hybride plug-in de derni├¿re g├®n├®ration, elle offre jusqu'├á 80 km en mode 100% ├®lectrique. Recharg├®e quotidiennement, la plupart des trajets urbains se font ├á co├╗t quasi-z├®ro.",
+      "La Prius PHEV révolutionne la mobilité éco-responsable. Avec sa technologie hybride plug-in de dernière génération, elle offre jusqu'à 80 km en mode 100% électrique. Rechargée quotidiennement, la plupart des trajets urbains se font à coût quasi-zéro.",
   },
 
-  // ÔöÇÔöÇ 9. Toyota C-HR ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  // ── 9. Toyota C-HR ───────────────────────────────────────────────────────────
   {
     id: "chr",
     name: "Toyota C-HR",
     category: "SUV Urbain",
     model3dPath: "/models/chr.glb",
-    imageUrl: "/images/vehicles/chr.jpg",
+    imageUrl: "/images/vehicles/chr-hero-2.png",
     images: [
-      "/images/vehicles/chr.jpg",
-      "/images/vehicles/chr.jpg",
+      "/images/vehicles/chr-hero-2.png",
+      "/images/vehicles/chr-hero-2.png",
     ],
     tagline: "Design audacieux, ├óme hybride",
     highlights: [
-      "2.0L Hybride ÔÇö 197 ch et 5,5 L/100 km",
-      "Design coup├® SUV exclusif",
-      "Mode Sport avec sonorit├® synth├®tique",
-      "├ëcran 12,3\" avec son JBL 9 haut-parleurs",
+      "2.0L Hybride — 197 ch et 5,5 L/100 km",
+      "Design coupé SUV exclusif",
+      "Mode Sport avec sonorité synthétique",
+      "Écran 12,3\" avec son JBL 9 haut-parleurs",
     ],
-    targetProfiles: ["Citadin branch├®", "Jeune professionnel", "Design lover"],
+    targetProfiles: ["Citadin branché", "Jeune professionnel", "Design lover"],
     isHybrid: true,
     isNew: true,
     rating: 4.5,
     reviewCount: 176,
     priceFrom: 245000,
     colors: [
-      { id: "white-pearl", name: "Blanc Nacr├®", hex: "#F5F5F5", type: "pearl" },
+      { id: "white-pearl", name: "Blanc Nacré", hex: "#F5F5F5", type: "pearl" },
       { id: "black-roof", name: "Noir Toit Biton", hex: "#0A0A0A", type: "metallic" },
       { id: "red-dynamic", name: "Rouge Dynamique", hex: "#DC2626", type: "solid" },
       { id: "orange-pulse", name: "Orange Pulse", hex: "#EA580C", type: "metallic" },
@@ -585,26 +585,26 @@ export const VEHICLES_DATA: Vehicle[] = [
       warranty: "3 ans / 100 000 km",
     },
     description:
-      "Le C-HR hybride s'impose comme le SUV urbain le plus audacieux. Son design coup├® unique avec toit flottant et ses technologies hybrides en font le choix parfait pour les citadins modernes qui refusent de sacrifier le style ├á la sobri├®t├®.",
+      "Le C-HR hybride s'impose comme le SUV urbain le plus audacieux. Son design coupé unique avec toit flottant et ses technologies hybrides en font le choix parfait pour les citadins modernes qui refusent de sacrifier le style à la sobriété.",
   },
 
-  // ÔöÇÔöÇ 10. Toyota Highlander ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  // ── 10. Toyota Highlander ─────────────────────────────────────────────────────
   {
     id: "highlander",
     name: "Toyota Highlander",
     category: "SUV 7 places",
     model3dPath: "/models/highlander.glb",
-    imageUrl: "/images/vehicles/highlander.jpg",
+    imageUrl: "/images/vehicles/highlander-hero-2.png",
     images: [
-      "/images/vehicles/highlander.jpg",
-      "/images/vehicles/highlander.jpg",
+      "/images/vehicles/highlander-hero-2.png",
+      "/images/vehicles/highlander-hero-2.png",
     ],
     tagline: "Grand SUV, grande famille, grand confort",
     highlights: [
-      "2.5L Hybride AWD ÔÇö 248 ch et 6,8 L/100 km",
-      "7 places avec 3├¿me rang├®e adultes",
-      "Syst├¿me Panoramic View Monitor 360┬░",
-      "Int├®rieur luxueux 3 rang├®es en cuir",
+      "2.5L Hybride AWD — 248 ch et 6,8 L/100 km",
+      "7 places avec 3ème rangée adultes",
+      "Système Panoramic View Monitor 360°",
+      "Intérieur luxueux 3 rangées en cuir",
     ],
     targetProfiles: ["Grande famille", "Chef d'entreprise", "Long voyage"],
     isHybrid: true,
@@ -613,7 +613,7 @@ export const VEHICLES_DATA: Vehicle[] = [
     reviewCount: 134,
     priceFrom: 580000,
     colors: [
-      { id: "white-pearl", name: "Blanc Nacr├®", hex: "#F5F5F5", type: "pearl" },
+      { id: "white-pearl", name: "Blanc Nacré", hex: "#F5F5F5", type: "pearl" },
       { id: "black-midnight", name: "Noir Minuit", hex: "#0A0A0A", type: "metallic" },
       { id: "grey-silver", name: "Gris Argent", hex: "#9CA3AF", type: "metallic" },
       { id: "bronze-luxury", name: "Bronze Luxe", hex: "#C9A84C", type: "metallic" },
@@ -630,7 +630,7 @@ export const VEHICLES_DATA: Vehicle[] = [
       { id: "brown-premium", name: "Cuir Brun Premium", material: "premium-leather", colorHex: "#7C3A1E" },
     ],
     specs: {
-      engine: "2.5L Hybride AWD (A25A-FXS + 2 moteurs ├®lectriques)",
+      engine: "2.5L Hybride AWD (A25A-FXS + 2 moteurs électriques)",
       engineType: "Hybride",
       power: 248,
       torque: 239,
@@ -659,10 +659,10 @@ export const VEHICLES_DATA: Vehicle[] = [
     name: "Toyota Granvia",
     category: "Van Premium",
     model3dPath: "/models/granvia/scene.gltf",
-    imageUrl: "/images/vehicles/hilux.jpg",
+    imageUrl: "/images/vehicles/granvia-hero-2.png",
     images: [
-      "/images/vehicles/hilux.jpg",
-      "/images/vehicles/highlander.jpg",
+      "/images/vehicles/granvia-hero-2.png",
+      "/images/vehicles/granvia-hero-2.png",
     ],
     tagline: "Le voyage en classe affaires",
     highlights: [
@@ -715,10 +715,10 @@ export const VEHICLES_DATA: Vehicle[] = [
     name: "Toyota Corolla 2026",
     category: "Berline",
     model3dPath: "/models/corolla-2/scene.gltf",
-    imageUrl: "/images/vehicles/corolla.jpg",
+    imageUrl: "/images/vehicles/corolla-2-hero-2.png",
     images: [
-      "/images/vehicles/corolla.jpg",
-      "/images/vehicles/corolla.jpg",
+      "/images/vehicles/corolla-2-hero-2.png",
+      "/images/vehicles/corolla-2-hero-2.png",
     ],
     tagline: "L'élégance technologique au quotidien",
     highlights: [
@@ -771,10 +771,10 @@ export const VEHICLES_DATA: Vehicle[] = [
     name: "Toyota Kijang",
     category: "Monospace Familial",
     model3dPath: "/models/kijang/scene.gltf",
-    imageUrl: "/images/vehicles/hilux.jpg",
+    imageUrl: "/images/vehicles/kijang-hero-1.png",
     images: [
-      "/images/vehicles/hilux.jpg",
-      "/images/vehicles/rav4.jpg",
+      "/images/vehicles/kijang-hero-1.png",
+      "/images/vehicles/rav4-hero-2.png",
     ],
     tagline: "L'espace familial repensé",
     highlights: [
@@ -826,7 +826,7 @@ export const VEHICLES_DATA: Vehicle[] = [
   },
 ];
 
-// ÔöÇÔöÇÔöÇ Utility Functions ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+// ─── Utility Functions ─────────────────────────────────────────────────────────
 
 /** Same image source used by vehicle cards and the homepage showcase slider. */
 export function getVehicleDisplayImage(vehicle: Vehicle): string {
@@ -856,7 +856,7 @@ export function searchVehicles(query: string): Vehicle[] {
   );
 }
 
-// ÔöÇÔöÇÔöÇ Pure-logic recommendation fallback ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+// ─── Pure-logic recommendation fallback ───────────────────────────────────────
 // Used when Gemini is slow/unavailable. Scores each vehicle against user preferences.
 
 export function getRecommendations(
@@ -883,10 +883,10 @@ export function getRecommendations(
     if (preferences.usage) {
       const usageMap: Record<string, string[]> = {
         family: ["SUV Familial", "SUV 7 places", "Berline Confort", "Compacte Hybride"],
-        city: ["Citadine", "SUV Urbain", "Compacte Hybride", "├ëco/Tech"],
-        offroad: ["Tout-terrain extr├¬me", "Pick-up utilitaire", "SUV Familial"],
+        city: ["Citadine", "SUV Urbain", "Compacte Hybride", "Éco/Tech"],
+        offroad: ["Tout-terrain extrême", "Pick-up utilitaire", "SUV Familial"],
         sport: ["Sport", "SUV Urbain"],
-        eco: ["├ëco/Tech", "Citadine", "Compacte Hybride", "SUV Familial"],
+        eco: ["Éco/Tech", "Citadine", "Compacte Hybride", "SUV Familial"],
       };
       const matched = usageMap[preferences.usage] ?? [];
       if (matched.includes(v.category)) score += 25;

@@ -30,7 +30,6 @@ const TOP_NAV = [
   { href: "/road-trip", label: "Road Trip", xlOnly: true },
   { href: "/acheter", label: "Acheter" },
   { href: "/concessions", label: "Concessions" },
-  { href: "/contact", label: "Contact" },
 ] as const;
 
 export function Header() {

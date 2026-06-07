@@ -4,10 +4,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, RotateCcw, Send, Sparkles, Bot } from "lucide-react";
+import { X, RotateCcw, Send, Sparkles, Bot, Scale, Loader2 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useChat, VEHICLE_DATA } from "@/hooks/useChat";
-import type { ChatMessage, RecommendationData } from "@/hooks/useChat";
+import type { ChatMessage, RecommendationData, CompareData } from "@/hooks/useChat";
+import { useCompareStore } from "@/store/compareStore";
 
 const PANEL_W = 390;
 const PANEL_H = 600;
@@ -153,6 +154,66 @@ function TypingIndicator() {
   );
 }
 
+function CompareInsightCard({
+  data,
+  loading,
+}: {
+  data: CompareData;
+  loading: boolean;
+}) {
+  const openCompare = useCompareStore((s) => s.openCompare);
+  const drawerOpen = useCompareStore((s) => s.drawerOpen);
+
+  const labels = data.ids
+    .slice(0, 3)
+    .map((id) => VEHICLE_DATA[id]?.name.replace("Toyota ", "") ?? id)
+    .join(" vs ");
+
+  return (
+    <motion.button
+      type="button"
+      initial={{ opacity: 0, y: 14, scale: 0.96 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      onClick={() => openCompare(data.ids, { scenario: data.scenario, summary: data.summary })}
+      className="w-full text-left rounded-2xl overflow-hidden border border-white/10 mt-1 shadow-xl bg-gradient-to-br from-[#1a1214] to-[#0d0d0d] hover:border-toyota-red/35 transition-all group"
+    >
+      <div className="flex items-center gap-2 px-3 pt-3 pb-2 border-b border-white/5">
+        {loading ? (
+          <Loader2 size={12} className="text-toyota-red animate-spin" />
+        ) : (
+          <Scale size={12} className="text-toyota-red" />
+        )}
+        <span className="text-[10px] text-toyota-red font-bold uppercase tracking-[0.12em]">
+          {loading ? "Analyse en cours…" : drawerOpen ? "Analyse ouverte" : "Voir l'analyse comparative"}
+        </span>
+      </div>
+      <div className="px-3 py-3 flex items-center gap-3">
+        <div className="flex -space-x-2">
+          {data.ids.slice(0, 3).map((id) => {
+            const vd = VEHICLE_DATA[id];
+            if (!vd) return null;
+            return (
+              <div
+                key={id}
+                className="relative w-12 h-9 rounded-lg overflow-hidden ring-2 ring-[#141414] bg-black/40"
+              >
+                <Image src={vd.imageUrl} alt={vd.name} fill className="object-cover" sizes="48px" />
+              </div>
+            );
+          })}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-white font-bold text-[12px] truncate">{labels}</p>
+          <p className="text-white/40 text-[11px] mt-0.5 line-clamp-2">
+            {data.summary ?? "Comparaison détaillée avec graphiques et verdict IA"}
+          </p>
+        </div>
+        <Scale className="h-4 w-4 text-white/25 group-hover:text-toyota-red shrink-0 transition-colors" />
+      </div>
+    </motion.button>
+  );
+}
+
 function RecommendationCard({
   data,
   onNavigate,
@@ -252,7 +313,7 @@ export default function ChatWidget() {
     null
   );
 
-  const { messages, input, setInput, isLoading, error, recommendation, chips, unread, markRead, sendMessage, clearChat } =
+  const { messages, input, setInput, isLoading, error, recommendation, compareData, chips, unread, markRead, sendMessage, clearChat } =
     useChat({ isOpen });
 
   useEffect(() => {
@@ -527,6 +588,9 @@ export default function ChatWidget() {
               {isLoading && <TypingIndicator />}
               {recommendation && !isLoading && (
                 <RecommendationCard data={recommendation} onNavigate={handleNavigate} />
+              )}
+              {compareData && compareData.ids.length >= 2 && (
+                <CompareInsightCard data={compareData} loading={isLoading} />
               )}
               {error && (
                 <div className="text-xs text-red-300 bg-red-950/40 border border-red-800/30 rounded-xl px-3 py-2">

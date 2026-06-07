@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { ensureVehicle } from "@/lib/catalogSync";
 import { prisma } from "@/lib/prisma";
 import { notifyAdminReservationConfirmed } from "@/lib/adminNotifications";
 import { requireAdmin } from "@/lib/auth";
@@ -54,12 +55,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Resolve vehicleId (slug or cuid)
-    const vehicle = await prisma.vehicle.findFirst({
-      where: {
-        OR: [{ id: vehicleId }, { slug: vehicleId }],
-      },
-    });
+    // Resolve vehicleId (slug or cuid); auto-sync from catalog if missing
+    const vehicle = await ensureVehicle(vehicleId);
 
     if (!vehicle) {
       return NextResponse.json(
@@ -68,11 +65,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Ensure date is in the future
+    // Ensure date is in the future (5 min buffer for same-day slots)
     const reservationDate = new Date(date);
-    if (reservationDate <= new Date()) {
+    const minDate = new Date(Date.now() + 5 * 60 * 1000);
+    if (reservationDate <= minDate) {
       return NextResponse.json(
-        { error: "Reservation date must be in the future" },
+        { error: "Choisissez une date et une heure dans le futur" },
         { status: 422 }
       );
     }

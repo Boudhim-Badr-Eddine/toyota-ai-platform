@@ -5,6 +5,7 @@ import { PageTransition } from "@/components/providers/PageTransition";
 import { Toaster } from "sonner";
 import { DebugPanel } from "@/components/dev/DebugPanel";
 import { ChatWidgetLoader } from "@/components/chat/ChatWidgetLoader";
+import { CompareOverlay } from "@/components/catalog/CompareOverlay";
 import { ScrollToTop } from "@/components/ui/ScrollToTop";
 import "./globals.css";
 
@@ -52,6 +53,7 @@ export default function RootLayout({
           }}
         />
         <ChatWidgetLoader />
+        <CompareOverlay />
         <ScrollToTop />
         <DebugPanel />
       </body>

@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { ContactStrip } from "@/components/layout/ContactInfo";
 import { VEHICLES_DATA, getVehicleDisplayImage } from "@/data/vehicles";
 import { cn } from "@/lib/utils";
 
@@ -1104,6 +1105,9 @@ export default function HomePage() {
         </section>
 
       </main>
+      <div className="section-container pb-8">
+        <ContactStrip />
+      </div>
       <Footer />
     </>
   );

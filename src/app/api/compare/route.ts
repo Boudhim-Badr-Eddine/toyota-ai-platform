@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getGroqClient } from "@/lib/groq";
+import { buildLocalCompare } from "@/lib/compareLocal";
 import { VEHICLES_DATA } from "@/data/vehicles";
 import { getEnrichedVehicle } from "@/data/vehicleEnrichments";
 
@@ -50,6 +50,17 @@ export async function POST(request: NextRequest) {
     }
 
     const scenario = context?.scenario ?? "general";
+
+    const apiKey = process.env.GROQ_API_KEY?.trim();
+    if (!apiKey) {
+      const local = buildLocalCompare(vehicleIds, scenario);
+      if (!local) {
+        return NextResponse.json({ error: "Vehicles not found" }, { status: 404 });
+      }
+      return NextResponse.json({ data: local, source: "local" });
+    }
+
+    const { getGroqClient } = await import("@/lib/groq");
     const prompt = `Tu es expert Toyota Maroc. Compare ces véhicules pour un client marocain.
 Scénario: ${scenario}
 Message client: ${context?.userMessage ?? "comparaison générale"}
@@ -81,33 +92,51 @@ Réponds UNIQUEMENT en JSON valide:
 Inclus 8-12 lignes pertinentes pour le scénario. relevance 0-100. Masque les specs peu pertinentes (relevance<30).`;
 
     const groq = getGroqClient();
-    const completion = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.4,
-      max_tokens: 2000,
-    });
-
-    const text = completion.choices[0]?.message?.content ?? "{}";
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    let aiData: Partial<CompareResult> = {};
+    let result: CompareResult;
     try {
-      aiData = JSON.parse(jsonMatch?.[0] ?? "{}") as Partial<CompareResult>;
-    } catch {
-      aiData = { summary: "Comparaison disponible ci-dessous.", rows: [] };
+      const completion = await groq.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.4,
+        max_tokens: 2000,
+      });
+
+      const text = completion.choices[0]?.message?.content ?? "{}";
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      let aiData: Partial<CompareResult> = {};
+      try {
+        aiData = JSON.parse(jsonMatch?.[0] ?? "{}") as Partial<CompareResult>;
+      } catch {
+        aiData = { summary: "Comparaison disponible ci-dessous.", rows: [] };
+      }
+
+      result = {
+        vehicles: vehicles.map((v) => ({ id: v.id, name: v.name })),
+        summary: aiData.summary ?? "Voici la comparaison détaillée.",
+        rows: (aiData.rows ?? []).filter((r) => r.relevance >= 30),
+        suggestedAlternatives: aiData.suggestedAlternatives,
+        scenario,
+      };
+    } catch (groqErr) {
+      console.warn("[POST /api/compare] Groq failed, using local compare:", groqErr);
+      const local = buildLocalCompare(vehicleIds, scenario);
+      if (!local) throw groqErr;
+      return NextResponse.json({ data: local, source: "local-fallback" });
     }
 
-    const result: CompareResult = {
-      vehicles: vehicles.map((v) => ({ id: v.id, name: v.name })),
-      summary: aiData.summary ?? "Voici la comparaison détaillée.",
-      rows: (aiData.rows ?? []).filter((r) => r.relevance >= 30),
-      suggestedAlternatives: aiData.suggestedAlternatives,
-      scenario,
-    };
-
-    return NextResponse.json({ data: result });
+    return NextResponse.json({ data: result, source: "groq" });
   } catch (error) {
     console.error("[POST /api/compare]", error);
+    try {
+      const body = await request.clone().json();
+      const parsed = CompareSchema.safeParse(body);
+      if (parsed.success) {
+        const local = buildLocalCompare(parsed.data.vehicleIds, parsed.data.context?.scenario ?? "general");
+        if (local) return NextResponse.json({ data: local, source: "local-fallback" });
+      }
+    } catch {
+      /* ignore */
+    }
     return NextResponse.json({ error: "Compare failed" }, { status: 500 });
   }
 }

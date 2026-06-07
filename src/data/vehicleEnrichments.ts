@@ -132,10 +132,44 @@ export const VEHICLE_ENRICHMENTS: Record<string, VehicleEnrichment> = {
     estimatedMonthlyPayment: monthlyPayment(295000),
     annualFuelCostMAD: annualFuel(3.5),
   },
+  granvia: {
+    scenarioScores: { family: 92, city: 55, sport: 20, value: 68, tech: 72, offroad: 30 },
+    safetyFeatures: ["TSS 2.0", "7 airbags", "Freinage pré-collision", "Alerte angle mort"],
+    techFeatures: ["Écran 10\"", "CarPlay", "Sièges capitaine option", "Climatisation multi-zones"],
+    standardEquipment: ["8 places", "Portes coulissantes", "Grand coffre", "Sièges confort"],
+    pros: ["Espace VIP", "Confort voyage", "Polyvalence familiale"],
+    cons: ["Encombrement", "Consommation en ville", "Prix élevé"],
+    idealFor: ["family7", "family"],
+    estimatedMonthlyPayment: monthlyPayment(420000),
+    annualFuelCostMAD: annualFuel(7.5),
+  },
+  "corolla-2": {
+    scenarioScores: { family: 78, city: 88, sport: 42, value: 86, tech: 90, offroad: 18 },
+    safetyFeatures: ["TSS 3.0", "Freinage pré-collision", "Surveillance trafic"],
+    techFeatures: ["Écran 12.3\"", "Hybride 5ème gen", "Charge sans fil", "Digital Key"],
+    standardEquipment: ["Design 2026", "Hybride efficient", "Sièges confort", "LED matrix"],
+    pros: ["Technologie récente", "Hybride économique", "Fiabilité Toyota"],
+    cons: ["Prix premium vs Corolla classique", "Coffre moyen", "Options coûteuses"],
+    idealFor: ["family", "city", "eco"],
+    estimatedMonthlyPayment: monthlyPayment(265000),
+    annualFuelCostMAD: annualFuel(4.0),
+  },
+  kijang: {
+    scenarioScores: { family: 88, city: 50, sport: 22, value: 72, tech: 65, offroad: 45 },
+    safetyFeatures: ["ABS + EBD", "Airbags multiples", "Caméra de recul", "Capteurs parking"],
+    techFeatures: ["Écran tactile 9\"", "Bluetooth", "Climatisation arrière", "USB multi-places"],
+    standardEquipment: ["7-8 places", "Modularité sièges", "Grand volume", "Robustesse"],
+    pros: ["Espace familial", "Polyvalent", "Accessible"],
+    cons: ["Finitions basiques", "Consommation route", "Moins tech que Granvia"],
+    idealFor: ["family7", "family"],
+    estimatedMonthlyPayment: monthlyPayment(320000),
+    annualFuelCostMAD: annualFuel(8.0),
+  },
 };
 
 export function getEnrichedVehicle(vehicle: Vehicle): Vehicle {
-  const e = VEHICLE_ENRICHMENTS[vehicle.id];
+  const key = (vehicle as Vehicle & { slug?: string }).slug ?? vehicle.id;
+  const e = VEHICLE_ENRICHMENTS[key];
   if (!e) return vehicle;
   return { ...vehicle, ...e };
 }

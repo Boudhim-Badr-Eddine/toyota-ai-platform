@@ -195,7 +195,7 @@ export default function LoginPage() {
         </div>
 
         {/* Footer */}
-        <p className="text-center text-toyota-muted/40 text-xs mt-6">
+        <p className="text-center text-toyota-muted/40 text-xs mt-6" suppressHydrationWarning>
           Toyota AI Experience Platform © {new Date().getFullYear()}
         </p>
       </div>

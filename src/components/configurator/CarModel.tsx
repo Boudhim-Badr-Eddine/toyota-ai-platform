@@ -6,6 +6,8 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import type { GLTF } from "three-stdlib";
 import { MODEL_PATHS, getModelPath } from "@/lib/modelPaths";
+import { normalizeVehicleScene } from "@/lib/normalizeModel";
+import { reportGltfStatus } from "@/components/dev/DebugPanel";
 import {
   setupVehicleHinges,
   applyVehicleHingeRotation,
@@ -24,6 +26,7 @@ export interface CarModelProps {
   selectedWheelId?: string;
   selectedInteriorId?: string;
   vehicleAnim?: VehicleAnimState;
+  onLoaded?: () => void;
 }
 
 const GLASS_RE = /glass|window|windshield|windscreen|visor|light|lamp|lens/i;
@@ -186,23 +189,31 @@ class LoadErrorBoundary extends Component<EBProps, EBState> {
 
 interface GltfModelProps {
   modelPath: string;
+  vehicleId: string;
   colorHex: string;
   colorType: ColorType;
   selectedWheelId: string;
   selectedInteriorId: string;
   vehicleAnim?: VehicleAnimState;
+  onLoaded?: () => void;
 }
 
 function GltfModel({
   modelPath,
+  vehicleId,
   colorHex,
   colorType,
   selectedWheelId,
   selectedInteriorId,
   vehicleAnim,
+  onLoaded,
 }: GltfModelProps) {
   const gltf = useGLTF(modelPath) as GLTF & { scene: THREE.Group };
-  const scene = useMemo(() => gltf.scene.clone(true), [gltf.scene]);
+  const scene = useMemo(() => {
+    const cloned = gltf.scene.clone(true);
+    normalizeVehicleScene(cloned);
+    return cloned;
+  }, [gltf.scene]);
 
   const [parts, setParts] = useState({
     frontLeftDoor: null as THREE.Object3D | null,
@@ -212,37 +223,13 @@ function GltfModel({
     hood: null as THREE.Object3D | null,
     trunk: null as THREE.Object3D | null,
   });
-  const [sceneReady, setSceneReady] = useState(false);
-
-  const vehicleHinges = useRef<VehicleHingeSetup | null>(null);
-  const vehicleRot = useRef({
-    FL: 0,
-    FR: 0,
-    RL: 0,
-    RR: 0,
-    hood: 0,
-    trunk: 0,
-  });
 
   const HINGE_ANIM_SPEED = 1.6;
 
   useEffect(() => {
-    setSceneReady(false);
-    scene.scale.setScalar(1);
-    scene.position.set(0, 0, 0);
-
-    const box = new THREE.Box3().setFromObject(scene);
-    const center = box.getCenter(new THREE.Vector3());
-    const size = box.getSize(new THREE.Vector3());
-    const maxDim = Math.max(size.x, size.y, size.z);
-    if (maxDim > 0) {
-      const scale = 3.5 / maxDim;
-      scene.scale.setScalar(scale);
-      scene.position.copy(center.clone().multiplyScalar(-scale));
-      scene.position.y = 0;
-    }
-    setSceneReady(true);
-  }, [scene]);
+    reportGltfStatus(vehicleId, "loaded");
+    onLoaded?.();
+  }, [vehicleId, onLoaded, scene]);
 
   useEffect(() => {
     const bodyColor = new THREE.Color(colorHex);
@@ -361,12 +348,17 @@ function GltfModel({
     setParts(found);
   }, [scene, colorHex, colorType, selectedWheelId, selectedInteriorId]);
 
-  useEffect(() => {
-    if (!sceneReady) {
-      vehicleHinges.current = null;
-      return;
-    }
+  const vehicleHinges = useRef<VehicleHingeSetup | null>(null);
+  const vehicleRot = useRef({
+    FL: 0,
+    FR: 0,
+    RL: 0,
+    RR: 0,
+    hood: 0,
+    trunk: 0,
+  });
 
+  useEffect(() => {
     const hasParts =
       parts.frontLeftDoor ||
       parts.frontRightDoor ||
@@ -382,7 +374,7 @@ function GltfModel({
 
     vehicleHinges.current = setupVehicleHinges(scene, parts);
     vehicleRot.current = { FL: 0, FR: 0, RL: 0, RR: 0, hood: 0, trunk: 0 };
-  }, [scene, parts, sceneReady]);
+  }, [scene, parts]);
 
   useFrame((_, delta) => {
     if (!vehicleHinges.current || !vehicleAnim) return;
@@ -414,7 +406,7 @@ function GltfModel({
     }
   });
 
-  return <primitive object={scene} visible={sceneReady} />;
+  return <primitive object={scene} />;
 }
 
 export function CarModel({
@@ -425,6 +417,7 @@ export function CarModel({
   selectedWheelId = "",
   selectedInteriorId = "",
   vehicleAnim,
+  onLoaded,
 }: CarModelProps) {
   const modelPath = getModelPath(vehicleId);
   const fallback = <FallbackBox colorHex={colorHex} vehicleName={vehicleName} />;
@@ -434,11 +427,13 @@ export function CarModel({
       <Suspense fallback={<LoadingCar />}>
         <GltfModel
           modelPath={modelPath}
+          vehicleId={vehicleId}
           colorHex={colorHex}
           colorType={colorType}
           selectedWheelId={selectedWheelId}
           selectedInteriorId={selectedInteriorId}
           vehicleAnim={vehicleAnim}
+          onLoaded={onLoaded}
         />
       </Suspense>
     </LoadErrorBoundary>

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { ensureVehicle, ensureDealership } from "@/lib/catalogSync";
 import { notifyAdminLeadConfirmed } from "@/lib/adminNotifications";
 import { auth, requireAdmin } from "@/lib/auth";
 
@@ -65,12 +66,8 @@ export async function POST(request: NextRequest) {
     const { firstName, lastName, email, phone, vehicleId, dealershipId, userLat, userLng, configuration, chatHistory, type } =
       parsed.data;
 
-    // Resolve vehicleId: accept either the string slug or the DB cuid
-    const vehicle = await prisma.vehicle.findFirst({
-      where: {
-        OR: [{ id: vehicleId }, { slug: vehicleId }],
-      },
-    });
+    // Resolve vehicleId: accept slug or cuid; auto-sync from catalog if missing in DB
+    const vehicle = await ensureVehicle(vehicleId);
 
     if (!vehicle) {
       return NextResponse.json(
@@ -81,9 +78,7 @@ export async function POST(request: NextRequest) {
 
     let resolvedDealershipId: string | null = null;
     if (dealershipId) {
-      const dealership = await prisma.dealership.findFirst({
-        where: { OR: [{ id: dealershipId }, { slug: dealershipId }] },
-      });
+      const dealership = await ensureDealership(dealershipId);
       if (dealership) resolvedDealershipId = dealership.id;
     }
 

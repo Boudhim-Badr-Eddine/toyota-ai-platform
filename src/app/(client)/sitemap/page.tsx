@@ -8,7 +8,7 @@ export default function SitemapPage() {
     { href: "/configurator", label: "Configurateur" },
     { href: "/acheter", label: "Acheter" },
     { href: "/concessions", label: "Concessions" },
-    { href: "/contact", label: "Contact" },
+    { href: "/acheter", label: "Acheter / RDV" },
     { href: "/privacy", label: "Confidentialité" },
     { href: "/terms", label: "CGU" },
   ];

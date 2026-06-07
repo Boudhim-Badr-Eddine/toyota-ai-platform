@@ -53,7 +53,14 @@ function devAuthFallback(email: string, password: string) {
   };
 }
 
+const authSecret =
+  process.env.NEXTAUTH_SECRET ||
+  (process.env.NODE_ENV === "development"
+    ? "toyota-ai-dev-secret-do-not-use-in-production"
+    : undefined);
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  secret: authSecret,
   trustHost: true,
   providers: [
     Credentials({

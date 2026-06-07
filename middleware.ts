@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
-const ADMIN_PATHS = ["/dashboard", "/leads", "/reservations"];
+const ADMIN_PATHS = ["/dashboard", "/leads", "/reservations", "/analytics"];
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;
@@ -21,5 +21,14 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/leads/:path*", "/reservations/:path*"],
+  matcher: [
+    "/dashboard",
+    "/dashboard/:path*",
+    "/leads",
+    "/leads/:path*",
+    "/reservations",
+    "/reservations/:path*",
+    "/analytics",
+    "/analytics/:path*",
+  ],
 };

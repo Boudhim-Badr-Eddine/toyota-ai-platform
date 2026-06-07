@@ -172,8 +172,11 @@ export function PurchaseWizard() {
       }
       const leadData = (await res.json()) as { data: { id: string } };
       const slot = new Date(`${appointmentDate}T${appointmentTime}:00`);
+      if (slot.getTime() <= Date.now() + 5 * 60 * 1000) {
+        throw new Error("Choisissez une date et une heure dans le futur");
+      }
       const reservationType = form.type === "test_drive" ? "test_drive" : "visit";
-      await fetch("/api/reservations", {
+      const resRes = await fetch("/api/reservations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -184,6 +187,14 @@ export function PurchaseWizard() {
           notes: `Concession: ${selectedDealer.name}`,
         }),
       });
+      if (!resRes.ok) {
+        const errBody = (await resRes.json().catch(() => ({}))) as { error?: string; details?: unknown };
+        const detail =
+          typeof errBody.details === "object" && errBody.details
+            ? JSON.stringify(errBody.details)
+            : errBody.error;
+        throw new Error(detail ?? "Impossible de confirmer le rendez-vous");
+      }
       confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
       setSubmittedDealer(selectedDealer);
       setStep(4);

@@ -49,7 +49,7 @@ export const OFFERS_DATA: Offer[] = [
     validUntil: "2026-12-31",
     highlight: "Jusqu'à 80 000 MAD de reprise",
     ctaLabel: "Demander une estimation",
-    ctaHref: "/contact",
+    ctaHref: "/acheter",
     imageUrl: "/images/vehicles/camry.jpg",
   },
   {
@@ -92,7 +92,7 @@ export const OFFERS_DATA: Offer[] = [
     vehicleIds: ["hilux", "corolla", "camry"],
     highlight: "Leasing dès 3 800 MAD/mois",
     ctaLabel: "Contacter l'équipe pro",
-    ctaHref: "/contact",
+    ctaHref: "/acheter",
     imageUrl: "/images/vehicles/hilux.jpg",
   },
   {

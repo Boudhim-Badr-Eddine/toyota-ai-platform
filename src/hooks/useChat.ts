@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useCompareStore } from '@/store/compareStore'
 import { setChatHistoryForExport } from '@/lib/chatHistory'
+import { detectCompareIntent, extractCompareFromText } from '@/lib/compareIntent'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -26,20 +27,24 @@ export interface CompareData {
   summary?: string
 }
 
-// ─── Vehicle data ────────────────────────────────────────────────────────────
+import { VEHICLES_DATA, getVehicleDisplayImage } from "@/data/vehicles";
 
-export const VEHICLE_DATA: Record<string, { name: string; subtitle: string; price: string; imageUrl: string }> = {
-  supra:       { name: 'Toyota GR Supra',         subtitle: 'Sport',              price: '520 000 MAD', imageUrl: '/images/vehicles/supra.jpg' },
-  rav4:        { name: 'Toyota RAV4 Hybride',      subtitle: 'SUV Familial',       price: '310 000 MAD', imageUrl: '/images/vehicles/rav4.jpg' },
-  yaris:       { name: 'Toyota Yaris Cross',       subtitle: 'Citadine',           price: '175 000 MAD', imageUrl: '/images/vehicles/yaris.jpg' },
-  corolla:     { name: 'Toyota Corolla Hybride',   subtitle: 'Berline',            price: '235 000 MAD', imageUrl: '/images/vehicles/corolla.jpg' },
-  camry:       { name: 'Toyota Camry Hybride',     subtitle: 'Berline Premium',    price: '280 000 MAD', imageUrl: '/images/vehicles/camry.jpg' },
-  landcruiser: { name: 'Toyota Land Cruiser 300',  subtitle: 'Tout-Terrain',       price: '680 000 MAD', imageUrl: '/images/vehicles/landcruiser.jpg' },
-  hilux:       { name: 'Toyota Hilux',             subtitle: 'Pick-up',            price: '295 000 MAD', imageUrl: '/images/vehicles/hilux.jpg' },
-  prius:       { name: 'Toyota Prius PHEV',        subtitle: 'Hybride Plug-in',    price: '260 000 MAD', imageUrl: '/images/vehicles/prius.jpg' },
-  chr:         { name: 'Toyota C-HR Hybride',      subtitle: 'SUV Design',         price: '245 000 MAD', imageUrl: '/images/vehicles/chr.jpg' },
-  highlander:  { name: 'Toyota Highlander',        subtitle: 'SUV 7 Places',       price: '580 000 MAD', imageUrl: '/images/vehicles/highlander.jpg' },
+function formatPriceMad(n: number): string {
+  return `${n.toLocaleString("fr-MA")} MAD`;
 }
+
+export const VEHICLE_DATA: Record<string, { name: string; subtitle: string; price: string; imageUrl: string }> =
+  Object.fromEntries(
+    VEHICLES_DATA.map((v) => [
+      v.id,
+      {
+        name: v.name,
+        subtitle: v.category,
+        price: formatPriceMad(v.priceFrom),
+        imageUrl: getVehicleDisplayImage(v),
+      },
+    ])
+  );
 
 // ─── Quick chips ──────────────────────────────────────────────────────────────
 
@@ -83,6 +88,8 @@ export function parseRecommendation(text: string): RecommendationData | null {
 const COMPARE_RE = /\{"compare"\s*:\s*\{[^}]+\}\}/
 
 export function parseCompare(text: string): CompareData | null {
+  const extracted = extractCompareFromText(text)
+  if (extracted?.ids && extracted.ids.length >= 2) return extracted
   const m = COMPARE_RE.exec(text)
   if (!m) return null
   try {
@@ -161,6 +168,12 @@ export function useChat({ isOpen = false, onRecommendation }: UseChatOptions = {
     setIsLoading(true)
     setError(null)
 
+    const earlyCompare = detectCompareIntent(content)
+    if (earlyCompare) {
+      setCompareData({ ids: earlyCompare.ids, scenario: earlyCompare.scenario })
+      useCompareStore.getState().openCompare(earlyCompare.ids, { scenario: earlyCompare.scenario })
+    }
+
     const apiMessages = [...messages.filter(m => m.id !== 'welcome'), userMsg].map(m => ({
       role: m.role === 'assistant' ? 'assistant' as const : 'user' as const,
       content: m.content,
@@ -212,7 +225,10 @@ export function useChat({ isOpen = false, onRecommendation }: UseChatOptions = {
       const cmp = parseCompare(full)
       if (cmp && cmp.ids && cmp.ids.length >= 2) {
         setCompareData(cmp)
-        useCompareStore.setState({ selectedIds: cmp.ids.slice(0, 3), drawerOpen: true })
+        useCompareStore.getState().openCompare(cmp.ids, {
+          scenario: cmp.scenario,
+          summary: cmp.summary,
+        })
       }
 
       // Increment unread if widget is closed

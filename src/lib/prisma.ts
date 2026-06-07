@@ -4,7 +4,18 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-function createPrismaClient() {
+function hasDatabaseUrl(): boolean {
+  return Boolean(process.env.DATABASE_URL?.trim());
+}
+
+function createPrismaClient(): PrismaClient | null {
+  if (!hasDatabaseUrl()) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn("[prisma] DATABASE_URL is not set — database features are disabled.");
+    }
+    return null;
+  }
+
   return new PrismaClient({
     log:
       process.env.NODE_ENV === "development"
@@ -24,6 +35,10 @@ export function getPrismaClient(): PrismaClient {
   if (globalForPrisma.prisma) return globalForPrisma.prisma;
 
   const client = createPrismaClient();
+  if (!client) {
+    throw new Error("DATABASE_URL is not configured");
+  }
+
   globalForPrisma.prisma = client;
   return client;
 }
