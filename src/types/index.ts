@@ -44,26 +44,44 @@ export interface VehicleSpecs {
   warranty: string;          // ex: "3 ans / 100,000 km"
 }
 
+export interface ScenarioScores {
+  family: number;
+  city: number;
+  sport: number;
+  value: number;
+  tech: number;
+  offroad: number;
+}
+
 export interface Vehicle {
   id: string;
   name: string;
   category: string;
   model3dPath: string;
   imageUrl: string;
-  images: string[];          // [front, side, rear, interior]
+  images: string[];
   tagline: string;
-  highlights: string[];      // 4 key selling points
-  targetProfiles: string[];  // ex: ["Famille", "Professionnel"]
+  highlights: string[];
+  targetProfiles: string[];
   isHybrid: boolean;
   isNew: boolean;
-  rating: number;            // out of 5
+  rating: number;
   reviewCount: number;
-  priceFrom: number;         // MAD
+  priceFrom: number;
   colors: VehicleColor[];
   wheels: VehicleWheel[];
   interiors: VehicleInterior[];
   specs: VehicleSpecs;
   description: string;
+  scenarioScores?: ScenarioScores;
+  safetyFeatures?: string[];
+  techFeatures?: string[];
+  standardEquipment?: string[];
+  pros?: string[];
+  cons?: string[];
+  idealFor?: string[];
+  estimatedMonthlyPayment?: number;
+  annualFuelCostMAD?: number;
 }
 
 // ─── Configurator Types ────────────────────────────────────────────────────────
@@ -79,7 +97,7 @@ export interface ConfiguratorState {
 
 // ─── Lead & Reservation Types ──────────────────────────────────────────────────
 
-export type LeadType = "test_drive" | "quote";
+export type LeadType = "test_drive" | "quote" | "purchase";
 export type LeadStatus = "new" | "contacted" | "converted" | "lost";
 export type ReservationStatus = "pending" | "confirmed" | "cancelled" | "completed";
 export type ReservationType = "test_drive" | "visit";

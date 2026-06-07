@@ -1,4 +1,4 @@
-import type { Vehicle, UserPreferences } from "@/types";
+﻿import type { Vehicle, UserPreferences } from "@/types";
 
 // ─── Complete Vehicle Catalog (10 Models) ──────────────────────────────────────
 
@@ -9,12 +9,10 @@ export const VEHICLES_DATA: Vehicle[] = [
     name: "Toyota Supra",
     category: "Sport",
     model3dPath: "/models/supra.glb",
-    imageUrl: "/images/vehicles/supra.jpg",
+    imageUrl: "/images/vehicles/supra-hero-2.png",
     images: [
-      "https://images.unsplash.com/photo-1632245889029-e406faaa34cd?w=1200&q=85",
-      "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=1200&q=85",
-      "https://images.unsplash.com/photo-1550355291-bbee04a92027?w=1200&q=85",
-      "https://images.unsplash.com/photo-1493238792000-8113da705763?w=1200&q=85",
+      "/images/vehicles/supra-hero-2.png",
+      "/images/vehicles/supra-hero-2.png",
     ],
     tagline: "L'art de la performance pure",
     highlights: [
@@ -75,12 +73,10 @@ export const VEHICLES_DATA: Vehicle[] = [
     name: "Toyota RAV4",
     category: "SUV Familial",
     model3dPath: "/models/rav4.glb",
-    imageUrl: "/images/vehicles/rav4.jpg",
+    imageUrl: "/images/vehicles/rav4-hero-2.png",
     images: [
-      "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=1200&q=85",
-      "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=1200&q=85",
-      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=85",
-      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1200&q=85",
+      "/images/vehicles/rav4-hero-2.png",
+      "/images/vehicles/rav4-hero-2.png",
     ],
     tagline: "Le SUV hybride qui s'adapte à tout",
     highlights: [
@@ -143,12 +139,10 @@ export const VEHICLES_DATA: Vehicle[] = [
     name: "Toyota Yaris",
     category: "Citadine",
     model3dPath: "/models/yaris.glb",
-    imageUrl: "/images/vehicles/yaris.jpg",
+    imageUrl: "/images/vehicles/yaris-gr-hero.png",
     images: [
-      "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=1200&q=85",
-      "https://images.unsplash.com/photo-1502877338535-766e1452684a?w=1200&q=85",
-      "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=1200&q=85",
-      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1200&q=85",
+      "/images/vehicles/yaris-gr-hero.png",
+      "/images/vehicles/yaris-gr-hero.png",
     ],
     tagline: "La ville à votre rythme, sans effort",
     highlights: [
@@ -209,12 +203,10 @@ export const VEHICLES_DATA: Vehicle[] = [
     name: "Toyota Corolla",
     category: "Compacte Hybride",
     model3dPath: "/models/corolla.glb",
-    imageUrl: "/images/vehicles/corolla.jpg",
+    imageUrl: "/images/vehicles/corolla-hero-2.png",
     images: [
-      "https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=1200&q=85",
-      "https://images.unsplash.com/photo-1553440569-bcc63803a83d?w=1200&q=85",
-      "https://images.unsplash.com/photo-1485291571150-772bcfc10da5?w=1200&q=85",
-      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1200&q=85",
+      "/images/vehicles/corolla-hero-2.png",
+      "/images/vehicles/corolla-hero-2.png",
     ],
     tagline: "Fiabilité légendaire, technologie moderne",
     highlights: [
@@ -275,12 +267,10 @@ export const VEHICLES_DATA: Vehicle[] = [
     name: "Toyota Camry",
     category: "Berline Confort",
     model3dPath: "/models/camry.glb",
-    imageUrl: "/images/vehicles/camry.jpg",
+    imageUrl: "/images/vehicles/camry-hero-2.png",
     images: [
-      "https://images.unsplash.com/photo-1590362891991-f776e747a588?w=1200&q=85",
-      "https://images.unsplash.com/photo-1606152421802-db97b9c7a11b?w=1200&q=85",
-      "https://images.unsplash.com/photo-1489824904134-891ab64532f1?w=1200&q=85",
-      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1200&q=85",
+      "/images/vehicles/camry-hero-2.png",
+      "/images/vehicles/camry-hero-2.png",
     ],
     tagline: "Le confort premium accessible",
     highlights: [
@@ -341,12 +331,10 @@ export const VEHICLES_DATA: Vehicle[] = [
     name: "Toyota Land Cruiser",
     category: "Tout-terrain extrême",
     model3dPath: "/models/landcruiser.glb",
-    imageUrl: "/images/vehicles/landcruiser.jpg",
+    imageUrl: "/images/vehicles/landcruiser-hero-2.png",
     images: [
-      "https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?w=1200&q=85",
-      "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=1200&q=85",
-      "https://images.unsplash.com/photo-1499946981954-9a7e214e77e6?w=1200&q=85",
-      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1200&q=85",
+      "/images/vehicles/landcruiser-hero-2.png",
+      "/images/vehicles/landcruiser-hero-2.png",
     ],
     tagline: "Aucune limite, aucun terrain",
     highlights: [
@@ -409,12 +397,10 @@ export const VEHICLES_DATA: Vehicle[] = [
     name: "Toyota Hilux",
     category: "Pick-up utilitaire",
     model3dPath: "/models/hilux.glb",
-    imageUrl: "/images/vehicles/hilux.jpg",
+    imageUrl: "/images/vehicles/hilux-hero-2.png",
     images: [
-      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=85",
-      "https://images.unsplash.com/photo-1566473965997-3de9c817e938?w=1200&q=85",
-      "https://images.unsplash.com/photo-1542362567-b07e54358753?w=1200&q=85",
-      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1200&q=85",
+      "/images/vehicles/hilux-hero-2.png",
+      "/images/vehicles/hilux-hero-2.png",
     ],
     tagline: "Inarrêtable. Indestructible. Indispensable.",
     highlights: [
@@ -478,12 +464,10 @@ export const VEHICLES_DATA: Vehicle[] = [
     name: "Toyota Prius",
     category: "Éco/Tech",
     model3dPath: "/models/prius.glb",
-    imageUrl: "/images/vehicles/prius.jpg",
+    imageUrl: "/images/vehicles/prius-hero-2.png",
     images: [
-      "https://images.unsplash.com/photo-1592198084033-aade902d1aae?w=1200&q=85",
-      "https://images.unsplash.com/photo-1548612319-b0a2c2b399e1?w=1200&q=85",
-      "https://images.unsplash.com/photo-1553440569-bcc63803a83d?w=1200&q=85",
-      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1200&q=85",
+      "/images/vehicles/prius-hero-2.png",
+      "/images/vehicles/prius-hero-2.png",
     ],
     tagline: "80 km 100% électrique, zéro compromis",
     highlights: [
@@ -545,14 +529,12 @@ export const VEHICLES_DATA: Vehicle[] = [
     name: "Toyota C-HR",
     category: "SUV Urbain",
     model3dPath: "/models/chr.glb",
-    imageUrl: "/images/vehicles/chr.jpg",
+    imageUrl: "/images/vehicles/chr-hero-2.png",
     images: [
-      "https://images.unsplash.com/photo-1619767886558-efdc259cde1a?w=1200&q=85",
-      "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=1200&q=85",
-      "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=1200&q=85",
-      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1200&q=85",
+      "/images/vehicles/chr-hero-2.png",
+      "/images/vehicles/chr-hero-2.png",
     ],
-    tagline: "Design audacieux, âme hybride",
+    tagline: "Design audacieux, ├óme hybride",
     highlights: [
       "2.0L Hybride — 197 ch et 5,5 L/100 km",
       "Design coupé SUV exclusif",
@@ -612,12 +594,10 @@ export const VEHICLES_DATA: Vehicle[] = [
     name: "Toyota Highlander",
     category: "SUV 7 places",
     model3dPath: "/models/highlander.glb",
-    imageUrl: "/images/vehicles/highlander.jpg",
+    imageUrl: "/images/vehicles/highlander-hero-2.png",
     images: [
-      "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=1200&q=85",
-      "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=1200&q=85",
-      "https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?w=1200&q=85",
-      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1200&q=85",
+      "/images/vehicles/highlander-hero-2.png",
+      "/images/vehicles/highlander-hero-2.png",
     ],
     tagline: "Grand SUV, grande famille, grand confort",
     highlights: [
@@ -673,9 +653,201 @@ export const VEHICLES_DATA: Vehicle[] = [
     description:
       "Le Highlander hybride est le SUV 7 places par excellence. Grand, luxueux et économique, il répond parfaitement aux besoins des grandes familles marocaines. Sa motorisation hybride AWD procure agilité et économies, avec une 3ème rangée de sièges confortable pour adultes.",
   },
+
+  {
+    id: "granvia",
+    name: "Toyota Granvia",
+    category: "Van Premium",
+    model3dPath: "/models/granvia/scene.gltf",
+    imageUrl: "/images/vehicles/granvia-hero-2.png",
+    images: [
+      "/images/vehicles/granvia-hero-2.png",
+      "/images/vehicles/granvia-hero-2.png",
+    ],
+    tagline: "Le voyage en classe affaires",
+    highlights: [
+      "Sièges Capitaine Ottoman",
+      "Moteur 2.8L Diesel",
+      "Portes coulissantes électriques",
+      "Espace intérieur luxueux 6/8 places",
+    ],
+    targetProfiles: ["Navette VIP", "Grande famille", "Professionnel du tourisme"],
+    isHybrid: false,
+    isNew: true,
+    rating: 4.8,
+    reviewCount: 45,
+    priceFrom: 450000,
+    colors: [
+      { id: "white-pearl", name: "Blanc Nacré", hex: "#F5F5F5", type: "pearl" },
+      { id: "black-metallic", name: "Noir Métallique", hex: "#0A0A0A", type: "metallic" },
+      { id: "grey-silver", name: "Gris Argent", hex: "#C0C0C0", type: "metallic" },
+    ],
+    wheels: [{ id: "alloy-17", name: 'Aluminium 17"', size: "17 pouces" }],
+    interiors: [
+      { id: "beige-leather", name: "Cuir Beige", material: "leather", colorHex: "#D4B896" },
+      { id: "black-leather", name: "Cuir Noir", material: "leather", colorHex: "#1A1A1A" },
+    ],
+    specs: {
+      engine: "2.8L Diesel",
+      engineType: "Diesel",
+      power: 177,
+      torque: 450,
+      transmission: "Automatique 6 rapports",
+      drivetrain: "RWD",
+      zeroto100: 11.5,
+      topSpeed: 175,
+      consumption: 8.0,
+      trunkLiters: 800,
+      seats: 6,
+      weight: 2300,
+      length: 5300,
+      width: 1970,
+      height: 1990,
+      wheelbase: 3210,
+      warranty: "3 ans / 100 000 km",
+    },
+    description:
+      "Le Toyota Granvia redéfinit le transport premium avec ses sièges Ottoman et ses finitions luxueuses.",
+  },
+
+  {
+    id: "corolla-2",
+    name: "Toyota Corolla 2026",
+    category: "Berline",
+    model3dPath: "/models/corolla-2/scene.gltf",
+    imageUrl: "/images/vehicles/corolla-2-hero-2.png",
+    images: [
+      "/images/vehicles/corolla-2-hero-2.png",
+      "/images/vehicles/corolla-2-hero-2.png",
+    ],
+    tagline: "L'élégance technologique au quotidien",
+    highlights: [
+      "Système Hybride 5ème Génération",
+      "Toyota Safety Sense 3.0",
+      "Écran tactile 10.5 pouces",
+      "Cockpit digital personnalisable",
+    ],
+    targetProfiles: ["Jeunes professionnels", "Citadins", "Petites familles"],
+    isHybrid: true,
+    isNew: true,
+    rating: 4.9,
+    reviewCount: 128,
+    priceFrom: 285000,
+    colors: [
+      { id: "emotional-red", name: "Rouge Émotionnel", hex: "#BC002D", type: "metallic" },
+      { id: "dark-blue", name: "Bleu Nuit", hex: "#001B44", type: "metallic" },
+      { id: "black-sand", name: "Noir Intense", hex: "#121212", type: "pearl" },
+    ],
+    wheels: [{ id: "sport-18", name: 'Jantes Sport 18"', size: "18 pouces" }],
+    interiors: [
+      { id: "black-sport", name: "Tissu Sport Noir", material: "fabric", colorHex: "#1F1F1F" },
+      { id: "grey-leather", name: "Cuir Gris Clair", material: "leather", colorHex: "#D3D3D3" },
+    ],
+    specs: {
+      engine: "1.8L Hybrid",
+      engineType: "Hybride",
+      power: 140,
+      torque: 185,
+      transmission: "e-CVT",
+      drivetrain: "FWD",
+      zeroto100: 9.2,
+      topSpeed: 180,
+      consumption: 4.4,
+      trunkLiters: 471,
+      seats: 5,
+      weight: 1420,
+      length: 4630,
+      width: 1780,
+      height: 1435,
+      wheelbase: 2700,
+      warranty: "5 ans / 100 000 km",
+    },
+    description:
+      "La nouvelle Toyota Corolla 2026 allie design dynamique et efficacité hybride de pointe.",
+  },
+
+  {
+    id: "kijang",
+    name: "Toyota Kijang",
+    category: "Monospace Familial",
+    model3dPath: "/models/kijang/scene.gltf",
+    imageUrl: "/images/vehicles/kijang-hero-2.png",
+    images: [
+      "/images/vehicles/kijang-hero-2.png",
+      "/images/vehicles/kijang-hero-2.png",
+    ],
+    tagline: "L'espace familial repensé",
+    highlights: [
+      "Configuration 7 places modulables",
+      "Confort de conduite supérieur",
+      "Fiabilité légendaire Toyota",
+      "Climatisation tri-zone",
+    ],
+    targetProfiles: ["Famille nombreuse", "Taxi premium", "Aventurier urbain"],
+    isHybrid: true,
+    isNew: true,
+    rating: 4.6,
+    reviewCount: 89,
+    priceFrom: 320000,
+    colors: [
+      { id: "white-pearl", name: "Blanc Nacré", hex: "#F5F5F5", type: "pearl" },
+      { id: "black-midnight", name: "Noir", hex: "#0A0A0A", type: "solid" },
+      { id: "bronze-metallic", name: "Bronze Métallique", hex: "#8A7356", type: "metallic" },
+    ],
+    wheels: [
+      { id: "alloy-16", name: 'Aluminium 16"', size: "16 pouces" },
+      { id: "alloy-17", name: 'Aluminium 17"', size: "17 pouces" },
+    ],
+    interiors: [
+      { id: "black-fabric", name: "Tissu Premium Noir", material: "fabric", colorHex: "#1A1A1A" },
+      { id: "brown-leather", name: "Cuir Brun", material: "leather", colorHex: "#5C4033" },
+    ],
+    specs: {
+      engine: "2.0L Hybride",
+      engineType: "Hybride",
+      power: 186,
+      torque: 206,
+      transmission: "e-CVT",
+      drivetrain: "FWD",
+      zeroto100: 9.5,
+      topSpeed: 170,
+      consumption: 5.8,
+      trunkLiters: 300,
+      seats: 7,
+      weight: 1700,
+      length: 4755,
+      width: 1850,
+      height: 1795,
+      wheelbase: 2850,
+      warranty: "3 ans / 100 000 km",
+    },
+    description:
+      "Le Kijang Innova apporte une touche de modernité au monospace classique avec sa motorisation hybride et son espace généreux.",
+  },
 ];
 
 // ─── Utility Functions ─────────────────────────────────────────────────────────
+
+const VEHICLE_DISPLAY_IMAGES: Record<string, string> = {
+  supra: "/images/vehicles/supra-hero-2.png",
+  rav4: "/images/vehicles/rav4-hero-2.png",
+  yaris: "/images/vehicles/yaris-gr-hero.png",
+  corolla: "/images/vehicles/corolla-hero-2.png",
+  camry: "/images/vehicles/camry-hero-2.png",
+  landcruiser: "/images/vehicles/landcruiser-hero-2.png",
+  hilux: "/images/vehicles/hilux-hero-2.png",
+  prius: "/images/vehicles/prius-hero-2.png",
+  chr: "/images/vehicles/chr-hero-2.png",
+  highlander: "/images/vehicles/highlander-hero-2.png",
+  granvia: "/images/vehicles/granvia-hero-2.png",
+  "corolla-2": "/images/vehicles/corolla-2-hero-2.png",
+  kijang: "/images/vehicles/kijang-hero-2.png",
+};
+
+/** Same image source used by vehicle cards and the homepage showcase slider. */
+export function getVehicleDisplayImage(vehicle: Vehicle): string {
+  return VEHICLE_DISPLAY_IMAGES[vehicle.id] ?? vehicle.imageUrl;
+}
 
 export function getVehicleById(id: string): Vehicle | undefined {
   return VEHICLES_DATA.find((v) => v.id === id);

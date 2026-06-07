@@ -33,6 +33,41 @@ async function main() {
 
   console.log(`\n✔  ${VEHICLES_DATA.length} vehicles seeded.\n`);
 
+  // ─── Seed Dealerships ────────────────────────────────────────────────────────
+  console.log("🏢 Seeding dealerships...");
+  const { DEALERSHIPS } = await import("../src/data/dealerships");
+
+  for (const d of DEALERSHIPS) {
+    const record = await prisma.dealership.upsert({
+      where: { slug: d.id },
+      update: {
+        name: d.name,
+        city: d.city,
+        address: d.address,
+        phone: d.phone,
+        email: d.email,
+        lat: d.lat,
+        lng: d.lng,
+        hours: d.hours as object,
+        services: d.services as object,
+      },
+      create: {
+        slug: d.id,
+        name: d.name,
+        city: d.city,
+        address: d.address,
+        phone: d.phone,
+        email: d.email,
+        lat: d.lat,
+        lng: d.lng,
+        hours: d.hours as object,
+        services: d.services as object,
+      },
+    });
+    console.log(`  ✅ ${record.name}`);
+  }
+  console.log(`\n✔  ${DEALERSHIPS.length} dealerships seeded.\n`);
+
   // ─── Seed Default Admin ──────────────────────────────────────────────────────
   console.log("👤 Seeding admin user...");
 
@@ -57,6 +92,35 @@ async function main() {
 
   console.log(`  ✅ Admin created: ${admin.email}`);
   console.log(`  ℹ  Default password: ${plainPassword}`);
+  console.log("\n👤 Seeding demo customer...");
+
+  const customerEmail = "client@toyota-ma.com";
+  const customerPassword = "Client@2024!";
+  const customerHash = await bcrypt.hash(customerPassword, 12);
+
+  const customer = await prisma.user.upsert({
+    where: { email: customerEmail },
+    update: {
+      firstName: "Karim",
+      lastName: "Benali",
+      password: customerHash,
+      phone: "+212 612 345 678",
+      city: "Casablanca",
+      address: "45, Bd Mohammed V",
+    },
+    create: {
+      email: customerEmail,
+      password: customerHash,
+      firstName: "Karim",
+      lastName: "Benali",
+      phone: "+212 612 345 678",
+      city: "Casablanca",
+      address: "45, Bd Mohammed V",
+    },
+  });
+
+  console.log(`  ✅ Customer created: ${customer.email}`);
+  console.log(`  ℹ  Default password: ${customerPassword}`);
   console.log("\n🎉 Database seed completed successfully!");
 }
 

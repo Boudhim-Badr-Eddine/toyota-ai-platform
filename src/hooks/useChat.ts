@@ -1,6 +1,9 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
+import { useCompareStore } from '@/store/compareStore'
+import { setChatHistoryForExport } from '@/lib/chatHistory'
+import { detectCompareIntent, extractCompareFromText } from '@/lib/compareIntent'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -15,22 +18,33 @@ export interface RecommendationData {
   id: string
   configuratorUrl: string
   detailUrl: string
+  acheterUrl?: string
 }
 
-// ─── Vehicle data ────────────────────────────────────────────────────────────
-
-export const VEHICLE_DATA: Record<string, { name: string; subtitle: string; price: string; imageUrl: string }> = {
-  supra:       { name: 'Toyota GR Supra',         subtitle: 'Sport',              price: '520 000 MAD', imageUrl: '/images/vehicles/supra.jpg' },
-  rav4:        { name: 'Toyota RAV4 Hybride',      subtitle: 'SUV Familial',       price: '310 000 MAD', imageUrl: '/images/vehicles/rav4.jpg' },
-  yaris:       { name: 'Toyota Yaris Cross',       subtitle: 'Citadine',           price: '175 000 MAD', imageUrl: '/images/vehicles/yaris.jpg' },
-  corolla:     { name: 'Toyota Corolla Hybride',   subtitle: 'Berline',            price: '235 000 MAD', imageUrl: '/images/vehicles/corolla.jpg' },
-  camry:       { name: 'Toyota Camry Hybride',     subtitle: 'Berline Premium',    price: '280 000 MAD', imageUrl: '/images/vehicles/camry.jpg' },
-  landcruiser: { name: 'Toyota Land Cruiser 300',  subtitle: 'Tout-Terrain',       price: '680 000 MAD', imageUrl: '/images/vehicles/landcruiser.jpg' },
-  hilux:       { name: 'Toyota Hilux',             subtitle: 'Pick-up',            price: '295 000 MAD', imageUrl: '/images/vehicles/hilux.jpg' },
-  prius:       { name: 'Toyota Prius PHEV',        subtitle: 'Hybride Plug-in',    price: '260 000 MAD', imageUrl: '/images/vehicles/prius.jpg' },
-  chr:         { name: 'Toyota C-HR Hybride',      subtitle: 'SUV Design',         price: '245 000 MAD', imageUrl: '/images/vehicles/chr.jpg' },
-  highlander:  { name: 'Toyota Highlander',        subtitle: 'SUV 7 Places',       price: '580 000 MAD', imageUrl: '/images/vehicles/highlander.jpg' },
+export interface CompareData {
+  ids: string[]
+  scenario?: string
+  summary?: string
 }
+
+import { VEHICLES_DATA, getVehicleDisplayImage } from "@/data/vehicles";
+
+function formatPriceMad(n: number): string {
+  return `${n.toLocaleString("fr-MA")} MAD`;
+}
+
+export const VEHICLE_DATA: Record<string, { name: string; subtitle: string; price: string; imageUrl: string }> =
+  Object.fromEntries(
+    VEHICLES_DATA.map((v) => [
+      v.id,
+      {
+        name: v.name,
+        subtitle: v.category,
+        price: formatPriceMad(v.priceFrom),
+        imageUrl: getVehicleDisplayImage(v),
+      },
+    ])
+  );
 
 // ─── Quick chips ──────────────────────────────────────────────────────────────
 
@@ -67,15 +81,34 @@ export function parseRecommendation(text: string): RecommendationData | null {
     id,
     configuratorUrl: conf ? conf[1] : `/configurator/${id}`,
     detailUrl: detail ? detail[1] : `/vehicles/${id}`,
+    acheterUrl: /"acheterUrl"\s*:\s*"([^"]+)"/.exec(text)?.[1] ?? `/acheter?vehicle=${id}`,
+  }
+}
+
+const COMPARE_RE = /\{"compare"\s*:\s*\{[^}]+\}\}/
+
+export function parseCompare(text: string): CompareData | null {
+  const extracted = extractCompareFromText(text)
+  if (extracted?.ids && extracted.ids.length >= 2) return extracted
+  const m = COMPARE_RE.exec(text)
+  if (!m) return null
+  try {
+    const parsed = JSON.parse(m[0]) as { compare: CompareData }
+    return parsed.compare
+  } catch {
+    return null
   }
 }
 
 // ─── Welcome message ─────────────────────────────────────────────────────────
 
+/** Fixed timestamp so SSR and client hydration match. */
+const WELCOME_TS = 1_700_000_000_000
+
 export const WELCOME: ChatMessage = {
   id: 'welcome',
   role: 'assistant',
-  ts: Date.now(),
+  ts: WELCOME_TS,
   content: 'Bonjour ! Je suis **Toyota AI Advisor** 🚗 — votre conseiller automobile personnel. En quelques questions, je trouve votre Toyota idéale. Commençons : c\'est quoi votre prénom ?',
 }
 
@@ -92,6 +125,7 @@ export function useChat({ isOpen = false, onRecommendation }: UseChatOptions = {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [recommendation, setRecommendation] = useState<RecommendationData | null>(null)
+  const [compareData, setCompareData] = useState<CompareData | null>(null)
   const [chips, setChips] = useState<string[] | null>(null)
   const [unread, setUnread] = useState(0)
 
@@ -100,9 +134,21 @@ export function useChat({ isOpen = false, onRecommendation }: UseChatOptions = {
   useEffect(() => { isOpenRef.current = isOpen }, [isOpen])
   useEffect(() => { onRecRef.current = onRecommendation }, [onRecommendation])
 
+  useEffect(() => {
+    setChatHistoryForExport(
+      messages.map((m) => ({
+        id: m.id,
+        role: m.role,
+        content: m.content,
+        timestamp: new Date(m.ts).toISOString(),
+      }))
+    )
+  }, [messages])
+
   const clearChat = useCallback(() => {
-    setMessages([{ ...WELCOME, ts: Date.now() }])
+    setMessages([{ ...WELCOME, ts: WELCOME_TS }])
     setRecommendation(null)
+    setCompareData(null)
     setChips(null)
     setError(null)
     setInput('')
@@ -122,6 +168,12 @@ export function useChat({ isOpen = false, onRecommendation }: UseChatOptions = {
     setIsLoading(true)
     setError(null)
 
+    const earlyCompare = detectCompareIntent(content)
+    if (earlyCompare) {
+      setCompareData({ ids: earlyCompare.ids, scenario: earlyCompare.scenario })
+      useCompareStore.getState().openCompare(earlyCompare.ids, { scenario: earlyCompare.scenario })
+    }
+
     const apiMessages = [...messages.filter(m => m.id !== 'welcome'), userMsg].map(m => ({
       role: m.role === 'assistant' ? 'assistant' as const : 'user' as const,
       content: m.content,
@@ -131,10 +183,14 @@ export function useChat({ isOpen = false, onRecommendation }: UseChatOptions = {
     const assistantTs = Date.now() + 1
 
     try {
+      const pageContext = {
+        pathname: typeof window !== 'undefined' ? window.location.pathname : '',
+        compareIds: useCompareStore.getState().selectedIds,
+      }
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: apiMessages }),
+        body: JSON.stringify({ messages: apiMessages, pageContext }),
       })
 
       if (!res.ok) {
@@ -153,7 +209,10 @@ export function useChat({ isOpen = false, onRecommendation }: UseChatOptions = {
         const { done, value } = await reader.read()
         if (done) break
         full += dec.decode(value, { stream: true })
-        const visible = full.replace(/\{[^}]*"recommendation"[^}]*\}/g, '').trim()
+        const visible = full
+          .replace(/\{[^}]*"recommendation"[^}]*\}/g, '')
+          .replace(/\{[^}]*"compare"[^}]*\}/g, '')
+          .trim()
         setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: visible } : m))
       }
 
@@ -161,6 +220,15 @@ export function useChat({ isOpen = false, onRecommendation }: UseChatOptions = {
       if (rec) {
         setRecommendation(rec)
         onRecRef.current?.(rec)
+      }
+
+      const cmp = parseCompare(full)
+      if (cmp && cmp.ids && cmp.ids.length >= 2) {
+        setCompareData(cmp)
+        useCompareStore.getState().openCompare(cmp.ids, {
+          scenario: cmp.scenario,
+          summary: cmp.summary,
+        })
       }
 
       // Increment unread if widget is closed
@@ -181,5 +249,5 @@ export function useChat({ isOpen = false, onRecommendation }: UseChatOptions = {
     }
   }, [input, isLoading, messages])
 
-  return { messages, input, setInput, isLoading, error, setError, recommendation, chips, unread, markRead, sendMessage, clearChat }
+  return { messages, input, setInput, isLoading, error, setError, recommendation, compareData, chips, unread, markRead, sendMessage, clearChat }
 }
