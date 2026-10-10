@@ -397,24 +397,24 @@ export default function ChatWidget() {
   const onDragStart = useCallback(
     (e: React.PointerEvent) => {
       if ((e.target as HTMLElement).closest("button")) return;
-      if (!pos) return;
       e.preventDefault();
       setIsDragging(true);
-      dragState.current = { startX: e.clientX, startY: e.clientY, origX: pos.x, origY: pos.y };
+      const base = pos ?? clampPosition(defaultPosition(panelDims).x, defaultPosition(panelDims).y, panelDims);
+      dragState.current = { startX: e.clientX, startY: e.clientY, origX: base.x, origY: base.y };
+      if (!pos) setPos(base);
       (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     },
-    [pos]
+    [pos, panelDims]
   );
 
   const onDragMove = useCallback((e: React.PointerEvent) => {
     if (!dragState.current) return;
     const dx = e.clientX - dragState.current.startX;
     const dy = e.clientY - dragState.current.startY;
-    setPos((p) =>
-      p
-        ? clampPosition(dragState.current!.origX + dx, dragState.current!.origY + dy, panelDims)
-        : p
-    );
+    setPos((p) => {
+      const current = p ?? clampPosition(defaultPosition(panelDims).x, defaultPosition(panelDims).y, panelDims);
+      return clampPosition(dragState.current!.origX + dx, dragState.current!.origY + dy, panelDims);
+    });
   }, [panelDims]);
 
   const onDragEnd = useCallback((e: React.PointerEvent) => {
@@ -435,6 +435,17 @@ export default function ChatWidget() {
 
   const groups = groupMessages(messages);
   const isNarrow = panelDims.w < PANEL_W;
+  const panelPos = pos ?? defaultPosition(panelDims);
+
+  const toggleChat = useCallback(() => {
+    setIsOpen((open) => {
+      const next = !open;
+      if (next) {
+        setPos((p) => p ?? clampPosition(defaultPosition(panelDims).x, defaultPosition(panelDims).y, panelDims));
+      }
+      return next;
+    });
+  }, [panelDims]);
 
   return (
     <>
@@ -469,7 +480,7 @@ export default function ChatWidget() {
 
       {/* FAB — follows panel when positioned */}
       <div
-        className={cn(MOTION_GPU_CLASS, "gpu-fixed fixed z-[9999] bottom-6 right-6 max-sm:bottom-6 max-sm:right-6")}
+        className={cn(MOTION_GPU_CLASS, "gpu-fixed fixed z-[10050] bottom-6 right-6 max-sm:bottom-6 max-sm:right-6")}
         style={
           isOpen && pos && !isNarrow
             ? {
@@ -504,7 +515,7 @@ export default function ChatWidget() {
         )}
 
         <motion.button
-          onClick={() => setIsOpen((v) => !v)}
+          onClick={toggleChat}
           onMouseEnter={() => setShowTooltip(true)}
           onMouseLeave={() => setShowTooltip(false)}
           whileHover={{ scale: 1.05 }}
@@ -521,20 +532,20 @@ export default function ChatWidget() {
       </div>
 
       <AnimatePresence>
-        {isOpen && pos && (
+        {isOpen && (
           <motion.div
             initial={{ opacity: 0, scale: 0.92 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.92 }}
             transition={{ type: "spring", stiffness: 400, damping: 32 }}
             style={{
-              left: pos.x,
-              top: pos.y,
+              left: panelPos.x,
+              top: panelPos.y,
               width: panelDims.w,
               height: panelDims.h,
             }}
             className={cn(
-              cn(MOTION_GPU_CLASS, "gpu-fixed fixed z-[9998] flex flex-col overflow-hidden chat-panel rounded-none"),
+              cn(MOTION_GPU_CLASS, "gpu-fixed fixed z-[10049] flex flex-col overflow-hidden chat-panel rounded-none"),
               isDragging && "chat-panel-dragging"
             )}
           >

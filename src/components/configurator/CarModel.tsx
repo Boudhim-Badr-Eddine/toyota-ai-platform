@@ -2,10 +2,11 @@
 
 import { Suspense, useEffect, useMemo, useRef, useState, Component, type ReactNode } from "react";
 import { useGLTF, Html } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import type { GLTF } from "three-stdlib";
-import { MODEL_PATHS, getModelPath } from "@/lib/modelPaths";
+import { getModelPath } from "@/lib/modelPaths";
+import { normalizeVehicleScene } from "@/lib/normalizeModel";
 import {
   setupVehicleHinges,
   applyVehicleHingeRotation,
@@ -13,8 +14,16 @@ import {
   type VehicleHingeSetup,
   type VehicleAnimState,
 } from "@/lib/vehicleHinges";
+import {
+  applySlotMaterial,
+  bodyPaintProps,
+  buildMeshCatalog,
+  optimizeVehicleTextures,
+  type ColorType,
+  type MeshCatalog,
+} from "@/lib/vehicleMaterials";
 
-export type ColorType = "solid" | "metallic" | "pearl" | string;
+export type { ColorType };
 
 export interface CarModelProps {
   vehicleId: string;
@@ -24,11 +33,8 @@ export interface CarModelProps {
   selectedWheelId?: string;
   selectedInteriorId?: string;
   vehicleAnim?: VehicleAnimState;
+  onLoaded?: () => void;
 }
-
-const GLASS_RE = /glass|window|windshield|windscreen|visor|light|lamp|lens/i;
-const TIRE_RE = /tire|tyre|rubber|wheel_tire/i;
-const CHROME_RE = /chrome|trim|emblem|logo|badge/i;
 
 const PART_KEYWORDS = {
   frontLeftDoor: /door.*front.*left|left.*front.*door|porte.*avant.*gauche|door_fl|fl_door|e180_door_fl|door_lf\b/i,
@@ -38,12 +44,6 @@ const PART_KEYWORDS = {
   hood: /hood|bonnet|capot(?!.*coffre)|e180_hood\b/i,
   trunk: /trunk|boot|coffre|tailgate(?!.*glass)|e180_trunk(?!body|lights)/i,
 };
-
-function bodyPaintProps(type: ColorType) {
-  if (type === "metallic") return { metalness: 0.75, roughness: 0.25, envMapIntensity: 1.3 };
-  if (type === "pearl") return { metalness: 0.55, roughness: 0.2, envMapIntensity: 1.5 };
-  return { metalness: 0.1, roughness: 0.5, envMapIntensity: 0.9 };
-}
 
 function LoadingCar() {
   return (
@@ -185,24 +185,79 @@ class LoadErrorBoundary extends Component<EBProps, EBState> {
 }
 
 interface GltfModelProps {
+  vehicleId: string;
   modelPath: string;
   colorHex: string;
   colorType: ColorType;
   selectedWheelId: string;
   selectedInteriorId: string;
   vehicleAnim?: VehicleAnimState;
+  onLoaded?: () => void;
+}
+
+function findVehicleParts(scene: THREE.Object3D) {
+  const found = {
+    frontLeftDoor: null as THREE.Object3D | null,
+    frontRightDoor: null as THREE.Object3D | null,
+    rearLeftDoor: null as THREE.Object3D | null,
+    rearRightDoor: null as THREE.Object3D | null,
+    hood: null as THREE.Object3D | null,
+    trunk: null as THREE.Object3D | null,
+  };
+
+  const EXACT_PARTS: Array<[keyof typeof found, RegExp]> = [
+    ["frontLeftDoor", /^door_FL$/i],
+    ["frontRightDoor", /^door_FR$/i],
+    ["rearLeftDoor", /^door_RL$/i],
+    ["rearRightDoor", /^door_RR$/i],
+    ["hood", /^hood$/i],
+    ["trunk", /^trunk$/i],
+  ];
+
+  scene.traverse((node) => {
+    for (const [key, pat] of EXACT_PARTS) {
+      if (!found[key] && pat.test(node.name)) found[key] = node;
+    }
+  });
+
+  scene.traverse((node) => {
+    const n = node.name;
+    if (!found.frontLeftDoor && PART_KEYWORDS.frontLeftDoor.test(n)) found.frontLeftDoor = node;
+    if (!found.frontRightDoor && PART_KEYWORDS.frontRightDoor.test(n)) found.frontRightDoor = node;
+    if (!found.rearLeftDoor && PART_KEYWORDS.rearLeftDoor.test(n)) found.rearLeftDoor = node;
+    if (!found.rearRightDoor && PART_KEYWORDS.rearRightDoor.test(n)) found.rearRightDoor = node;
+    if (!found.hood && PART_KEYWORDS.hood.test(n)) found.hood = node;
+    if (!found.trunk && PART_KEYWORDS.trunk.test(n)) found.trunk = node;
+  });
+
+  return found;
+}
+
+function applyCatalogSlots(
+  catalog: MeshCatalog,
+  slots: Array<keyof MeshCatalog>,
+  opts: Parameters<typeof applySlotMaterial>[2]
+) {
+  for (const slot of slots) {
+    for (const mat of catalog[slot]) {
+      applySlotMaterial(mat, slot, opts);
+    }
+  }
 }
 
 function GltfModel({
+  vehicleId,
   modelPath,
   colorHex,
   colorType,
   selectedWheelId,
   selectedInteriorId,
   vehicleAnim,
+  onLoaded,
 }: GltfModelProps) {
   const gltf = useGLTF(modelPath) as GLTF & { scene: THREE.Group };
   const scene = useMemo(() => gltf.scene.clone(true), [gltf.scene]);
+  const invalidate = useThree((s) => s.invalidate);
 
   const [parts, setParts] = useState({
     frontLeftDoor: null as THREE.Object3D | null,
@@ -213,6 +268,11 @@ function GltfModel({
     trunk: null as THREE.Object3D | null,
   });
   const [sceneReady, setSceneReady] = useState(false);
+
+  const catalogRef = useRef<MeshCatalog | null>(null);
+  const targetColorRef = useRef(new THREE.Color(colorHex));
+  const paintRef = useRef(bodyPaintProps(colorType));
+  const paintDirtyRef = useRef(true);
 
   const vehicleHinges = useRef<VehicleHingeSetup | null>(null);
   const vehicleRot = useRef({
@@ -225,141 +285,100 @@ function GltfModel({
   });
 
   const HINGE_ANIM_SPEED = 1.6;
+  const COLOR_LERP_SPEED = 9;
 
   useEffect(() => {
     setSceneReady(false);
-    scene.scale.setScalar(1);
-    scene.position.set(0, 0, 0);
+    catalogRef.current = null;
+    normalizeVehicleScene(scene);
+    optimizeVehicleTextures(scene);
+    const catalog = buildMeshCatalog(scene, vehicleId);
+    catalogRef.current = catalog;
+    setParts(findVehicleParts(scene));
 
-    const box = new THREE.Box3().setFromObject(scene);
-    const center = box.getCenter(new THREE.Vector3());
-    const size = box.getSize(new THREE.Vector3());
-    const maxDim = Math.max(size.x, size.y, size.z);
-    if (maxDim > 0) {
-      const scale = 3.5 / maxDim;
-      scene.scale.setScalar(scale);
-      scene.position.copy(center.clone().multiplyScalar(-scale));
-      scene.position.y = 0;
-    }
+    const initialPaint = bodyPaintProps(colorType);
+    const initialColor = new THREE.Color(colorHex);
+    targetColorRef.current.copy(initialColor);
+    paintRef.current = initialPaint;
+
+    const opts = {
+      bodyColor: initialColor,
+      paint: initialPaint,
+      selectedWheelId,
+      selectedInteriorId,
+    };
+    applyCatalogSlots(catalog, ["body", "glass", "chrome", "tire", "wheel", "interior", "emissive", "trim"], opts);
+
     setSceneReady(true);
-  }, [scene]);
+  }, [scene, vehicleId, colorHex, colorType, selectedWheelId, selectedInteriorId]);
 
   useEffect(() => {
-    const bodyColor = new THREE.Color(colorHex);
-    const paint = bodyPaintProps(colorType);
-    const WHEEL_RE = /wheel|rim|jante|felge|alloy/i;
-    const INTERIOR_RE = /seat|interior|cabin|cockpit|upholstery|leather|fabric|dashboard|si[eè]ge/i;
+    if (sceneReady) onLoaded?.();
+  }, [sceneReady, onLoaded]);
 
-    const found = {
-      frontLeftDoor: null as THREE.Object3D | null,
-      frontRightDoor: null as THREE.Object3D | null,
-      rearLeftDoor: null as THREE.Object3D | null,
-      rearRightDoor: null as THREE.Object3D | null,
-      hood: null as THREE.Object3D | null,
-      trunk: null as THREE.Object3D | null,
+  useEffect(() => {
+    targetColorRef.current.set(colorHex);
+    paintRef.current = bodyPaintProps(colorType);
+    paintDirtyRef.current = true;
+    invalidate();
+  }, [colorHex, colorType, invalidate]);
+
+  useEffect(() => {
+    const catalog = catalogRef.current;
+    if (!catalog || !sceneReady) return;
+
+    const opts = {
+      bodyColor: targetColorRef.current,
+      paint: paintRef.current,
+      selectedWheelId,
+      selectedInteriorId,
     };
 
-    const EXACT_PARTS: Array<[keyof typeof found, RegExp]> = [
-      ["frontLeftDoor", /^door_FL$/i],
-      ["frontRightDoor", /^door_FR$/i],
-      ["rearLeftDoor", /^door_RL$/i],
-      ["rearRightDoor", /^door_RR$/i],
-      ["hood", /^hood$/i],
-      ["trunk", /^trunk$/i],
-    ];
+    applyCatalogSlots(catalog, ["glass", "chrome", "tire", "emissive", "trim"], opts);
+    applyCatalogSlots(catalog, ["wheel"], opts);
+    applyCatalogSlots(catalog, ["interior"], opts);
 
-    scene.traverse((node) => {
-      for (const [key, pat] of EXACT_PARTS) {
-        if (!found[key] && pat.test(node.name)) found[key] = node;
+    paintDirtyRef.current = true;
+    invalidate();
+  }, [sceneReady, selectedWheelId, selectedInteriorId, invalidate]);
+
+  useEffect(() => {
+    if (!sceneReady) return;
+    paintDirtyRef.current = true;
+    invalidate();
+  }, [colorHex, colorType, sceneReady, invalidate]);
+
+  useFrame((_, delta) => {
+    const catalog = catalogRef.current;
+    if (!catalog?.body.length) return;
+
+    const target = targetColorRef.current;
+    const paint = paintRef.current;
+    const lerpT = Math.min(1, delta * COLOR_LERP_SPEED);
+    let changed = false;
+
+    for (const mat of catalog.body) {
+      const dr = mat.color.r - target.r;
+      const dg = mat.color.g - target.g;
+      const db = mat.color.b - target.b;
+      if (dr * dr + dg * dg + db * db > 0.00001) {
+        mat.color.lerp(target, lerpT);
+        changed = true;
       }
-    });
-
-    scene.traverse((node) => {
-      const n = node.name;
-      if (!found.frontLeftDoor && PART_KEYWORDS.frontLeftDoor.test(n)) found.frontLeftDoor = node;
-      if (!found.frontRightDoor && PART_KEYWORDS.frontRightDoor.test(n)) found.frontRightDoor = node;
-      if (!found.rearLeftDoor && PART_KEYWORDS.rearLeftDoor.test(n)) found.rearLeftDoor = node;
-      if (!found.rearRightDoor && PART_KEYWORDS.rearRightDoor.test(n)) found.rearRightDoor = node;
-      if (!found.hood && PART_KEYWORDS.hood.test(n)) found.hood = node;
-      if (!found.trunk && PART_KEYWORDS.trunk.test(n)) found.trunk = node;
-
-      if (!(node instanceof THREE.Mesh)) return;
-
-      const matName = Array.isArray(node.material)
-        ? ((node.material[0] as THREE.Material)?.name ?? "")
-        : ((node.material as THREE.Material)?.name ?? "");
-      const combined = (matName + " " + node.name).toLowerCase();
-
-      const remap = (mat: THREE.Material): THREE.Material => {
-        if (!(mat instanceof THREE.MeshStandardMaterial)) return mat;
-        const m = mat.clone() as THREE.MeshStandardMaterial;
-
-        if (GLASS_RE.test(combined)) {
-          m.color.set("#aaccff");
-          m.transparent = true;
-          m.opacity = 0.25;
-          m.metalness = 0.1;
-          m.roughness = 0.05;
-        } else if (TIRE_RE.test(combined)) {
-          m.color.set("#111111");
-          m.metalness = 0.05;
-          m.roughness = 0.9;
-        } else if (CHROME_RE.test(combined)) {
-          m.metalness = 0.95;
-          m.roughness = 0.05;
-        } else if (WHEEL_RE.test(combined)) {
-          if (/racing|forged/.test(selectedWheelId)) {
-            m.color.set("#2a2a2a");
-            m.metalness = 0.95;
-            m.roughness = 0.1;
-          } else if (/diamond|luxury|prestige/.test(selectedWheelId)) {
-            m.color.set("#c8c8c8");
-            m.metalness = 1.0;
-            m.roughness = 0.05;
-          } else {
-            m.color.set("#888888");
-            m.metalness = 0.8;
-            m.roughness = 0.2;
-          }
-        } else if (INTERIOR_RE.test(combined)) {
-          if (/beige|ivoire/.test(selectedInteriorId)) {
-            m.color.set("#c8a882");
-            m.roughness = 0.7;
-          } else if (/brown|brun/.test(selectedInteriorId)) {
-            m.color.set("#5c2e0e");
-            m.roughness = 0.5;
-          } else if (/red|rouge/.test(selectedInteriorId)) {
-            m.color.set("#7a0000");
-            m.roughness = 0.4;
-          } else {
-            m.color.set("#111111");
-            m.roughness = 0.6;
-          }
-          if (/leather|cuir/.test(selectedInteriorId)) {
-            m.metalness = 0.05;
-            m.roughness = 0.35;
-          } else {
-            m.metalness = 0.0;
-          }
-        } else {
-          m.color.copy(bodyColor);
-          m.metalness = paint.metalness;
-          m.roughness = paint.roughness;
-          m.envMapIntensity = paint.envMapIntensity;
+      if (paintDirtyRef.current) {
+        mat.metalness = paint.metalness;
+        mat.roughness = paint.roughness;
+        mat.envMapIntensity = paint.envMapIntensity;
+        if (mat instanceof THREE.MeshPhysicalMaterial) {
+          mat.clearcoat = paint.clearcoat;
+          mat.clearcoatRoughness = paint.clearcoatRoughness;
         }
-        m.needsUpdate = true;
-        return m;
-      };
-
-      if (Array.isArray(node.material)) {
-        node.material = (node.material as THREE.Material[]).map(remap);
-      } else {
-        node.material = remap(node.material as THREE.Material);
       }
-    });
+    }
 
-    setParts(found);
-  }, [scene, colorHex, colorType, selectedWheelId, selectedInteriorId]);
+    if (paintDirtyRef.current) paintDirtyRef.current = false;
+    if (changed) invalidate();
+  });
 
   useEffect(() => {
     if (!sceneReady) {
@@ -387,6 +406,17 @@ function GltfModel({
   useFrame((_, delta) => {
     if (!vehicleHinges.current || !vehicleAnim) return;
 
+    const anim = vehicleAnim;
+    const anyDoorOpen = Object.values(anim.doors).some(Boolean);
+    const hoodOpen = anim.hood;
+    const trunkOpen = anim.trunk;
+    if (!anyDoorOpen && !hoodOpen && !trunkOpen) {
+      const rot = vehicleRot.current;
+      if (rot.FL === 0 && rot.FR === 0 && rot.RL === 0 && rot.RR === 0 && rot.hood === 0 && rot.trunk === 0) {
+        return;
+      }
+    }
+
     const lerp = (cur: number, target: number) =>
       THREE.MathUtils.lerp(cur, target, Math.min(1, HINGE_ANIM_SPEED * delta));
 
@@ -412,6 +442,8 @@ function GltfModel({
       rot.trunk = lerp(rot.trunk, target);
       applyVehicleHingeRotation(hinges.trunk, rot.trunk);
     }
+
+    invalidate();
   });
 
   return <primitive object={scene} visible={sceneReady} dispose={null} />;
@@ -425,32 +457,33 @@ export function CarModel({
   selectedWheelId = "",
   selectedInteriorId = "",
   vehicleAnim,
+  onLoaded,
 }: CarModelProps) {
   const modelPath = getModelPath(vehicleId);
   const fallback = <FallbackBox colorHex={colorHex} vehicleName={vehicleName} />;
+
+  useEffect(() => {
+    try {
+      useGLTF.preload(modelPath);
+    } catch {
+      /* ignore */
+    }
+  }, [modelPath]);
 
   return (
     <LoadErrorBoundary fallback={fallback}>
       <Suspense fallback={<LoadingCar />}>
         <GltfModel
+          vehicleId={vehicleId}
           modelPath={modelPath}
           colorHex={colorHex}
           colorType={colorType}
           selectedWheelId={selectedWheelId}
           selectedInteriorId={selectedInteriorId}
           vehicleAnim={vehicleAnim}
+          onLoaded={onLoaded}
         />
       </Suspense>
     </LoadErrorBoundary>
   );
-}
-
-if (typeof window !== "undefined") {
-  Object.values(MODEL_PATHS).forEach((path) => {
-    try {
-      useGLTF.preload(path);
-    } catch {
-      /* ignore */
-    }
-  });
 }

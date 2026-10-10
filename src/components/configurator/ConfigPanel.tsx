@@ -2,12 +2,12 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, ChevronDown, Calendar, ChevronLeft, DiscAlbum, Sparkles, ArrowRight } from "lucide-react";
+import { Check, ChevronDown, Calendar, ChevronLeft, DiscAlbum, Sparkles, ArrowRight, PanelRightClose } from "lucide-react";
 import { LeadFormContent } from "@/components/forms/LeadForm";
 import Link from "next/link";
 import { useConfiguratorStore } from "@/store/configuratorStore";
 import { formatPrice, cn } from "@/lib/utils";
-import type { VehicleColor, VehicleWheel, VehicleInterior } from "@/types";
+import type { Vehicle, VehicleColor, VehicleWheel, VehicleInterior } from "@/types";
 import { AIStyleAdvisor } from "./AIStyleAdvisor";
 import { FinanceSimulator } from "@/components/commerce/FinanceSimulator";
 import { getTrimsForVehicle, type VehicleTrim } from "@/data/vehicleTrims";
@@ -514,7 +514,15 @@ function AIAdvisorCard() {
 
 // ─── ConfigPanel ──────────────────────────────────────────────────────────────
 
-export function ConfigPanel({ floating = false }: { floating?: boolean }) {
+export function ConfigPanel({
+  floating = false,
+  vehicle: vehicleProp,
+  onHidePanel,
+}: {
+  floating?: boolean;
+  vehicle?: Vehicle;
+  onHidePanel?: () => void;
+}) {
   const {
     selectedVehicle,
     selectedTrim,
@@ -531,7 +539,9 @@ export function ConfigPanel({ floating = false }: { floating?: boolean }) {
 
   const [showLeadModal, setShowLeadModal] = useState(false);
 
-  if (!selectedVehicle) {
+  const activeVehicle = selectedVehicle ?? vehicleProp ?? null;
+
+  if (!activeVehicle) {
     return (
       <div className="flex items-center justify-center h-full bg-[#0d0d0d]">
         <p className="text-white/40 text-sm">Aucun véhicule sélectionné.</p>
@@ -539,7 +549,7 @@ export function ConfigPanel({ floating = false }: { floating?: boolean }) {
     );
   }
 
-  const trims = getTrimsForVehicle(selectedVehicle.id);
+  const trims = getTrimsForVehicle(activeVehicle.id);
   const config = getConfiguration();
 
   return (
@@ -552,25 +562,38 @@ export function ConfigPanel({ floating = false }: { floating?: boolean }) {
       >
         {/* Header */}
         <div className="px-5 pt-5 pb-4 border-b border-white/[0.06] shrink-0">
-          <Link
-            href={`/vehicles/${selectedVehicle.id}`}
-            className="inline-flex items-center gap-1 text-white/35 hover:text-[#EB0A1E] transition-colors text-xs font-medium mb-3"
-          >
-            <ChevronLeft className="h-3.5 w-3.5" />
-            Changer de modèle
-          </Link>
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <Link
+              href={`/vehicles/${activeVehicle.id}`}
+              className="inline-flex items-center gap-1 text-white/35 hover:text-[#EB0A1E] transition-colors text-xs font-medium"
+            >
+              <ChevronLeft className="h-3.5 w-3.5" />
+              Changer de modèle
+            </Link>
+            {onHidePanel && (
+              <button
+                type="button"
+                onClick={onHidePanel}
+                title="Masquer le panneau"
+                aria-label="Masquer le panneau de configuration"
+                className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-white/45 hover:text-white hover:bg-white/[0.08] hover:border-white/20 transition-colors"
+              >
+                <PanelRightClose className="h-4 w-4" />
+              </button>
+            )}
+          </div>
           <AnimatePresence mode="wait">
             <motion.div
-              key={selectedVehicle.id + (selectedTrim?.id ?? "")}
+              key={activeVehicle.id + (selectedTrim?.id ?? "")}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.35, ease: EASE_PREMIUM }}
             >
               <h2 className="text-white text-xl font-black leading-tight tracking-tight">
-                {selectedVehicle.name}
+                {activeVehicle.name}
               </h2>
-              <p className="text-white/35 text-xs mt-1">{selectedVehicle.category}</p>
+              <p className="text-white/35 text-xs mt-1">{activeVehicle.category}</p>
               <p className="text-toyota-gold text-lg font-black mt-2 tabular-nums">
                 <AnimatedPrice value={totalPrice} />
               </p>
@@ -604,7 +627,7 @@ export function ConfigPanel({ floating = false }: { floating?: boolean }) {
 
           <Section title="Couleur extérieure" index={1}>
             <ColorSwatches
-              colors={selectedVehicle.colors}
+              colors={activeVehicle.colors}
               selected={selectedColor}
               onSelect={setColor}
             />
@@ -612,7 +635,7 @@ export function ConfigPanel({ floating = false }: { floating?: boolean }) {
 
           <Section title="Jantes" index={2}>
             <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-2">
-              {selectedVehicle.wheels.map((wheel, i) => (
+              {activeVehicle.wheels.map((wheel, i) => (
                 <WheelCard
                   key={wheel.id}
                   wheel={wheel}
@@ -626,7 +649,7 @@ export function ConfigPanel({ floating = false }: { floating?: boolean }) {
 
           <Section title="Sellerie intérieure" index={3}>
             <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-2">
-              {selectedVehicle.interiors.map((interior, i) => (
+              {activeVehicle.interiors.map((interior, i) => (
                 <InteriorCard
                   key={interior.id}
                   interior={interior}
@@ -654,7 +677,7 @@ export function ConfigPanel({ floating = false }: { floating?: boolean }) {
               type="button"
               onClick={() =>
                 void downloadQuotePdf(
-                  selectedVehicle.name,
+                  activeVehicle.name,
                   selectedTrim?.name,
                   config.basePrice,
                   totalPrice,
@@ -689,7 +712,7 @@ export function ConfigPanel({ floating = false }: { floating?: boolean }) {
             <ArrowRight className="h-4 w-4" />
           </BorderDrawButton>
           <BorderDrawButton
-            href={`/acheter?vehicle=${selectedVehicle.id}`}
+            href={`/acheter?vehicle=${activeVehicle.id}`}
             className="w-full justify-center"
           >
             Acheter chez un concessionnaire

@@ -199,6 +199,7 @@ export function useChat({ isOpen = false, onRecommendation }: UseChatOptions = {
       }
       if (!res.body) throw new Error('No stream')
 
+      const chatSource = res.headers.get('X-Chat-Source')
       setMessages(prev => [...prev, { id: assistantId, role: 'assistant', content: '', ts: assistantTs }])
 
       const reader = res.body.getReader()
@@ -211,9 +212,13 @@ export function useChat({ isOpen = false, onRecommendation }: UseChatOptions = {
         full += dec.decode(value, { stream: true })
         const visible = full
           .replace(/\{[^}]*"recommendation"[^}]*\}/g, '')
-          .replace(/\{[^}]*"compare"[^}]*\}/g, '')
+          .replace(/\{"compare"\s*:\s*\{[\s\S]*?\}\}/g, '')
           .trim()
         setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: visible } : m))
+      }
+
+      if (chatSource === 'catalog-fallback') {
+        setError('Mode conseiller local (quota IA atteint) — réponses basées sur le catalogue Toyota.')
       }
 
       const rec = parseRecommendation(full)
@@ -238,12 +243,19 @@ export function useChat({ isOpen = false, onRecommendation }: UseChatOptions = {
       if (c) setChips(c)
 
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Erreur de connexion')
-      setMessages(prev => prev.map(m =>
-        m.id === assistantId
-          ? { ...m, content: 'Désolé, une erreur s\'est produite. Veuillez réessayer.' }
-          : m
-      ))
+      const msg = e instanceof Error ? e.message : 'Erreur de connexion'
+      setError(msg)
+      setMessages(prev => {
+        const hasAssistant = prev.some((m) => m.id === assistantId)
+        const fallbackContent =
+          /429|rate_limit|quota|500|HTTP 5/i.test(msg)
+            ? 'Le quota IA est temporairement atteint. Réessayez dans quelques minutes — le conseiller catalogue reste disponible pour les comparaisons simples.'
+            : 'Désolé, une erreur s\'est produite. Veuillez réessayer.'
+        if (hasAssistant) {
+          return prev.map((m) => (m.id === assistantId ? { ...m, content: fallbackContent } : m))
+        }
+        return [...prev, { id: assistantId, role: 'assistant', content: fallbackContent, ts: assistantTs }]
+      })
     } finally {
       setIsLoading(false)
     }

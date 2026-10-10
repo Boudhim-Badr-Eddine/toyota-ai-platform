@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useLayoutEffect } from "react";
 import { useParams, useSearchParams, notFound } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, Camera, Download, X, SlidersHorizontal, Share2 } from "lucide-react";
+import { ChevronLeft, Camera, Download, X, SlidersHorizontal, Share2, PanelRightOpen } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { Photo360Fallback, shouldUsePhotoFallback } from "@/components/configurator/Photo360Fallback";
 import type { CarSceneControls } from "@/components/configurator/CarScene";
 import { BorderDrawButton } from "@/components/ui/BorderDrawButton";
+import { getPanelRightInsetCss } from "@/lib/showroomCamera";
 
 const EASE_PREMIUM = [0.22, 1, 0.36, 1] as const;
 
@@ -136,11 +137,21 @@ export default function ConfiguratorPage() {
 
   const [screenshotUrl, setScreenshotUrl] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [panelOpen, setPanelOpen] = useState(true);
   const [clientReady, setClientReady] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
   const [sceneControls, setSceneControls] = useState<CarSceneControls | null>(null);
 
   useEffect(() => {
     setClientReady(true);
+  }, []);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const update = () => setIsDesktop(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
   }, []);
 
   const usePhotoMode = clientReady && shouldUsePhotoFallback();
@@ -158,7 +169,7 @@ export default function ConfiguratorPage() {
     }
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (vehicle && selectedVehicle?.id !== vehicle.id) {
       setVehicle(vehicle);
     }
@@ -178,12 +189,17 @@ export default function ConfiguratorPage() {
 
   const activeColorHex = selectedColor?.hex ?? vehicle.colors[0]?.hex ?? "#EB0A1E";
   const activeColorType = selectedColor?.type ?? vehicle.colors[0]?.type ?? "solid";
+  const panelRightInset = getPanelRightInsetCss();
+  const viewportRightInset = isDesktop && panelOpen ? panelRightInset : "0px";
 
   return (
-    <div className="fixed inset-0 overflow-hidden bg-[#050505]">
+    <div className="fixed inset-0 z-0 overflow-hidden bg-[#050505]" style={{ width: "100vw", height: "100dvh" }}>
 
-      {/* ── Full-screen 3D canvas ─────────────────────────────────────────── */}
-      <div className="absolute inset-0">
+      {/* ── 3D viewport — physical width matches visible area beside panel ──── */}
+      <div
+        className="absolute top-0 left-0 bottom-0 transition-[right] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
+        style={{ right: viewportRightInset }}
+      >
         {usePhotoMode ? (
           <Photo360Fallback
             images={vehicle.images?.length ? vehicle.images : [vehicle.imageUrl]}
@@ -201,15 +217,6 @@ export default function ConfiguratorPage() {
             onSceneControlsReady={handleSceneControlsReady}
           />
         )}
-
-        {/* Subtle vignette */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(ellipse at 40% 50%, transparent 30%, rgba(0,0,0,0.55) 100%)",
-          }}
-        />
       </div>
 
       {/* ── Floating top controls ─────────────────────────────────────────── */}
@@ -217,9 +224,12 @@ export default function ConfiguratorPage() {
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: EASE_PREMIUM }}
-        className="absolute top-0 left-0 right-0 z-20 flex items-start justify-between gap-3 px-4 py-3 lg:px-6 pointer-events-none"
+        className="absolute top-0 left-0 z-20 flex flex-col items-start gap-2 px-4 py-3 lg:px-6 pointer-events-none max-lg:right-0"
+        style={{
+          right: viewportRightInset,
+        }}
       >
-        <div className="pointer-events-auto flex flex-col items-start gap-2">
+        <div className="pointer-events-auto flex items-center gap-2 w-full max-lg:justify-between">
           <div className="flex items-center gap-2">
             <Link
               href={`/vehicles/${vehicle.id}`}
@@ -234,69 +244,76 @@ export default function ConfiguratorPage() {
               <span className="text-white/55">{vehicle.name.replace(/^Toyota\s+/i, "")}</span>
             </nav>
           </div>
-          {sceneControls?.isReady && (
-            <div className="flex flex-col gap-1.5">
-              {sceneControls.showDoorControls && (
-                <>
-                  <button
-                    type="button"
-                    onClick={sceneControls.toggleAllDoors}
-                    className="px-3 py-2 min-w-[7.5rem] rounded-none border border-white/10 bg-[#111]/80 backdrop-blur-md text-white/65 hover:text-white hover:bg-[#161616] hover:border-white/20 text-xs font-medium transition-colors"
-                  >
-                    Portes
-                  </button>
-                  <button
-                    type="button"
-                    onClick={sceneControls.toggleHood}
-                    className="px-3 py-2 min-w-[7.5rem] rounded-none border border-white/10 bg-[#111]/80 backdrop-blur-md text-white/65 hover:text-white hover:bg-[#161616] hover:border-white/20 text-xs font-medium transition-colors"
-                  >
-                    Capot
-                  </button>
-                </>
-              )}
-              <button
-                type="button"
-                onClick={sceneControls.toggleViewMode}
-                className={cn(
-                  "px-3 py-2 min-w-[7.5rem] rounded-none border backdrop-blur-md text-xs font-medium transition-colors",
-                  sceneControls.viewMode === "interior"
-                    ? "border-white/25 bg-white/[0.08] text-white"
-                    : "border-white/10 bg-[#111]/80 text-white/65 hover:text-white hover:bg-[#161616] hover:border-white/20"
-                )}
-              >
-                {sceneControls.viewMode === "exterior" ? "Vue Intérieure" : "Vue Extérieure"}
-              </button>
-            </div>
-          )}
+
+          {/* Share / capture — right side of visible canvas (never under panel) */}
+          <div
+            className={cn(
+              "pointer-events-auto flex items-center gap-2 shrink-0",
+              !panelOpen && "lg:mr-[9.5rem]"
+            )}
+          >
+            <button
+              type="button"
+              onClick={() => {
+                const params = new URLSearchParams({
+                  c: selectedColor?.id ?? "",
+                  w: selectedWheels?.id ?? "",
+                  i: selectedInterior?.id ?? "",
+                  t: selectedTrim?.id ?? "",
+                });
+                const url = `${window.location.origin}/configurator/${vehicle.id}?${params}`;
+                void navigator.clipboard.writeText(url);
+                toast.success("Lien de configuration copié");
+              }}
+              className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-full bg-black/50 border border-white/10 text-white/50 hover:text-white hover:border-white/25 text-xs font-medium backdrop-blur-md transition-all"
+            >
+              <Share2 className="h-3.5 w-3.5" />
+              Partager
+            </button>
+            <button
+              onClick={handleCapture}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-black/50 border border-white/10 text-white/50 hover:text-white hover:border-white/25 text-xs font-medium backdrop-blur-md transition-all"
+            >
+              <Camera className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Capturer</span>
+            </button>
+          </div>
         </div>
 
-        <div className="pointer-events-auto flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => {
-              const params = new URLSearchParams({
-                c: selectedColor?.id ?? "",
-                w: selectedWheels?.id ?? "",
-                i: selectedInterior?.id ?? "",
-                t: selectedTrim?.id ?? "",
-              });
-              const url = `${window.location.origin}/configurator/${vehicle.id}?${params}`;
-              void navigator.clipboard.writeText(url);
-              toast.success("Lien de configuration copié");
-            }}
-            className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-full bg-black/50 border border-white/10 text-white/50 hover:text-white hover:border-white/25 text-xs font-medium backdrop-blur-md transition-all"
-          >
-            <Share2 className="h-3.5 w-3.5" />
-            Partager
-          </button>
-          <button
-            onClick={handleCapture}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-black/50 border border-white/10 text-white/50 hover:text-white hover:border-white/25 text-xs font-medium backdrop-blur-md transition-all"
-          >
-            <Camera className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Capturer</span>
-          </button>
-        </div>
+        {sceneControls?.isReady && (
+          <div className="pointer-events-auto flex flex-col gap-1.5">
+            {sceneControls.showDoorControls && (
+              <>
+                <button
+                  type="button"
+                  onClick={sceneControls.toggleAllDoors}
+                  className="px-3 py-2 min-w-[7.5rem] rounded-none border border-white/10 bg-[#111]/80 backdrop-blur-md text-white/65 hover:text-white hover:bg-[#161616] hover:border-white/20 text-xs font-medium transition-colors"
+                >
+                  Portes
+                </button>
+                <button
+                  type="button"
+                  onClick={sceneControls.toggleHood}
+                  className="px-3 py-2 min-w-[7.5rem] rounded-none border border-white/10 bg-[#111]/80 backdrop-blur-md text-white/65 hover:text-white hover:bg-[#161616] hover:border-white/20 text-xs font-medium transition-colors"
+                >
+                  Capot
+                </button>
+              </>
+            )}
+            <button
+              type="button"
+              onClick={sceneControls.toggleViewMode}
+              className={cn(
+                "px-3 py-2 min-w-[7.5rem] rounded-none border backdrop-blur-md text-xs font-medium transition-colors",
+                sceneControls.viewMode === "interior"
+                  ? "border-white/25 bg-white/[0.08] text-white"
+                  : "border-white/10 bg-[#111]/80 text-white/65 hover:text-white hover:bg-[#161616] hover:border-white/20"
+              )}
+            >
+              {sceneControls.viewMode === "exterior" ? "Vue Intérieure" : "Vue Extérieure"}
+            </button>
+          </div>
+        )}
       </motion.div>
 
       {showArHint && !usePhotoMode && (
@@ -310,14 +327,35 @@ export default function ConfiguratorPage() {
       )}
 
       {/* ── Floating config panel — desktop ───────────────────────────────── */}
-      <motion.div
-        initial={{ opacity: 0, x: 24 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.6, delay: 0.15, ease: EASE_PREMIUM }}
-        className="hidden lg:flex absolute top-4 right-4 bottom-4 z-30 w-[min(420px,36vw)] min-w-[340px]"
-      >
-        <ConfigPanel floating />
-      </motion.div>
+      <AnimatePresence>
+        {panelOpen && (
+          <motion.div
+            key="desktop-panel"
+            initial={{ opacity: 0, x: 32 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 40 }}
+            transition={{ duration: 0.35, ease: EASE_PREMIUM }}
+            className="hidden lg:flex absolute top-4 right-4 bottom-4 z-30 w-[min(420px,36vw)] min-w-[340px]"
+          >
+            <ConfigPanel floating vehicle={vehicle} onHidePanel={() => setPanelOpen(false)} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {!panelOpen && (
+        <motion.button
+          type="button"
+          initial={{ opacity: 0, x: 12 }}
+          animate={{ opacity: 1, x: 0 }}
+          onClick={() => setPanelOpen(true)}
+          title="Afficher le panneau de configuration"
+          aria-label="Afficher le panneau de configuration"
+          className="hidden lg:flex absolute top-4 right-4 z-30 items-center gap-2 px-4 py-2.5 rounded-xl border border-white/15 bg-[#111]/90 backdrop-blur-md text-white/75 hover:text-white hover:bg-[#161616] hover:border-white/25 text-xs font-semibold transition-colors shadow-lg"
+        >
+          <PanelRightOpen className="h-4 w-4" />
+          Configurer
+        </motion.button>
+      )}
 
       {/* ── Mobile config toggle ──────────────────────────────────────────── */}
       <div className="lg:hidden absolute bottom-5 right-5 z-30">
@@ -358,7 +396,7 @@ export default function ConfiguratorPage() {
                 <div className="w-10 h-1 rounded-full bg-white/15" />
               </div>
               <div className="flex-1 overflow-hidden bg-[#0d0d0d]">
-                <ConfigPanel />
+                <ConfigPanel vehicle={vehicle} />
               </div>
             </motion.div>
           </>
