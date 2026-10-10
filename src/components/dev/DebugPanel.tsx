@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 
 // ─── Only rendered in development ─────────────────────────────────────────────
 
-type GeminiStatus = "idle" | "testing" | "ok" | "error";
+type GroqStatus = "idle" | "testing" | "ok" | "error";
 type ModelStatus = "pending" | "loaded" | "failed";
 
 const ENV_VARS = [
@@ -24,8 +24,8 @@ if (typeof window !== "undefined") {
 
 export function DebugPanel() {
   const [open, setOpen] = useState(false);
-  const [geminiStatus, setGeminiStatus] = useState<GeminiStatus>("idle");
-  const [geminiMsg, setGeminiMsg] = useState("");
+  const [groqStatus, setGroqStatus] = useState<GroqStatus>("idle");
+  const [groqMsg, setGroqMsg] = useState("");
   const [modelStatuses, setModelStatuses] = useState<Record<string, ModelStatus>>({});
 
   // Poll GLTF statuses every 2 seconds while open
@@ -40,22 +40,34 @@ export function DebugPanel() {
     return () => clearInterval(id);
   }, [open]);
 
-  const testGemini = useCallback(async () => {
-    setGeminiStatus("testing");
-    setGeminiMsg("");
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "D" && e.shiftKey && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setOpen((v) => !v);
+      }
+      if (e.key === "Escape" && open) setOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open]);
+
+  const testGroq = useCallback(async () => {
+    setGroqStatus("testing");
+    setGroqMsg("");
     try {
       const res = await fetch("/api/chat/test");
       const data = await res.json() as { status: string; message?: string; response?: string };
       if (data.status === "ok") {
-        setGeminiStatus("ok");
-        setGeminiMsg(data.response ?? "OK");
+        setGroqStatus("ok");
+        setGroqMsg(data.response ?? "OK");
       } else {
-        setGeminiStatus("error");
-        setGeminiMsg(data.message ?? "Error");
+        setGroqStatus("error");
+        setGroqMsg(data.message ?? "Error");
       }
     } catch {
-      setGeminiStatus("error");
-      setGeminiMsg("Network error");
+      setGroqStatus("error");
+      setGroqMsg("Network error");
     }
   }, []);
 
@@ -69,10 +81,11 @@ export function DebugPanel() {
         className={cn(
           "w-9 h-9 rounded-full flex items-center justify-center shadow-lg transition-all",
           open
-            ? "bg-red-500 text-white"
-            : "bg-[#1A1A1A] border border-white/10 text-toyota-muted hover:text-white hover:border-white/30"
+            ? "bg-red-500 text-white opacity-100"
+            : "opacity-0 bg-transparent border-0 shadow-none text-transparent hover:opacity-0 focus:opacity-0"
         )}
-        title="Debug Panel"
+        title="Debug Panel (Ctrl+Shift+D)"
+        aria-label="Debug Panel"
       >
         {open ? <X className="h-4 w-4" /> : <Bug className="h-4 w-4" />}
       </button>
@@ -99,23 +112,23 @@ export function DebugPanel() {
 
             <div className="p-4 space-y-4 max-h-96 overflow-y-auto">
 
-              {/* ── Gemini Status ──────────────────────────────────────────── */}
+              {/* ── Groq Status ───────────────────────────────────────────── */}
               <section>
-                <p className="text-[10px] font-bold text-toyota-muted/60 uppercase tracking-wider mb-2">Gemini API</p>
+                <p className="text-[10px] font-bold text-toyota-muted/60 uppercase tracking-wider mb-2">Groq API</p>
                 <div className="flex items-center gap-3">
-                  <StatusDot status={geminiStatus} />
+                  <StatusDot status={groqStatus} />
                   <span className="text-white text-xs flex-1 truncate">
-                    {geminiStatus === "idle" && "Non testé"}
-                    {geminiStatus === "testing" && "Test en cours…"}
-                    {geminiStatus === "ok" && `Connecté — "${geminiMsg}"`}
-                    {geminiStatus === "error" && `Erreur: ${geminiMsg}`}
+                    {groqStatus === "idle" && "Non testé"}
+                    {groqStatus === "testing" && "Test en cours…"}
+                    {groqStatus === "ok" && `Connecté — "${groqMsg}"`}
+                    {groqStatus === "error" && `Erreur: ${groqMsg}`}
                   </span>
                   <button
-                    onClick={testGemini}
-                    disabled={geminiStatus === "testing"}
+                    onClick={testGroq}
+                    disabled={groqStatus === "testing"}
                     className="flex items-center gap-1 text-[10px] text-toyota-muted hover:text-white border border-white/10 hover:border-white/20 rounded-lg px-2 py-1 transition-colors disabled:opacity-40"
                   >
-                    <RefreshCw className={cn("h-3 w-3", geminiStatus === "testing" && "animate-spin")} />
+                    <RefreshCw className={cn("h-3 w-3", groqStatus === "testing" && "animate-spin")} />
                     Tester
                   </button>
                 </div>
@@ -169,14 +182,9 @@ export function DebugPanel() {
                     );
                   })}
                   <div className="flex items-center gap-2 mt-1">
-                    {process.env.GEMINI_API_KEY
-                      ? <CheckCircle2 className="h-3 w-3 text-green-400 shrink-0" />
-                      : <XCircle className="h-3 w-3 text-red-400 shrink-0" />
-                    }
-                    <code className="text-[10px] text-toyota-muted">GEMINI_API_KEY</code>
-                    <span className={cn("ml-auto text-[10px]", process.env.GEMINI_API_KEY ? "text-green-400" : "text-red-400")}>
-                      {process.env.GEMINI_API_KEY ? "Défini" : "Manquant"}
-                    </span>
+                    <Clock className="h-3 w-3 text-toyota-muted/40 shrink-0" />
+                    <code className="text-[10px] text-toyota-muted">GROQ_API_KEY</code>
+                    <span className="ml-auto text-[10px] text-toyota-muted/50">serveur uniquement</span>
                   </div>
                 </div>
               </section>
@@ -191,7 +199,7 @@ export function DebugPanel() {
 
 // ─── Micro helpers ────────────────────────────────────────────────────────────
 
-function StatusDot({ status }: { status: GeminiStatus }) {
+function StatusDot({ status }: { status: GroqStatus }) {
   return (
     <span className={cn(
       "w-2.5 h-2.5 rounded-full shrink-0",

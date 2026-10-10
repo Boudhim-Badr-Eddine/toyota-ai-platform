@@ -9,20 +9,37 @@ datasource db {
 }
 
 model Vehicle {
-  id           String        @id @default(cuid())
-  slug         String        @unique
-  name         String
-  category     String
-  description  String
-  priceFrom    Float
-  model3dPath  String
-  colors       Json
-  wheels       Json
-  interiors    Json
-  specs        Json
-  createdAt    DateTime      @default(now())
-  leads        Lead[]
-  reservations Reservation[]
+  id                  String               @id @default(cuid())
+  slug                String               @unique
+  name                String
+  category            String
+  description         String
+  priceFrom           Float
+  model3dPath         String
+  colors              Json
+  wheels              Json
+  interiors           Json
+  specs               Json
+  createdAt           DateTime             @default(now())
+  leads               Lead[]
+  reservations        Reservation[]
+  savedConfigurations SavedConfiguration[]
+}
+
+model Dealership {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  name      String
+  city      String
+  address   String
+  phone     String
+  email     String?
+  lat       Float
+  lng       Float
+  hours     Json
+  services  Json
+  createdAt DateTime @default(now())
+  leads     Lead[]
 }
 
 model Lead {
@@ -33,6 +50,12 @@ model Lead {
   phone         String?
   vehicleId     String
   vehicle       Vehicle      @relation(fields: [vehicleId], references: [id])
+  userId        String?
+  user          User?        @relation(fields: [userId], references: [id])
+  dealershipId  String?
+  dealership    Dealership?  @relation(fields: [dealershipId], references: [id])
+  userLat       Float?
+  userLng       Float?
   configuration Json
   chatHistory   Json
   type          String
@@ -40,6 +63,35 @@ model Lead {
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
   reservation   Reservation?
+  @@index([status])
+  @@index([createdAt])
+  @@index([userId])
+}
+
+model User {
+  id                  String               @id @default(cuid())
+  email               String               @unique
+  password            String
+  firstName           String
+  lastName            String
+  phone               String?
+  city                String?
+  address             String?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  leads               Lead[]
+  savedConfigurations SavedConfiguration[]
+}
+
+model SavedConfiguration {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vehicleId     String
+  vehicle       Vehicle  @relation(fields: [vehicleId], references: [id])
+  configuration Json
+  name          String
+  createdAt     DateTime @default(now())
 }
 
 model Reservation {
@@ -53,6 +105,9 @@ model Reservation {
   status    String   @default("pending")
   notes     String?
   createdAt DateTime @default(now())
+
+  @@index([date])
+  @@index([status])
 }
 
 model Admin {

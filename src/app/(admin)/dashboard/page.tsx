@@ -13,13 +13,30 @@ async function fetchDashboardData() {
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-  const [totalLeads, newLeadsToday, newLeadsMonth, totalReservations, pendingReservations, leadsByVehicle, recentLeads] =
+  const startOfPrevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const endOfPrevMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+
+  const [totalLeads, newLeadsToday, newLeadsMonth, previousMonthLeads, totalReservations, pendingReservations, monthReservations, previousMonthReservations, convertedLeads, previousMonthConverted, leadsByVehicle, recentLeads, recentReservations, avgVehiclePrice] =
     await Promise.all([
       prisma.lead.count(),
       prisma.lead.count({ where: { createdAt: { gte: startOfToday } } }),
       prisma.lead.count({ where: { createdAt: { gte: startOfMonth } } }),
+      prisma.lead.count({
+        where: { createdAt: { gte: startOfPrevMonth, lte: endOfPrevMonth } },
+      }),
       prisma.reservation.count(),
       prisma.reservation.count({ where: { status: "pending" } }),
+      prisma.reservation.count({ where: { createdAt: { gte: startOfMonth } } }),
+      prisma.reservation.count({
+        where: { createdAt: { gte: startOfPrevMonth, lte: endOfPrevMonth } },
+      }),
+      prisma.lead.count({ where: { status: "converted" } }),
+      prisma.lead.count({
+        where: {
+          status: "converted",
+          updatedAt: { gte: startOfPrevMonth, lte: endOfPrevMonth },
+        },
+      }),
       prisma.lead.groupBy({
         by: ["vehicleId"],
         _count: { id: true },
@@ -31,6 +48,15 @@ async function fetchDashboardData() {
         orderBy: { createdAt: "desc" },
         include: { vehicle: { select: { name: true, slug: true } } },
       }),
+      prisma.reservation.findMany({
+        take: 8,
+        orderBy: { date: "desc" },
+        include: {
+          lead: { select: { firstName: true, lastName: true, email: true } },
+          vehicle: { select: { name: true, slug: true, category: true } },
+        },
+      }),
+      prisma.vehicle.aggregate({ _avg: { priceFrom: true } }),
     ]);
 
   // Resolve vehicle names for the bar chart
@@ -56,15 +82,25 @@ async function fetchDashboardData() {
     ? (vehicleMap[topVehicleGroup.vehicleId] ?? "—")
     : "—";
 
+  const avgPrice = avgVehiclePrice._avg.priceFrom ?? 450000;
+  const estimatedRevenueM =
+    Math.round(((totalLeads * avgPrice * (conversionRate / 100)) / 1_000_000) * 10) / 10;
+
   return {
     stats: {
       totalLeads,
       newLeadsToday,
       newLeadsMonth,
+      previousMonthLeads,
       totalReservations,
       pendingReservations,
+      monthReservations,
+      previousMonthReservations,
+      convertedLeads,
+      previousMonthConverted,
       conversionRate,
       topVehicle,
+      estimatedRevenueM,
     },
     leadsByVehicle: leadsByVehicle.map((g) => ({
       name: vehicleMap[g.vehicleId] ?? g.vehicleId,
@@ -80,14 +116,60 @@ async function fetchDashboardData() {
       status: l.status,
       createdAt: l.createdAt.toISOString(),
     })),
+    recentReservations: recentReservations.map((r) => ({
+      id: r.id,
+      clientName: `${r.lead.firstName} ${r.lead.lastName}`,
+      clientEmail: r.lead.email,
+      vehicleName: r.vehicle.name,
+      vehicleCategory: r.vehicle.category,
+      vehicleSlug: r.vehicle.slug,
+      date: r.date.toISOString(),
+      status: r.status,
+    })),
   };
 }
 
 export default async function DashboardPage() {
   const session = await auth();
-  if (!session) redirect("/login");
+  if (!session || session.user?.role !== "admin") redirect("/login");
 
-  const data = await fetchDashboardData();
+  let data;
+  let dbError: string | null = null;
+  try {
+    data = await fetchDashboardData();
+  } catch (error) {
+    console.error("[dashboard] DB error:", error);
+    dbError =
+      error instanceof Error
+        ? error.message
+        : "Base de données indisponible — vérifiez DATABASE_URL et lancez npm run db:setup";
+    data = {
+      stats: {
+        totalLeads: 0,
+        newLeadsToday: 0,
+        newLeadsMonth: 0,
+        previousMonthLeads: 0,
+        totalReservations: 0,
+        pendingReservations: 0,
+        monthReservations: 0,
+        previousMonthReservations: 0,
+        convertedLeads: 0,
+        previousMonthConverted: 0,
+        conversionRate: 0,
+        topVehicle: "—",
+        estimatedRevenueM: 0,
+      },
+      leadsByVehicle: [],
+      recentLeads: [],
+      recentReservations: [],
+    };
+  }
 
-  return <DashboardClient data={data} adminName={session.user?.name ?? "Admin"} />;
+  return (
+    <DashboardClient
+      data={data}
+      adminName={session.user?.name ?? "Admin"}
+      dbError={dbError}
+    />
+  );
 }

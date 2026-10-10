@@ -1,27 +1,34 @@
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import { auth } from "@/lib/auth";
+import { NextResponse } from "next/server";
 
-export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl
+const ADMIN_PATHS = ["/dashboard", "/leads", "/reservations", "/analytics"];
 
-  // These admin routes require authentication
-  const protectedPaths = ['/dashboard', '/leads', '/reservations']
-  const isProtected = protectedPaths.some(p => pathname.startsWith(p))
+export default auth((req) => {
+  const { pathname } = req.nextUrl;
+  const isAdminRoute = ADMIN_PATHS.some((p) => pathname.startsWith(p));
 
-  if (isProtected) {
-    // Check for session cookie (NextAuth v4/v5 compatible)
-    const sessionToken =
-      request.cookies.get('next-auth.session-token') ??
-      request.cookies.get('__Secure-next-auth.session-token')
+  if (!isAdminRoute) return NextResponse.next();
 
-    if (!sessionToken) {
-      return NextResponse.redirect(new URL('/login', request.url))
-    }
+  if (!req.auth) {
+    return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  return NextResponse.next()
-}
+  if (req.auth.user?.role !== "admin") {
+    return NextResponse.redirect(new URL("/compte", req.url));
+  }
+
+  return NextResponse.next();
+});
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/leads/:path*', '/reservations/:path*'],
-}
+  matcher: [
+    "/dashboard",
+    "/dashboard/:path*",
+    "/leads",
+    "/leads/:path*",
+    "/reservations",
+    "/reservations/:path*",
+    "/analytics",
+    "/analytics/:path*",
+  ],
+};

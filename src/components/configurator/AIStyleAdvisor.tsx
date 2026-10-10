@@ -14,7 +14,6 @@ function useTypewriter(text: string, isActive: boolean, speed = 28) {
 
   useEffect(() => {
     if (!isActive || !text) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDisplayed(text);
       return;
     }
@@ -42,9 +41,9 @@ const QUICK_TIPS = [
   { label: "Gris + Tout-terrain", text: "Le gris foncé avec des jantes tout-terrain donne un look robuste et aventurier à votre Toyota. 🏔️" },
 ];
 
-// ─── Gemini API call ──────────────────────────────────────────────────────────
+// ─── Groq API call ────────────────────────────────────────────────────────────
 
-async function fetchGeminiTip(
+async function fetchStyleTip(
   vehicleName: string,
   colorName: string,
   wheelsName: string
@@ -66,22 +65,11 @@ Réponds UNIQUEMENT avec la phrase, sans guillemets.`;
   return data.tip ?? "Excellente configuration ! 🚗";
 }
 
-// ─── Gemini Logo SVG ──────────────────────────────────────────────────────────
-
-function GeminiLogo({ className }: { className?: string }) {
+function GroqLogo({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 28 28" fill="none" aria-hidden>
-      <defs>
-        <linearGradient id="gem-grad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#4285f4" />
-          <stop offset="50%" stopColor="#9b72cb" />
-          <stop offset="100%" stopColor="#d96570" />
-        </linearGradient>
-      </defs>
-      <path
-        d="M14 2C14 8.627 8.627 14 2 14C8.627 14 14 19.373 14 26C14 19.373 19.373 14 26 14C19.373 14 14 8.627 14 2Z"
-        fill="url(#gem-grad)"
-      />
+      <rect width="28" height="28" rx="8" fill="#EB0A1E" />
+      <text x="14" y="18" textAnchor="middle" fill="white" fontSize="11" fontWeight="900" fontFamily="Inter, sans-serif">G</text>
     </svg>
   );
 }
@@ -111,7 +99,7 @@ export function AIStyleAdvisor() {
     setTypeActive(false);
 
     try {
-      const text = await fetchGeminiTip(
+      const text = await fetchStyleTip(
         selectedVehicle.name,
         selectedColor.name,
         selectedWheels.name
@@ -149,9 +137,8 @@ export function AIStyleAdvisor() {
           onClick={() => setCollapsed((v) => !v)}
           className="w-full flex items-center gap-2.5 px-4 py-3 hover:bg-white/3 transition-colors"
         >
-          {/* Gemini avatar */}
           <div className="w-7 h-7 rounded-full bg-[#1a1a2e] border border-white/10 flex items-center justify-center shrink-0 shadow-md">
-            <GeminiLogo className="w-4 h-4" />
+            <GroqLogo className="w-4 h-4" />
           </div>
 
           <div className="flex-1 text-left min-w-0">
@@ -159,7 +146,7 @@ export function AIStyleAdvisor() {
               <p className="text-white text-xs font-semibold leading-tight">Style Advisor</p>
               <Sparkles className="h-3 w-3 text-toyota-gold" />
             </div>
-            <p className="text-toyota-muted/45 text-[10px] leading-tight">Propulsé par Gemini</p>
+            <p className="text-toyota-muted/45 text-[10px] leading-tight">Propulsé par Groq</p>
           </div>
 
           <ChevronDown className={cn(
@@ -248,11 +235,10 @@ export function AIStyleAdvisor() {
           )}
         </AnimatePresence>
 
-        {/* ── Gemini badge footer ── */}
         {!collapsed && (
           <div className="flex items-center gap-1.5 px-4 py-2 border-t border-white/5 bg-white/2">
-            <GeminiLogo className="w-3 h-3" />
-            <span className="text-[9px] text-toyota-muted/30 tracking-wide">Propulsé par Google Gemini</span>
+            <GroqLogo className="w-3 h-3" />
+            <span className="text-[9px] text-toyota-muted/30 tracking-wide">Propulsé par Groq AI</span>
           </div>
         )}
       </div>

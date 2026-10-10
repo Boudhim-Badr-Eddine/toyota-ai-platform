@@ -36,9 +36,6 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
-# vercel
-.vercel
-
 # typescript
 *.tsbuildinfo
 next-env.d.ts
@@ -49,6 +46,7 @@ ml-service/*.pyc
 ml-service/.venv/
 ml-service/venv/
 ml-service/*.pkl
+ml-service/saved_models/
 ml-service/.env
 
 # 3D model files (provided by developer)
@@ -57,4 +55,8 @@ public/models/*.gltf
 public/models/*/
 !public/models/.gitkeep
 !public/models/README.txt
+
+# hero video — use Cloudinary via NEXT_PUBLIC_HERO_VIDEO_URL, not local MP4s
+public/videos/
 next-env.d.ts
+.env*

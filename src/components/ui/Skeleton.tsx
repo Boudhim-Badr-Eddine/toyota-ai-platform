@@ -8,7 +8,7 @@ export function Skeleton({ className }: SkeletonProps) {
   return (
     <div
       className={cn(
-        "animate-pulse rounded-md bg-white/5",
+        "rounded-md bg-white/[0.04] animate-shimmer",
         className
       )}
     />
@@ -17,28 +17,24 @@ export function Skeleton({ className }: SkeletonProps) {
 
 // ─── VehicleCard skeleton ─────────────────────────────────────────────────────
 
-export function VehicleCardSkeleton() {
+export function VehicleCardSkeleton({ delay = 0 }: { delay?: number }) {
   return (
-    <div className="bg-[#111111] border border-white/5 rounded-2xl overflow-hidden flex flex-col">
-      {/* Image */}
-      <Skeleton className="w-full aspect-[16/9]" />
-      {/* Body */}
+    <div
+      className="bg-[#111111] border border-white/[0.06] rounded-none overflow-hidden flex flex-col"
+      style={{ animationDelay: `${delay}ms` }}
+    >
+      <Skeleton className="w-full h-[220px] md:h-[240px] rounded-none" />
       <div className="p-5 flex-1 flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-4 w-24 rounded-full" />
-          <Skeleton className="h-4 w-16 rounded-full" />
+        <Skeleton className="h-7 w-3/4 rounded-lg" />
+        <Skeleton className="h-6 w-32 rounded-lg" />
+        <div className="flex gap-4">
+          <Skeleton className="h-3 w-16 rounded-full" />
+          <Skeleton className="h-3 w-16 rounded-full" />
+          <Skeleton className="h-3 w-20 rounded-full" />
         </div>
-        <Skeleton className="h-6 w-3/4" />
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-2/3" />
-        <div className="flex gap-3 mt-2">
-          <Skeleton className="h-8 w-8 rounded-xl" />
-          <Skeleton className="h-8 w-8 rounded-xl" />
-          <Skeleton className="h-8 w-8 rounded-xl" />
-        </div>
-        <div className="mt-auto pt-3 border-t border-white/5 flex items-center justify-between">
-          <Skeleton className="h-6 w-28" />
-          <Skeleton className="h-9 w-28 rounded-full" />
+        <div className="mt-auto flex gap-2.5 pt-2">
+          <Skeleton className="h-10 flex-1 rounded-full" />
+          <Skeleton className="h-10 flex-1 rounded-full" />
         </div>
       </div>
     </div>
@@ -49,9 +45,11 @@ export function VehicleCardSkeleton() {
 
 export function VehicleGridSkeleton({ count = 6 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
       {Array.from({ length: count }).map((_, i) => (
-        <VehicleCardSkeleton key={i} />
+        <div key={i} className={i === 0 ? "md:col-span-2 lg:col-span-2" : undefined}>
+          <VehicleCardSkeleton delay={i * 80} />
+        </div>
       ))}
     </div>
   );

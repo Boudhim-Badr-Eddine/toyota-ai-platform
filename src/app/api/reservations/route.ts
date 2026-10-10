@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { ensureVehicle } from "@/lib/catalogSync";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
+import { notifyAdminReservationConfirmed } from "@/lib/adminNotifications";
+import { requireAdmin } from "@/lib/auth";
 
 // ─── Validation schemas ────────────────────────────────────────────────────────
 
@@ -53,12 +55,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Resolve vehicleId (slug or cuid)
-    const vehicle = await prisma.vehicle.findFirst({
-      where: {
-        OR: [{ id: vehicleId }, { slug: vehicleId }],
-      },
-    });
+    // Resolve vehicleId (slug or cuid); auto-sync from catalog if missing
+    const vehicle = await ensureVehicle(vehicleId);
 
     if (!vehicle) {
       return NextResponse.json(
@@ -67,11 +65,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Ensure date is in the future
+    // Ensure date is in the future (5 min buffer for same-day slots)
     const reservationDate = new Date(date);
-    if (reservationDate <= new Date()) {
+    const minDate = new Date(Date.now() + 5 * 60 * 1000);
+    if (reservationDate <= minDate) {
       return NextResponse.json(
-        { error: "Reservation date must be in the future" },
+        { error: "Choisissez une date et une heure dans le futur" },
         { status: 422 }
       );
     }
@@ -87,7 +86,12 @@ export async function POST(request: NextRequest) {
       },
       include: {
         vehicle: true,
-        lead: true,
+        lead: {
+          include: {
+            vehicle: true,
+            dealership: true,
+          },
+        },
       },
     });
 
@@ -96,6 +100,10 @@ export async function POST(request: NextRequest) {
       where: { id: leadId },
       data: { status: "contacted" },
     });
+
+    void notifyAdminReservationConfirmed(reservation).catch((err) =>
+      console.error("[POST /api/reservations] Admin email failed:", err)
+    );
 
     return NextResponse.json({ data: reservation }, { status: 201 });
   } catch (error) {
@@ -108,7 +116,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await requireAdmin();
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -160,7 +168,7 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await requireAdmin();
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

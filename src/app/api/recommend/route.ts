@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { geminiModel } from "@/lib/gemini";
+import { generateGroqCompletion } from "@/lib/groq";
 
 export async function POST(req: Request) {
   try {
@@ -10,8 +10,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid prompt" }, { status: 400 });
     }
 
-    const result = await geminiModel.generateContent(prompt);
-    const tip = result.response.text().trim();
+    const tip = await generateGroqCompletion(prompt, { maxTokens: 120, temperature: 0.8 });
 
     return NextResponse.json({ tip });
   } catch (err) {

@@ -5,7 +5,6 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { RefreshCw, CheckCircle, XCircle } from "lucide-react";
-import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { DataTable, StatusBadge, type ColumnDef } from "@/components/admin/DataTable";
 import { cn } from "@/lib/utils";
 
@@ -143,7 +142,6 @@ export default function ReservationsPage() {
   }, []);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (status === "authenticated") fetchReservations();
   }, [status, fetchReservations]);
 
@@ -230,14 +228,11 @@ export default function ReservationsPage() {
 
   if (status === "loading" || (loading && reservations.length === 0)) {
     return (
-      <div className="min-h-screen bg-toyota-dark flex">
-        <AdminSidebar />
-        <main className="flex-1 lg:ml-60 p-8 pt-16 lg:pt-8 flex items-center justify-center">
+      <div className="p-8 flex items-center justify-center min-h-[50vh]">
           <div className="flex flex-col items-center gap-3 text-toyota-muted">
             <div className="w-8 h-8 border-2 border-toyota-red border-t-transparent rounded-full animate-spin" />
             <p className="text-sm">Chargement des réservations…</p>
           </div>
-        </main>
       </div>
     );
   }
@@ -249,9 +244,7 @@ export default function ReservationsPage() {
   const completed = reservations.filter((r) => r.status === "completed").length;
 
   return (
-    <div className="min-h-screen bg-toyota-dark flex">
-      <AdminSidebar />
-      <main className="flex-1 lg:ml-60 p-6 lg:p-8 pt-16 lg:pt-8 min-w-0">
+    <div className="p-6 lg:p-8 min-w-0">
         {/* Header */}
         <div className="flex items-start justify-between mb-8 gap-4">
           <div>
@@ -308,7 +301,6 @@ export default function ReservationsPage() {
             emptyMessage="Aucune réservation trouvée"
           />
         </div>
-      </main>
     </div>
   );
 }

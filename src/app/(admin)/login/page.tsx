@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -22,8 +22,14 @@ type LoginFormValues = z.infer<typeof LoginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
+  const { data: session } = useSession();
   const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (session?.user?.role === "admin") router.replace("/dashboard");
+    if (session?.user?.role === "customer") router.replace("/compte");
+  }, [session, router]);
 
   const {
     register,
@@ -165,10 +171,31 @@ export default function LoginPage() {
               )}
             </button>
           </form>
+
+          <p className="text-center text-sm text-toyota-muted mt-6">
+            Client Toyota ?{" "}
+            <a href="/compte/connexion" className="text-toyota-red font-semibold hover:underline">
+              Connexion client
+            </a>
+            {" · "}
+            <a href="/compte/inscription" className="text-toyota-red font-semibold hover:underline">
+              Créer un compte
+            </a>
+          </p>
+
+          <div className="mt-6 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-xs text-toyota-muted space-y-1">
+            <p className="font-semibold text-white/80">Comptes de démonstration</p>
+            <p>
+              <span className="text-white/60">Admin :</span> admin@toyota-ma.com / Admin@2024!
+            </p>
+            <p>
+              <span className="text-white/60">Client :</span> client@toyota-ma.com / Client@2024!
+            </p>
+          </div>
         </div>
 
         {/* Footer */}
-        <p className="text-center text-toyota-muted/40 text-xs mt-6">
+        <p className="text-center text-toyota-muted/40 text-xs mt-6" suppressHydrationWarning>
           Toyota AI Experience Platform © {new Date().getFullYear()}
         </p>
       </div>
